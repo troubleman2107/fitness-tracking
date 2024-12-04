@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "jsm-react-native",
-    "slug": "jsm-react-native",
+    "name": "fitness-tracking",
+    "slug": "fitness-tracking",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "jsm-react-native",
+    "scheme": "fitness-tracking",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {

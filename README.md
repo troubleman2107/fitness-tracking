@@ -1,50 +1,34 @@
-# Welcome to your Expo app 👋
+**Prototype**
+How start:
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+- 1 session will contain more exercies:
+- How is 1 session started
+- 1 session include more exercies
+- 1 exercies include more sets
+- 1 set include more reps and time to rest
+- 1 session have date
 
-## Get started
+Flow of session:
 
-1. Install dependencies
+- User open app and choose program
+- User start program (will tracking time and getTime() in this point)
+- App will refer exercise and show rep and set of exercise
+- When user done each exercise rest time will be interval
+- Drawer will show up to user fill set and rep in this
 
-   ```bash
-   npm install
-   ```
+Data:
 
-2. Start the app
+_Data Type_
 
-   ```bash
-    npx expo start
-   ```
+- Goal of set x rep (will be init) will be calculate when users create programs
+- Current of set x rep (present work out)
+- Past of set x rep (lasted work out)
 
-In the output, you'll find options to open the app in a
+_Color_
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- If Current => Goal -> Green
+- If Current => Past && Current < Goal -> Yellow
+- If Current < Past && Current < Goal - > Red
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Init set x rep
+- When finish exercise will give input of set x rep
