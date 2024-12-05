@@ -14,6 +14,7 @@ import CustomButton from "@/components/CustomButton";
 import { sessionData } from "@/data/mock-data";
 import Exercises from "@/components/Exercise";
 import Exercise from "@/components/Exercise";
+import BottomSheetComponent from "@/components/BottomSheetComponent";
 
 export interface Exercise {
   id: string;
@@ -35,22 +36,31 @@ export interface SessionData {
   exercises: Exercise[];
 }
 
-interface InitialState {
+export interface InitialState {
   sessionData: SessionData[];
+  currentSet: {
+    reps: string;
+    weight: string;
+  };
 }
 
 const initialState: InitialState = {
   sessionData: sessionData,
+  currentSet: {
+    reps: "",
+    weight: "",
+  },
 };
 
 type ACTIONTYPE =
   | { type: "increment"; payload: number }
-  | { type: "decrement"; payload: string };
+  | { type: "decrement"; payload: string }
+  | { type: "setCurrentSet"; payload: typeof initialState.currentSet };
 
 function reducer(state: typeof initialState, action: ACTIONTYPE) {
   switch (action.type) {
-    // case "increment":
-    //   return { count: state.count + action.payload };
+    case "setCurrentSet":
+      return { ...state, currentSet: action.payload };
     // case "decrement":
     //   return { count: state.count - Number(action.payload) };
     default:
@@ -60,10 +70,13 @@ function reducer(state: typeof initialState, action: ACTIONTYPE) {
 }
 
 const App = () => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isFinishSet, setIsFinishSet] = useState(false);
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  console.log("state.sessionData", state.sessionData[0]);
+  const handleFinishSet = (infoSet: InitialState["currentSet"]) => {
+    dispatch({ type: "setCurrentSet", payload: infoSet });
+    setIsFinishSet(!isFinishSet);
+  };
 
   return (
     <SafeAreaView className="h-full bg-white">
@@ -87,8 +100,16 @@ const App = () => {
             })}
           </View>
         </View>
-        <Exercise session={state.sessionData[0]} />
+        <Exercise
+          session={state.sessionData[0]}
+          handleFinishSet={handleFinishSet}
+        />
       </View>
+      <BottomSheetComponent
+        isVisible={isFinishSet}
+        toggle={() => setIsFinishSet(false)}
+        infoSet={state.currentSet}
+      />
       <StatusBar style="light" backgroundColor="#161622" />
     </SafeAreaView>
   );

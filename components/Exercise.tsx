@@ -1,12 +1,25 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import React from "react";
-import { SessionData } from "@/app";
+import { InitialState, SessionData } from "@/app";
 
 type ExerciesProps = {
   session: SessionData;
+  handleFinishSet?: (infoSet: InitialState["currentSet"]) => void;
 };
 
-const Exercise = ({ session }: ExerciesProps) => {
+const Exercise = ({ session, handleFinishSet }: ExerciesProps) => {
+  const handleOnSetPress = (infoSet: InitialState["currentSet"]) => {
+    if (handleFinishSet) {
+      handleFinishSet(infoSet);
+    }
+  };
+
   return (
     <ScrollView className="px-3 pt-3 pb-6 bg-[#DDD8D8] rounded-[20px] mt-2">
       {session &&
@@ -22,16 +35,25 @@ const Exercise = ({ session }: ExerciesProps) => {
 
             <View className="mt-6">
               {exercise.sets.map((set, index) => (
-                <View
+                <TouchableOpacity
+                  onPress={() =>
+                    handleOnSetPress({
+                      reps: String(set.reps),
+                      weight: String(set.weight),
+                    })
+                  }
                   key={set.id}
-                  className={`${
-                    set.active ? "bg-[#D6D0D0]" : "bg-[#BFBABA]"
-                  }  px-[19px] py-[22px] rounded-[20px] mb-[6px]`}
                 >
-                  <Text>
-                    Set {index + 1}: {set.reps} reps x {set.weight}kg
-                  </Text>
-                </View>
+                  <View
+                    className={`${
+                      set.active ? "bg-[#D6D0D0]" : "bg-[#BFBABA]"
+                    }  px-[19px] py-[22px] rounded-[20px] mb-[6px]`}
+                  >
+                    <Text>
+                      Set {index + 1}: {set.reps} reps x {set.weight}kg
+                    </Text>
+                  </View>
+                </TouchableOpacity>
               ))}
             </View>
           </View>
