@@ -42,6 +42,7 @@ export interface InitialState {
     reps: string;
     weight: string;
     id: string;
+    active?: boolean;
   };
 }
 
@@ -51,6 +52,7 @@ const initialState: InitialState = {
     reps: "",
     weight: "",
     id: "",
+    active: false,
   },
 };
 
@@ -98,6 +100,7 @@ const App = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const handleFinishSet = (infoSet: InitialState["currentSet"]) => {
+    if (!infoSet.active) return;
     dispatch({ type: "setCurrentSet", payload: infoSet });
     setIsFinishSet(!isFinishSet);
   };
@@ -107,20 +110,26 @@ const App = () => {
   };
 
   return (
-    <SafeAreaView className="h-full bg-white">
+    <SafeAreaView className="h-full bg-slate-50">
       <View className="p-2 h-full">
-        <View className="px-3 pt-3 pb-6 bg-[#DDD8D8] mb-[6px] rounded-[20px]">
-          <View className="mb-2">
-            <Text className="font-pbold text-xl">{state.sessionData.name}</Text>
-            <Text className="font-plight text-[14px]">Mon - 04/12/2024</Text>
+        <View className="px-3 pt-3 pb-6 bg-slate-100 mb-[6px] rounded-[20px]">
+          <View className="mb-2 flex items-center justify-center gap-2">
+            <Text className="font-pbold text-xl text-slate-600">
+              {state.sessionData.name}
+            </Text>
+            <Text className="font-plight text-[14px] text-slate-600">
+              Mon - 04/12/2024
+            </Text>
+            <Text className="font-plight text-xl text-slate-600">
+              Time: 04:20
+            </Text>
           </View>
-          <Text className="font-pbold text-xl">Time: 04:20</Text>
           <View className="flex flex-row gap-3 overflow-hidden">
             {Array.from({ length: 10 }, (i, k) => {
               return (
                 <View
                   key={k}
-                  className="w-[30px] h-[45px] bg-[#B3ADAD] rounded-[10px] mt-[14px]"
+                  className="w-[30px] h-[45px] bg-slate-200 rounded-[10px] mt-[14px]"
                 ></View>
               );
             })}

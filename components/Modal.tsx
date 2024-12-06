@@ -33,7 +33,7 @@ const Modal: React.FC<ModalProps> = ({
         onPress={onClose}
       >
         <View
-          className="bg-white rounded-lg p-6 w-5/6 max-w-sm"
+          className="bg-white rounded-[20px] p-6 w-5/6 max-w-sm"
           onStartShouldSetResponder={() => true}
           onTouchEnd={(e) => e.stopPropagation()}
         >
