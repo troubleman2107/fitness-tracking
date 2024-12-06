@@ -40,6 +40,7 @@ const Exercise = ({ session, handleFinishSet }: ExerciesProps) => {
                     handleOnSetPress({
                       reps: String(set.reps),
                       weight: String(set.weight),
+                      id: set.id,
                     })
                   }
                   key={set.id}

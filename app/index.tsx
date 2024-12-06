@@ -37,35 +37,59 @@ export interface SessionData {
 }
 
 export interface InitialState {
-  sessionData: SessionData[];
+  sessionData: SessionData;
   currentSet: {
     reps: string;
     weight: string;
+    id: string;
   };
 }
 
 const initialState: InitialState = {
-  sessionData: sessionData,
+  sessionData: sessionData[0],
   currentSet: {
     reps: "",
     weight: "",
+    id: "",
   },
 };
 
 type ACTIONTYPE =
-  | { type: "increment"; payload: number }
-  | { type: "decrement"; payload: string }
-  | { type: "setCurrentSet"; payload: typeof initialState.currentSet };
+  | { type: "setCurrentSet"; payload: typeof initialState.currentSet }
+  | { type: "doneSet"; payload: InitialState["currentSet"] };
 
 function reducer(state: typeof initialState, action: ACTIONTYPE) {
   switch (action.type) {
     case "setCurrentSet":
       return { ...state, currentSet: action.payload };
-    // case "decrement":
-    //   return { count: state.count - Number(action.payload) };
+    case "doneSet":
+      return {
+        ...state,
+        sessionData: {
+          ...state.sessionData,
+          exercises: state.sessionData.exercises.map((exercise) => {
+            if (exercise.id === "ex_001") {
+              return {
+                ...exercise,
+                sets: exercise.sets.map((set) => {
+                  if (set.active) {
+                    return {
+                      ...set,
+                      weight: Number(action.payload.weight),
+                      reps: Number(action.payload.reps),
+                    };
+                  }
+                  return set;
+                }),
+              };
+            }
+            return exercise;
+          }),
+        },
+      };
+
     default:
       return state;
-      throw new Error();
   }
 }
 
@@ -78,14 +102,16 @@ const App = () => {
     setIsFinishSet(!isFinishSet);
   };
 
+  const handleRest = (infoSet: InitialState["currentSet"]) => {
+    dispatch({ type: "doneSet", payload: infoSet });
+  };
+
   return (
     <SafeAreaView className="h-full bg-white">
       <View className="p-2 h-full">
         <View className="px-3 pt-3 pb-6 bg-[#DDD8D8] mb-[6px] rounded-[20px]">
           <View className="mb-2">
-            <Text className="font-pbold text-xl">
-              Upper Body Strength Training
-            </Text>
+            <Text className="font-pbold text-xl">{state.sessionData.name}</Text>
             <Text className="font-plight text-[14px]">Mon - 04/12/2024</Text>
           </View>
           <Text className="font-pbold text-xl">Time: 04:20</Text>
@@ -101,7 +127,7 @@ const App = () => {
           </View>
         </View>
         <Exercise
-          session={state.sessionData[0]}
+          session={state.sessionData}
           handleFinishSet={handleFinishSet}
         />
       </View>
@@ -109,6 +135,7 @@ const App = () => {
         isVisible={isFinishSet}
         toggle={() => setIsFinishSet(false)}
         infoSet={state.currentSet}
+        handleRest={handleRest}
       />
       <StatusBar style="light" backgroundColor="#161622" />
     </SafeAreaView>

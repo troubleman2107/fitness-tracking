@@ -41,21 +41,26 @@ function reducer(state: typeof initialState, action: ACTIONTYPE) {
 type BottomSheetComponentProps = {
   isVisible: boolean;
   toggle: () => void;
-  infoSet: {
-    reps: string;
-    weight: string;
-  };
+  infoSet: InitialState["currentSet"];
+  handleRest?: (infoSet: InitialState["currentSet"]) => void;
 };
 
 const BottomSheetComponent: React.FunctionComponent<
   BottomSheetComponentProps
-> = ({ isVisible, toggle, infoSet }: BottomSheetComponentProps) => {
+> = ({ isVisible, toggle, infoSet, handleRest }: BottomSheetComponentProps) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
     dispatch({ type: "set_reps", payload: infoSet.reps });
     dispatch({ type: "set_weight", payload: infoSet.weight });
   }, [infoSet]);
+
+  const handleSubmit = (infoSet: InitialState["currentSet"]) => {
+    if (handleRest) {
+      handleRest(infoSet);
+    }
+    toggle();
+  };
 
   return (
     <SafeAreaProvider>
@@ -98,7 +103,13 @@ const BottomSheetComponent: React.FunctionComponent<
               <CustomButton
                 containerStyles="w-full"
                 title="SUBMIT"
-                handlePress={() => {}}
+                handlePress={() =>
+                  handleSubmit({
+                    reps: state.reps,
+                    weight: state.weight,
+                    id: infoSet.id,
+                  })
+                }
               />
             </View>
           </View>
