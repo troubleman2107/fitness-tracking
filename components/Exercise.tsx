@@ -40,8 +40,8 @@ const Exercise = ({ session, handleFinishSet }: ExerciesProps) => {
                 <TouchableOpacity
                   onPress={() =>
                     handleOnSetPress({
-                      reps: String(set.reps),
-                      weight: String(set.weight),
+                      reps: set.reps,
+                      weight: set.weight ? set.weight : null,
                       id: set.id,
                       active: set.active,
                     })

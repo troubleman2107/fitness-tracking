@@ -39,8 +39,8 @@ export interface SessionData {
 export interface InitialState {
   sessionData: SessionData;
   currentSet: {
-    reps: string;
-    weight: string;
+    reps: number | null;
+    weight: number | null;
     id: string;
     active?: boolean;
   };
@@ -49,8 +49,8 @@ export interface InitialState {
 const initialState: InitialState = {
   sessionData: sessionData[0],
   currentSet: {
-    reps: "",
-    weight: "",
+    reps: null,
+    weight: null,
     id: "",
     active: false,
   },

@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Alert,
 } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import FormField from "./FormField";
@@ -14,14 +15,14 @@ import CustomButton from "./CustomButton";
 import { InitialState } from "@/app";
 import Modal from "./Modal";
 
-const initialState = {
-  reps: "",
-  weight: "",
+const initialState: { reps: number | null; weight: number | null } = {
+  reps: null,
+  weight: null,
 };
 
 type ACTIONTYPE =
-  | { type: "set_reps"; payload: string }
-  | { type: "set_weight"; payload: string };
+  | { type: "set_reps"; payload: number | null }
+  | { type: "set_weight"; payload: number | null };
 
 function reducer(state: typeof initialState, action: ACTIONTYPE) {
   switch (action.type) {
@@ -49,6 +50,7 @@ const BottomSheetComponent: React.FunctionComponent<
   BottomSheetComponentProps
 > = ({ isVisible, toggle, infoSet, handleRest }: BottomSheetComponentProps) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+  console.log("🚀 ~ infoSet:", infoSet);
 
   useEffect(() => {
     dispatch({ type: "set_reps", payload: infoSet.reps });
@@ -56,6 +58,18 @@ const BottomSheetComponent: React.FunctionComponent<
   }, [infoSet]);
 
   const handleSubmit = (infoSet: InitialState["currentSet"]) => {
+    if (!infoSet.reps || !infoSet.weight) {
+      Alert.alert("Validation Error", "Please choose your rep or weight", [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel",
+        },
+        { text: "OK", onPress: () => console.log("OK Pressed") },
+      ]);
+      return;
+    }
+
     if (handleRest) {
       handleRest(infoSet);
     }
@@ -77,9 +91,9 @@ const BottomSheetComponent: React.FunctionComponent<
                 <FormField
                   type="number"
                   handleChangeText={(value) => {
-                    dispatch({ type: "set_reps", payload: value });
+                    dispatch({ type: "set_reps", payload: Number(value) });
                   }}
-                  value={state.reps}
+                  value={state.reps ? String(state.reps) : ""}
                   placeholder="Reps"
                   otherStyles="flex flex-row items-center w-[100px] gap-2 mb-2 mr-[]"
                 />
@@ -90,10 +104,10 @@ const BottomSheetComponent: React.FunctionComponent<
                   handleChangeText={(value) => {
                     dispatch({
                       type: "set_weight",
-                      payload: value,
+                      payload: Number(value),
                     });
                   }}
-                  value={state.weight}
+                  value={state.weight ? String(state.weight) : ""}
                   placeholder="Weight"
                   otherStyles="flex flex-row items-center w-[100px] gap-2 mb-2 mr-[]"
                 />
