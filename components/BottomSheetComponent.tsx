@@ -15,30 +15,6 @@ import CustomButton from "./CustomButton";
 import { InitialState } from "@/app";
 import Modal from "./Modal";
 
-const initialState: { reps: number | null; weight: number | null } = {
-  reps: null,
-  weight: null,
-};
-
-type ACTIONTYPE =
-  | { type: "set_reps"; payload: number | null }
-  | { type: "set_weight"; payload: number | null };
-
-function reducer(state: typeof initialState, action: ACTIONTYPE) {
-  switch (action.type) {
-    case "set_reps":
-      return { ...state, reps: action.payload };
-    case "set_weight":
-      return { ...state, weight: action.payload };
-    // case "increment":
-    //   return { count: state.count + action.payload };
-    // case "decrement":
-    //   return { count: state.count - Number(action.payload) };
-    default:
-      return state;
-  }
-}
-
 type BottomSheetComponentProps = {
   isVisible: boolean;
   toggle: () => void;
@@ -49,12 +25,16 @@ type BottomSheetComponentProps = {
 const BottomSheetComponent: React.FunctionComponent<
   BottomSheetComponentProps
 > = ({ isVisible, toggle, infoSet, handleRest }: BottomSheetComponentProps) => {
-  const [state, dispatch] = useReducer(reducer, initialState);
-  console.log("🚀 ~ infoSet:", infoSet);
+  const [reps, setReps] = useState(infoSet.reps ? infoSet.reps : null);
+  const [weight, setWeight] = useState(infoSet.weight ? infoSet.weight : null);
 
   useEffect(() => {
-    dispatch({ type: "set_reps", payload: infoSet.reps });
-    dispatch({ type: "set_weight", payload: infoSet.weight });
+    if (!infoSet) {
+      return;
+    }
+
+    setReps(infoSet.reps);
+    setWeight(infoSet.weight);
   }, [infoSet]);
 
   const handleSubmit = (infoSet: InitialState["currentSet"]) => {
@@ -91,9 +71,9 @@ const BottomSheetComponent: React.FunctionComponent<
                 <FormField
                   type="number"
                   handleChangeText={(value) => {
-                    dispatch({ type: "set_reps", payload: Number(value) });
+                    setReps(Number(value));
                   }}
-                  value={state.reps ? String(state.reps) : ""}
+                  value={reps ? String(reps) : ""}
                   placeholder="Reps"
                   otherStyles="flex flex-row items-center w-[100px] gap-2 mb-2 mr-[]"
                 />
@@ -102,12 +82,9 @@ const BottomSheetComponent: React.FunctionComponent<
                 <FormField
                   type="number"
                   handleChangeText={(value) => {
-                    dispatch({
-                      type: "set_weight",
-                      payload: Number(value),
-                    });
+                    setWeight(Number(value));
                   }}
-                  value={state.weight ? String(state.weight) : ""}
+                  value={weight ? String(weight) : ""}
                   placeholder="Weight"
                   otherStyles="flex flex-row items-center w-[100px] gap-2 mb-2 mr-[]"
                 />
@@ -119,8 +96,8 @@ const BottomSheetComponent: React.FunctionComponent<
                 title="SUBMIT"
                 handlePress={() =>
                   handleSubmit({
-                    reps: state.reps,
-                    weight: state.weight,
+                    reps: reps,
+                    weight: weight,
                     id: infoSet.id,
                   })
                 }
