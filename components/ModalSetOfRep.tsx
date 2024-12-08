@@ -15,16 +15,19 @@ import CustomButton from "./CustomButton";
 import { InitialState } from "@/app";
 import Modal from "./Modal";
 
-type BottomSheetComponentProps = {
+type ModalSetOfRepProps = {
   isVisible: boolean;
   toggle: () => void;
   infoSet: InitialState["currentSet"];
   handleRest?: (infoSet: InitialState["currentSet"]) => void;
 };
 
-const BottomSheetComponent: React.FunctionComponent<
-  BottomSheetComponentProps
-> = ({ isVisible, toggle, infoSet, handleRest }: BottomSheetComponentProps) => {
+const ModalSetOfRep: React.FunctionComponent<ModalSetOfRepProps> = ({
+  isVisible,
+  toggle,
+  infoSet,
+  handleRest,
+}: ModalSetOfRepProps) => {
   const [reps, setReps] = useState(infoSet.reps ? infoSet.reps : null);
   const [weight, setWeight] = useState(infoSet.weight ? infoSet.weight : null);
 
@@ -119,4 +122,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BottomSheetComponent;
+export default ModalSetOfRep;

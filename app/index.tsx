@@ -14,7 +14,8 @@ import CustomButton from "@/components/CustomButton";
 import { sessionData } from "@/data/mock-data";
 import Exercises from "@/components/Exercise";
 import Exercise from "@/components/Exercise";
-import BottomSheetComponent from "@/components/BottomSheetComponent";
+import ModalSetOfRep from "@/components/ModalSetOfRep";
+import CountDownRest from "@/components/CountDownRest";
 
 export interface Exercise {
   id: string;
@@ -98,6 +99,7 @@ function reducer(state: typeof initialState, action: ACTIONTYPE) {
 const App = () => {
   const [isFinishSet, setIsFinishSet] = useState(false);
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [isRest, setIsRest] = useState(false);
 
   const handleFinishSet = (infoSet: InitialState["currentSet"]) => {
     if (!infoSet.active) return;
@@ -107,6 +109,11 @@ const App = () => {
 
   const handleRest = (infoSet: InitialState["currentSet"]) => {
     dispatch({ type: "doneSet", payload: infoSet });
+    setIsRest(true);
+  };
+
+  const handleStopRest = (param: boolean) => {
+    setIsRest(param);
   };
 
   return (
@@ -125,7 +132,7 @@ const App = () => {
             </Text>
           </View>
           <View className="flex flex-row gap-3 overflow-hidden">
-            {Array.from({ length: 10 }, (i, k) => {
+            {Array.from({ length: 3 }, (i, k) => {
               return (
                 <View
                   key={k}
@@ -135,12 +142,13 @@ const App = () => {
             })}
           </View>
         </View>
+        <CountDownRest seconds={3} isRunning={isRest} onStop={handleStopRest} />
         <Exercise
           session={state.sessionData}
           handleFinishSet={handleFinishSet}
         />
       </View>
-      <BottomSheetComponent
+      <ModalSetOfRep
         isVisible={isFinishSet}
         toggle={() => setIsFinishSet(false)}
         infoSet={state.currentSet}
