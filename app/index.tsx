@@ -5,6 +5,9 @@ import Exercise from "@/components/Exercise";
 import ModalSetOfRep from "@/components/ModalSetOfRep";
 import CountDownRest from "@/components/CountDownRest";
 import { setItem, getItem } from "@/utils/AsyncStorage";
+const data = require("@/data/data.json");
+
+setItem("sessionData", data);
 
 export interface Exercise {
   id: string;
@@ -112,7 +115,15 @@ const App = () => {
     const getSessionData = async () => {
       const res = await getItem("sessionData");
       if (res) {
-        dispatch({ type: "setSessionData", payload: JSON.parse(res)[0] });
+        const filterToday = res.find((item: SessionData) => {
+          const toDay = new Date();
+          toDay.setHours(0, 0, 0, 0);
+          const dataDay = new Date(item.date);
+          dataDay.setHours(0, 0, 0, 0);
+          return toDay.getTime() === dataDay.getTime();
+        });
+        console.log("🚀 ~ getSessionData ~ filterToday:", filterToday);
+        dispatch({ type: "setSessionData", payload: filterToday });
       }
     };
     getSessionData();
