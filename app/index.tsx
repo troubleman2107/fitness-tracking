@@ -16,6 +16,7 @@ import Exercises from "@/components/Exercise";
 import Exercise from "@/components/Exercise";
 import ModalSetOfRep from "@/components/ModalSetOfRep";
 import CountDownRest from "@/components/CountDownRest";
+import { set } from "date-fns";
 
 export interface Exercise {
   id: string;
@@ -25,10 +26,11 @@ export interface Exercise {
 }
 interface Set {
   id: string;
-  reps: number;
-  weight?: number;
-  restTime?: number;
+  reps: number | null;
+  weight?: number | null;
+  restTime?: number | null;
   active?: boolean;
+  status?: string;
 }
 export interface SessionData {
   id: string;
@@ -39,12 +41,7 @@ export interface SessionData {
 
 export interface InitialState {
   sessionData: SessionData;
-  currentSet: {
-    reps: number | null;
-    weight: number | null;
-    id: string;
-    active?: boolean;
-  };
+  currentSet: Set;
 }
 
 const initialState: InitialState = {
@@ -54,12 +51,14 @@ const initialState: InitialState = {
     weight: null,
     id: "",
     active: false,
+    restTime: null,
   },
 };
 
 type ACTIONTYPE =
   | { type: "setCurrentSet"; payload: typeof initialState.currentSet }
-  | { type: "doneSet"; payload: InitialState["currentSet"] };
+  | { type: "doneSet"; payload: InitialState["currentSet"] }
+  | { type: "nextSet"; payload: InitialState["sessionData"] };
 
 function reducer(state: typeof initialState, action: ACTIONTYPE) {
   switch (action.type) {
@@ -71,7 +70,7 @@ function reducer(state: typeof initialState, action: ACTIONTYPE) {
         sessionData: {
           ...state.sessionData,
           exercises: state.sessionData.exercises.map((exercise) => {
-            if (exercise.id === "ex_001") {
+            if (exercise.sets.filter((item) => item.active)) {
               return {
                 ...exercise,
                 sets: exercise.sets.map((set) => {
@@ -80,6 +79,12 @@ function reducer(state: typeof initialState, action: ACTIONTYPE) {
                       ...set,
                       weight: Number(action.payload.weight),
                       reps: Number(action.payload.reps),
+                      status:
+                        Number(action.payload.weight) *
+                          Number(action.payload.reps) >
+                        Number(set?.weight) * Number(set?.reps)
+                          ? "goal"
+                          : "down",
                     };
                   }
                   return set;
@@ -90,6 +95,18 @@ function reducer(state: typeof initialState, action: ACTIONTYPE) {
           }),
         },
       };
+    case "nextSet":
+      return {
+        ...state,
+        sessionData: action.payload,
+      };
+
+    //   ...state,
+    //   sessionData: {
+    //     ...state.sessionData,
+    //     exercises: state.sessionData.exercises,
+    //   },
+    // };
 
     default:
       return state;
@@ -100,6 +117,8 @@ const App = () => {
   const [isFinishSet, setIsFinishSet] = useState(false);
   const [state, dispatch] = useReducer(reducer, initialState);
   const [isRest, setIsRest] = useState(false);
+
+  console.log("state.currentSet", state.currentSet);
 
   const handleFinishSet = (infoSet: InitialState["currentSet"]) => {
     if (!infoSet.active) return;
@@ -113,7 +132,51 @@ const App = () => {
   };
 
   const handleStopRest = (param: boolean) => {
-    setIsRest(param);
+    const updatedSession = { ...state.sessionData }; // Clone the session object to avoid mutation
+
+    const allSets: Set[] = [];
+
+    updatedSession.exercises.forEach((exercise) => {
+      exercise.sets.forEach((set) => {
+        allSets.push({ ...set });
+      });
+    });
+
+    let foundActive = false;
+
+    const nextSet = allSets.map((set, index) => {
+      if (set.active && !foundActive) {
+        foundActive = true;
+        set.active = false;
+
+        if (index + 1 < allSets.length) {
+          allSets[index + 1].active = true;
+        }
+
+        return { ...set, active: false };
+      }
+
+      return { ...set };
+    });
+
+    const findActiveSet = nextSet.find((set) => set.active);
+
+    updatedSession.exercises = updatedSession.exercises.map((exercise) => {
+      return {
+        ...exercise,
+        sets: [
+          ...exercise.sets.map((set) => {
+            return {
+              ...set,
+              active: set.id === findActiveSet?.id ? true : false,
+            };
+          }),
+        ],
+      };
+    });
+
+    dispatch({ type: "nextSet", payload: updatedSession });
+    setIsRest(false);
   };
 
   return (
@@ -142,7 +205,20 @@ const App = () => {
             })}
           </View>
         </View>
-        <CountDownRest seconds={3} isRunning={isRest} onStop={handleStopRest} />
+        <View className="flex-row justify-center ">
+          {isRest && (
+            <>
+              <Text className="font-plight text-xl text-slate-600">Rest: </Text>
+              <CountDownRest
+                seconds={
+                  state.currentSet.restTime ? state.currentSet.restTime : 0
+                }
+                isRunning={isRest}
+                onStop={handleStopRest}
+              />
+            </>
+          )}
+        </View>
         <Exercise
           session={state.sessionData}
           handleFinishSet={handleFinishSet}

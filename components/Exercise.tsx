@@ -7,6 +7,7 @@ import {
 } from "react-native";
 import React from "react";
 import { InitialState, SessionData } from "@/app";
+import CountDownRest from "./CountDownRest";
 
 type ExerciesProps = {
   session: SessionData;
@@ -44,18 +45,30 @@ const Exercise = ({ session, handleFinishSet }: ExerciesProps) => {
                       weight: set.weight ? set.weight : null,
                       id: set.id,
                       active: set.active,
+                      restTime: set.restTime,
                     })
                   }
                   key={set.id}
                 >
                   <View
                     className={`${
-                      set.active ? "bg-slate-400" : "bg-slate-200"
-                    }  px-[19px] py-[22px] rounded-[20px] mb-[6px]`}
+                      set.status
+                        ? set.status === "goal"
+                          ? "bg-lime-400"
+                          : "bg-red-400"
+                        : set.active
+                        ? "bg-slate-400"
+                        : "bg-slate-200"
+                    }  px-[19px] py-[22px] rounded-[20px] mb-[6px] flex flex-row justify-between items-center`}
                   >
-                    <Text>
+                    <Text className="font-pregular">
                       Set {index + 1}: {set.reps} reps x {set.weight}kg
                     </Text>
+                    {set.status && (
+                      <Text className="font-pbold text-xs">{`${
+                        set.status === "goal" ? "Level Up" : "Nice Try"
+                      } `}</Text>
+                    )}
                   </View>
                 </TouchableOpacity>
               ))}

@@ -36,8 +36,8 @@ const ModalSetOfRep: React.FunctionComponent<ModalSetOfRepProps> = ({
       return;
     }
 
-    setReps(infoSet.reps);
-    setWeight(infoSet.weight);
+    infoSet.reps && setReps(infoSet.reps);
+    infoSet.weight && setWeight(infoSet.weight);
   }, [infoSet]);
 
   const handleSubmit = (infoSet: InitialState["currentSet"]) => {

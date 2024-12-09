@@ -48,7 +48,9 @@ const CountDownRest = ({
     <>
       {isRunning && (
         <View>
-          <Text>{displayTime}</Text>
+          <Text className="font-plight text-lg text-slate-600">
+            {displayTime}
+          </Text>
         </View>
       )}
     </>
