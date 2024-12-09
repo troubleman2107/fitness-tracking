@@ -7,7 +7,6 @@ import {
 } from "react-native";
 import React from "react";
 import { InitialState, SessionData } from "@/app";
-import CountDownRest from "./CountDownRest";
 
 type ExerciesProps = {
   session: SessionData;
@@ -66,7 +65,7 @@ const Exercise = ({ session, handleFinishSet }: ExerciesProps) => {
                     </Text>
                     {set.status && (
                       <Text className="font-pbold text-xs">{`${
-                        set.status === "goal" ? "Level Up" : "Nice Try"
+                        set.status === "goal" ? "Level Up ✊" : "Nice Try 🤌"
                       } `}</Text>
                     )}
                   </View>

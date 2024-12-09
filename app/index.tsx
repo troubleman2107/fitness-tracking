@@ -1,22 +1,10 @@
-import {
-  Image,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import React, { useReducer, useState } from "react";
+import { SafeAreaView, Text, View } from "react-native";
+import React, { useEffect, useReducer, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { Link, router } from "expo-router";
-import { images } from "@/constants";
-import CustomButton from "@/components/CustomButton";
-import { sessionData } from "@/data/mock-data";
-import Exercises from "@/components/Exercise";
 import Exercise from "@/components/Exercise";
 import ModalSetOfRep from "@/components/ModalSetOfRep";
 import CountDownRest from "@/components/CountDownRest";
-import { set } from "date-fns";
+import { setItem, getItem } from "@/utils/AsyncStorage";
 
 export interface Exercise {
   id: string;
@@ -40,12 +28,12 @@ export interface SessionData {
 }
 
 export interface InitialState {
-  sessionData: SessionData;
+  sessionData: SessionData | null;
   currentSet: Set;
 }
 
 const initialState: InitialState = {
-  sessionData: sessionData[0],
+  sessionData: null,
   currentSet: {
     reps: null,
     weight: null,
@@ -56,58 +44,60 @@ const initialState: InitialState = {
 };
 
 type ACTIONTYPE =
+  | { type: "setSessionData"; payload: InitialState["sessionData"] }
   | { type: "setCurrentSet"; payload: typeof initialState.currentSet }
   | { type: "doneSet"; payload: InitialState["currentSet"] }
   | { type: "nextSet"; payload: InitialState["sessionData"] };
 
 function reducer(state: typeof initialState, action: ACTIONTYPE) {
   switch (action.type) {
+    case "setSessionData":
+      return { ...state, sessionData: action.payload };
     case "setCurrentSet":
       return { ...state, currentSet: action.payload };
     case "doneSet":
-      return {
-        ...state,
-        sessionData: {
-          ...state.sessionData,
-          exercises: state.sessionData.exercises.map((exercise) => {
-            if (exercise.sets.filter((item) => item.active)) {
-              return {
-                ...exercise,
-                sets: exercise.sets.map((set) => {
-                  if (set.active) {
-                    return {
-                      ...set,
-                      weight: Number(action.payload.weight),
-                      reps: Number(action.payload.reps),
-                      status:
-                        Number(action.payload.weight) *
-                          Number(action.payload.reps) >
-                        Number(set?.weight) * Number(set?.reps)
-                          ? "goal"
-                          : "down",
-                    };
-                  }
-                  return set;
-                }),
-              };
-            }
-            return exercise;
-          }),
-        },
-      };
+      if (!state?.sessionData) {
+        return state;
+      } else {
+        return {
+          ...state,
+          sessionData: {
+            ...state.sessionData,
+            exercises: state.sessionData.exercises.map((exercise) => {
+              if (exercise.sets.filter((item) => item.active)) {
+                return {
+                  ...exercise,
+                  sets: exercise.sets.map((set) => {
+                    if (set.active) {
+                      return {
+                        ...set,
+                        weight: Number(action.payload.weight),
+                        reps: Number(action.payload.reps),
+                        status:
+                          Number(action.payload.weight) *
+                            Number(action.payload.reps) >
+                          Number(set?.weight) * Number(set?.reps)
+                            ? "goal"
+                            : "down",
+                      };
+                    }
+                    return set;
+                  }),
+                };
+              }
+              return exercise;
+            }),
+          },
+        };
+      }
+
     case "nextSet":
-      return {
-        ...state,
-        sessionData: action.payload,
-      };
-
-    //   ...state,
-    //   sessionData: {
-    //     ...state.sessionData,
-    //     exercises: state.sessionData.exercises,
-    //   },
-    // };
-
+      if (action.payload) {
+        return {
+          ...state,
+          sessionData: action.payload,
+        };
+      }
     default:
       return state;
   }
@@ -118,7 +108,15 @@ const App = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [isRest, setIsRest] = useState(false);
 
-  console.log("state.currentSet", state.currentSet);
+  useEffect(() => {
+    const getSessionData = async () => {
+      const res = await getItem("sessionData");
+      if (res) {
+        dispatch({ type: "setSessionData", payload: JSON.parse(res)[0] });
+      }
+    };
+    getSessionData();
+  }, []);
 
   const handleFinishSet = (infoSet: InitialState["currentSet"]) => {
     if (!infoSet.active) return;
@@ -132,50 +130,53 @@ const App = () => {
   };
 
   const handleStopRest = (param: boolean) => {
-    const updatedSession = { ...state.sessionData }; // Clone the session object to avoid mutation
+    if (state.sessionData) {
+      const updatedSession = { ...state.sessionData }; // Clone the session object to avoid mutation
 
-    const allSets: Set[] = [];
+      const allSets: Set[] = [];
 
-    updatedSession.exercises.forEach((exercise) => {
-      exercise.sets.forEach((set) => {
-        allSets.push({ ...set });
+      updatedSession.exercises.forEach((exercise) => {
+        exercise.sets.forEach((set) => {
+          allSets.push({ ...set });
+        });
       });
-    });
 
-    let foundActive = false;
+      let foundActive = false;
 
-    const nextSet = allSets.map((set, index) => {
-      if (set.active && !foundActive) {
-        foundActive = true;
-        set.active = false;
+      const nextSet = allSets.map((set, index) => {
+        if (set.active && !foundActive) {
+          foundActive = true;
+          set.active = false;
 
-        if (index + 1 < allSets.length) {
-          allSets[index + 1].active = true;
+          if (index + 1 < allSets.length) {
+            allSets[index + 1].active = true;
+          }
+
+          return { ...set, active: false };
         }
 
-        return { ...set, active: false };
-      }
+        return { ...set };
+      });
 
-      return { ...set };
-    });
+      const findActiveSet = nextSet.find((set) => set.active);
 
-    const findActiveSet = nextSet.find((set) => set.active);
+      updatedSession.exercises = updatedSession.exercises.map((exercise) => {
+        return {
+          ...exercise,
+          sets: [
+            ...exercise.sets.map((set) => {
+              return {
+                ...set,
+                active: set.id === findActiveSet?.id ? true : false,
+              };
+            }),
+          ],
+        };
+      });
 
-    updatedSession.exercises = updatedSession.exercises.map((exercise) => {
-      return {
-        ...exercise,
-        sets: [
-          ...exercise.sets.map((set) => {
-            return {
-              ...set,
-              active: set.id === findActiveSet?.id ? true : false,
-            };
-          }),
-        ],
-      };
-    });
+      dispatch({ type: "nextSet", payload: updatedSession });
+    }
 
-    dispatch({ type: "nextSet", payload: updatedSession });
     setIsRest(false);
   };
 
@@ -185,7 +186,7 @@ const App = () => {
         <View className="px-3 pt-3 pb-6 bg-slate-100 mb-[6px] rounded-[20px]">
           <View className="mb-2 flex items-center justify-center gap-2">
             <Text className="font-pbold text-xl text-slate-600">
-              {state.sessionData.name}
+              {state.sessionData && state.sessionData.name}
             </Text>
             <Text className="font-plight text-[14px] text-slate-600">
               Mon - 04/12/2024
@@ -219,10 +220,12 @@ const App = () => {
             </>
           )}
         </View>
-        <Exercise
-          session={state.sessionData}
-          handleFinishSet={handleFinishSet}
-        />
+        {state.sessionData && (
+          <Exercise
+            session={state.sessionData}
+            handleFinishSet={handleFinishSet}
+          />
+        )}
       </View>
       <ModalSetOfRep
         isVisible={isFinishSet}
