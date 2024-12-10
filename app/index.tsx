@@ -1,112 +1,24 @@
 import { SafeAreaView, Text, View } from "react-native";
-import React, { useEffect, useReducer, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import Exercise from "@/components/Exercise";
 import ModalSetOfRep from "@/components/ModalSetOfRep";
 import CountDownRest from "@/components/CountDownRest";
 import { setItem, getItem } from "@/utils/AsyncStorage";
 import { SessionData, Set } from "@/types/session";
-import {
-  Calendar,
-  CalendarList,
-  Agenda,
-  WeekCalendar,
-  CalendarProvider,
-  ExpandableCalendar,
-  DateData,
-} from "react-native-calendars";
+import { Agenda, DateData } from "react-native-calendars";
 
-import { useSessionStore } from "@/store/useSessionStore";
+import { InitialState, useSessionStore } from "@/store/useSessionStore";
 
 const data = require("@/data/data.json");
 
 setItem("sessionData", data);
 
-export interface InitialState {
-  allSessionData: SessionData[] | null;
-  sessionData: SessionData | null;
-  currentSet: Set;
-}
-
-const initialState: InitialState = {
-  allSessionData: null,
-  sessionData: null,
-  currentSet: {
-    reps: null,
-    weight: null,
-    id: "",
-    active: false,
-    restTime: null,
-  },
-};
-
-type ACTIONTYPE =
-  | { type: "setAllSessionData"; payload: InitialState["allSessionData"] }
-  | { type: "setSessionData"; payload: InitialState["sessionData"] }
-  | { type: "doneSet"; payload: InitialState["currentSet"] }
-  | { type: "nextSet"; payload: InitialState["sessionData"] };
-
-function reducer(state: typeof initialState, action: ACTIONTYPE) {
-  switch (action.type) {
-    case "setAllSessionData":
-      return { ...state, allSessionData: action.payload };
-    case "setSessionData":
-      return { ...state, sessionData: action.payload };
-    case "doneSet":
-      if (!state?.sessionData) {
-        return state;
-      } else {
-        return {
-          ...state,
-          sessionData: {
-            ...state.sessionData,
-            exercises: state.sessionData.exercises.map((exercise) => {
-              if (exercise.sets.filter((item) => item.active)) {
-                return {
-                  ...exercise,
-                  sets: exercise.sets.map((set) => {
-                    if (set.active) {
-                      return {
-                        ...set,
-                        weight: Number(action.payload.weight),
-                        reps: Number(action.payload.reps),
-                        status:
-                          Number(action.payload.weight) *
-                            Number(action.payload.reps) >
-                          Number(set?.weight) * Number(set?.reps)
-                            ? "goal"
-                            : "down",
-                      };
-                    }
-                    return set;
-                  }),
-                };
-              }
-              return exercise;
-            }),
-          },
-        };
-      }
-
-    case "nextSet":
-      if (action.payload) {
-        return {
-          ...state,
-          sessionData: action.payload,
-        };
-      }
-    default:
-      return state;
-  }
-}
-
 const App = () => {
   const [isFinishSet, setIsFinishSet] = useState(false);
-  const [state, dispatch] = useReducer(reducer, initialState);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isDateNow, setIsDateNow] = useState(false);
-  console.log("🚀 ~ App ~ isDateNow:", isDateNow);
-  const sessionIsRest = useSessionStore.getState().isRest;
+
   const {
     isRest,
     currentSet,
@@ -158,8 +70,6 @@ const App = () => {
         useSessionStore.setState(() => ({
           sessionData: filterToday,
         }));
-
-        dispatch({ type: "setSessionData", payload: filterToday });
       }
     };
     getSessionData();
@@ -175,7 +85,6 @@ const App = () => {
 
   const handleRest = (infoSet: InitialState["currentSet"]) => {
     doneSet && doneSet(infoSet);
-    dispatch({ type: "doneSet", payload: infoSet });
     toggleRest && toggleRest();
   };
 
