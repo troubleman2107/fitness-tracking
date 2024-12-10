@@ -46,6 +46,7 @@ export const useSessionStore = create<InitialState>((set) => ({
                           Number(set?.weight) * Number(set?.reps)
                             ? "goal"
                             : "down",
+                        isDone: true,
                       };
                     }
                     return set;

@@ -18,6 +18,9 @@ const App = () => {
   const [isFinishSet, setIsFinishSet] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isDateNow, setIsDateNow] = useState(false);
+  const [sessionShow, setSessionShow] = useState<SessionData>();
+
+  console.log("🚀 ~ App ~ sessionShow:", sessionShow);
 
   const {
     isRest,
@@ -44,12 +47,14 @@ const App = () => {
       dataDay.setHours(0, 0, 0, 0);
 
       if (toDay.getTime() !== dataDay.getTime()) {
+        sessionData && setSessionShow(anotherDay);
         setIsDateNow(false);
       } else {
+        sessionData && setSessionShow(sessionData);
         setIsDateNow(true);
       }
     }
-  }, [selectedDate]);
+  }, [selectedDate, sessionData]);
 
   useEffect(() => {
     const getSessionData = async () => {
@@ -76,7 +81,7 @@ const App = () => {
   }, []);
 
   const handleFinishSet = (infoSet: InitialState["currentSet"]) => {
-    if (!infoSet.active) return;
+    if (!infoSet.active && !infoSet.status) return;
     useSessionStore.setState((state) => ({
       currentSet: infoSet,
     }));
@@ -84,8 +89,11 @@ const App = () => {
   };
 
   const handleRest = (infoSet: InitialState["currentSet"]) => {
+    console.log("🚀 ~ handleRest ~ infoSet: 1", infoSet);
     doneSet && doneSet(infoSet);
-    toggleRest && toggleRest();
+    if (!infoSet.isDone) {
+      toggleRest && toggleRest();
+    }
   };
 
   const handleStopRest = (param: boolean) => {
@@ -154,17 +162,29 @@ const App = () => {
             <SafeAreaView className="h-full bg-slate-50 relative">
               <View className="p-2 h-full">
                 <View className="px-3 pt-3 pb-6 bg-slate-100 mb-[6px] rounded-[20px]">
-                  <View className="mb-2 flex items-center justify-center gap-2">
-                    <Text className="font-pbold text-xl text-slate-600">
-                      {sessionData && sessionData.name}
-                    </Text>
-                    <Text className="font-plight text-[14px] text-slate-600">
-                      Mon - 04/12/2024
-                    </Text>
-                    <Text className="font-plight text-xl text-slate-600">
-                      Time: 04:20
-                    </Text>
-                  </View>
+                  {sessionShow && (
+                    <View className="mb-2 flex items-center justify-center gap-2">
+                      <Text className="font-pbold text-xl text-slate-600">
+                        {sessionShow && sessionShow.name}
+                      </Text>
+                      <Text className="font-plight text-[14px] text-slate-600">
+                        {`${new Date(sessionShow.date).toLocaleString(
+                          "default",
+                          { weekday: "short" }
+                        )} - ${new Date(sessionShow.date).toLocaleDateString(
+                          "en-GB",
+                          {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          }
+                        )}`}
+                      </Text>
+                      <Text className="font-plight text-xl text-slate-600">
+                        Time: 04:20
+                      </Text>
+                    </View>
+                  )}
                 </View>
                 <View className="flex-row justify-center">
                   {isRest && (
@@ -180,9 +200,9 @@ const App = () => {
                     </>
                   )}
                 </View>
-                {sessionData && anotherDay ? (
+                {sessionShow ? (
                   <Exercise
-                    session={isDateNow ? sessionData : anotherDay}
+                    session={sessionShow}
                     handleFinishSet={handleFinishSet}
                   />
                 ) : (

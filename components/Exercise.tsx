@@ -6,7 +6,8 @@ import {
   View,
 } from "react-native";
 import React from "react";
-import { InitialState, SessionData } from "@/types/session";
+import { SessionData } from "@/types/session";
+import { InitialState } from "@/store/useSessionStore";
 
 type ExerciesProps = {
   session: SessionData;
@@ -45,6 +46,7 @@ const Exercise = ({ session, handleFinishSet }: ExerciesProps) => {
                       id: set.id,
                       active: set.active,
                       restTime: set.restTime,
+                      isDone: set.isDone,
                     })
                   }
                   key={set.id}

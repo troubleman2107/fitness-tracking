@@ -11,6 +11,7 @@ export interface Set {
   restTime?: number | null;
   active?: boolean;
   status?: string;
+  isDone?: boolean;
 }
 export interface SessionData {
   id: string;

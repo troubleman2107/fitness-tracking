@@ -12,8 +12,8 @@ import {
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import FormField from "./FormField";
 import CustomButton from "./CustomButton";
-import { InitialState } from "@/app";
 import Modal from "./Modal";
+import { InitialState } from "@/store/useSessionStore";
 
 type ModalSetOfRepProps = {
   isVisible: boolean;
@@ -102,6 +102,8 @@ const ModalSetOfRep: React.FunctionComponent<ModalSetOfRepProps> = ({
                     reps: reps,
                     weight: weight,
                     id: infoSet.id,
+                    status: infoSet.status,
+                    isDone: infoSet.isDone,
                   })
                 }
               />
