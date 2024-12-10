@@ -43,7 +43,6 @@ const initialState: InitialState = {
 type ACTIONTYPE =
   | { type: "setAllSessionData"; payload: InitialState["allSessionData"] }
   | { type: "setSessionData"; payload: InitialState["sessionData"] }
-  | { type: "setCurrentSet"; payload: typeof initialState.currentSet }
   | { type: "doneSet"; payload: InitialState["currentSet"] }
   | { type: "nextSet"; payload: InitialState["sessionData"] };
 
@@ -53,8 +52,6 @@ function reducer(state: typeof initialState, action: ACTIONTYPE) {
       return { ...state, allSessionData: action.payload };
     case "setSessionData":
       return { ...state, sessionData: action.payload };
-    case "setCurrentSet":
-      return { ...state, currentSet: action.payload };
     case "doneSet":
       if (!state?.sessionData) {
         return state;
@@ -107,11 +104,40 @@ const App = () => {
   const [isFinishSet, setIsFinishSet] = useState(false);
   const [state, dispatch] = useReducer(reducer, initialState);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-
+  const [isDateNow, setIsDateNow] = useState(false);
+  console.log("🚀 ~ App ~ isDateNow:", isDateNow);
   const sessionIsRest = useSessionStore.getState().isRest;
-  const { toggleRest, isRest } = useSessionStore();
+  const {
+    isRest,
+    currentSet,
+    sessionData,
+    allSessionData,
+    toggleRest,
+    doneSet,
+  } = useSessionStore();
 
-  console.log("🚀 ~ App ~ sessionIsRest:", sessionIsRest);
+  const anotherDay = allSessionData?.find((item) => {
+    const toDay = selectedDate;
+    toDay.setHours(0, 0, 0, 0);
+    const dataDay = new Date(item.date);
+    dataDay.setHours(0, 0, 0, 0);
+    return toDay.getTime() === dataDay.getTime();
+  });
+
+  useEffect(() => {
+    if (selectedDate) {
+      const toDay = new Date();
+      toDay.setHours(0, 0, 0, 0);
+      const dataDay = selectedDate;
+      dataDay.setHours(0, 0, 0, 0);
+
+      if (toDay.getTime() !== dataDay.getTime()) {
+        setIsDateNow(false);
+      } else {
+        setIsDateNow(true);
+      }
+    }
+  }, [selectedDate]);
 
   useEffect(() => {
     const getSessionData = async () => {
@@ -125,28 +151,37 @@ const App = () => {
           return toDay.getTime() === dataDay.getTime();
         });
 
-        dispatch({ type: "setAllSessionData", payload: res });
+        useSessionStore.setState(() => ({
+          allSessionData: res,
+        }));
+
+        useSessionStore.setState(() => ({
+          sessionData: filterToday,
+        }));
 
         dispatch({ type: "setSessionData", payload: filterToday });
       }
     };
     getSessionData();
-  }, [selectedDate]);
+  }, []);
 
   const handleFinishSet = (infoSet: InitialState["currentSet"]) => {
     if (!infoSet.active) return;
-    dispatch({ type: "setCurrentSet", payload: infoSet });
+    useSessionStore.setState((state) => ({
+      currentSet: infoSet,
+    }));
     setIsFinishSet(!isFinishSet);
   };
 
   const handleRest = (infoSet: InitialState["currentSet"]) => {
+    doneSet && doneSet(infoSet);
     dispatch({ type: "doneSet", payload: infoSet });
     toggleRest && toggleRest();
   };
 
   const handleStopRest = (param: boolean) => {
-    if (state.sessionData) {
-      const updatedSession = { ...state.sessionData }; // Clone the session object to avoid mutation
+    if (sessionData) {
+      const updatedSession = { ...sessionData }; // Clone the session object to avoid mutation
 
       const allSets: Set[] = [];
 
@@ -189,7 +224,9 @@ const App = () => {
         };
       });
 
-      dispatch({ type: "nextSet", payload: updatedSession });
+      useSessionStore.setState(() => ({
+        sessionData: updatedSession,
+      }));
     }
 
     toggleRest && toggleRest();
@@ -210,7 +247,7 @@ const App = () => {
                 <View className="px-3 pt-3 pb-6 bg-slate-100 mb-[6px] rounded-[20px]">
                   <View className="mb-2 flex items-center justify-center gap-2">
                     <Text className="font-pbold text-xl text-slate-600">
-                      {state.sessionData && state.sessionData.name}
+                      {sessionData && sessionData.name}
                     </Text>
                     <Text className="font-plight text-[14px] text-slate-600">
                       Mon - 04/12/2024
@@ -227,20 +264,16 @@ const App = () => {
                         Rest:{" "}
                       </Text>
                       <CountDownRest
-                        seconds={
-                          state.currentSet.restTime
-                            ? state.currentSet.restTime
-                            : 0
-                        }
+                        seconds={currentSet.restTime ? currentSet.restTime : 0}
                         isRunning={isRest}
                         onStop={handleStopRest}
                       />
                     </>
                   )}
                 </View>
-                {state.sessionData ? (
+                {sessionData && anotherDay ? (
                   <Exercise
-                    session={state.sessionData}
+                    session={isDateNow ? sessionData : anotherDay}
                     handleFinishSet={handleFinishSet}
                   />
                 ) : (
@@ -252,7 +285,7 @@ const App = () => {
               <ModalSetOfRep
                 isVisible={isFinishSet}
                 toggle={() => setIsFinishSet(false)}
-                infoSet={state.currentSet}
+                infoSet={currentSet}
                 handleRest={handleRest}
               />
               <StatusBar style="light" backgroundColor="#161622" />
