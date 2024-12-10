@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import React from "react";
 import { Tabs, Redirect } from "expo-router";
-import { icons } from "../../constants";
+import { icons } from "@/constants";
 
 type TabIconProps = {
   icon: ImageSourcePropType;
@@ -17,6 +17,7 @@ type TabIconProps = {
 };
 
 const TabIcon = ({ icon, color, name, focused }: TabIconProps) => {
+  console.log("🚀 ~ TabIcon ~ icon:", icon);
   return (
     <View className="flex items-center justify-center gap-2 w-24">
       <Image
@@ -35,7 +36,8 @@ const TabIcon = ({ icon, color, name, focused }: TabIconProps) => {
   );
 };
 
-const TabsLayout = () => {
+const TabNavBar = () => {
+  console.log("tabs run");
   return (
     <>
       <Tabs
@@ -52,6 +54,39 @@ const TabsLayout = () => {
           },
         }}
       >
+        <Tabs.Screen
+          name="home"
+          options={{
+            headerShown: false,
+            tabBarIcon: ({ color, focused }): React.ReactNode => {
+              return (
+                <TabIcon
+                  color={color}
+                  focused={focused}
+                  name="Home"
+                  icon={icons.home as ImageSourcePropType}
+                />
+              );
+            },
+          }}
+        />
+        <Tabs.Screen
+          name="bookmark"
+          options={{
+            title: "Bookmark",
+            headerShown: false,
+            tabBarIcon: ({ color, focused }): React.ReactNode => {
+              return (
+                <TabIcon
+                  color={color}
+                  focused={focused}
+                  name="Bookmark"
+                  icon={icons.bookmark as ImageSourcePropType}
+                />
+              );
+            },
+          }}
+        />
         <Tabs.Screen
           name="create"
           options={{
@@ -70,32 +105,17 @@ const TabsLayout = () => {
           }}
         />
         <Tabs.Screen
-          name="session"
+          name="profile"
           options={{
+            title: "Profile",
             headerShown: false,
             tabBarIcon: ({ color, focused }): React.ReactNode => {
               return (
                 <TabIcon
                   color={color}
                   focused={focused}
-                  name="Session"
-                  icon={icons.home as ImageSourcePropType}
-                />
-              );
-            },
-          }}
-        />
-        <Tabs.Screen
-          name="report"
-          options={{
-            headerShown: false,
-            tabBarIcon: ({ color, focused }): React.ReactNode => {
-              return (
-                <TabIcon
-                  color={color}
-                  focused={focused}
-                  name="Report"
-                  icon={icons.bookmark as ImageSourcePropType}
+                  name="Profile"
+                  icon={icons.profile as ImageSourcePropType}
                 />
               );
             },
@@ -106,4 +126,6 @@ const TabsLayout = () => {
   );
 };
 
-export default TabsLayout;
+export default TabNavBar;
+
+const styles = StyleSheet.create({});

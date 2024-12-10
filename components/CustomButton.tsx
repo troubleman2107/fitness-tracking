@@ -25,7 +25,9 @@ const CustomButton = ({
       disabled={isLoading}
       onPress={handlePress}
     >
-      <Text className="text-primary font-psemibold text-lg">{title}</Text>
+      <Text className={`text-primary font-psemibold text-lg ${textStyles}`}>
+        {title}
+      </Text>
     </TouchableOpacity>
   );
 };

@@ -21,6 +21,23 @@ const Exercise = ({ session, handleFinishSet }: ExerciesProps) => {
     }
   };
 
+  const status = (status: string) => {
+    switch (status) {
+      case "goal":
+        return {
+          color: "bg-lime-400",
+          text: "Level Up ✊",
+        };
+      case "down":
+        return {
+          color: "bg-red-400",
+          text: "Nice Try 🤌",
+        };
+      default:
+        break;
+    }
+  };
+
   return (
     <ScrollView className="px-3 pt-3 pb-6 bg-slate-100 rounded-[20px] mt-2">
       {session &&
@@ -54,9 +71,7 @@ const Exercise = ({ session, handleFinishSet }: ExerciesProps) => {
                   <View
                     className={`${
                       set.status
-                        ? set.status === "goal"
-                          ? "bg-lime-400"
-                          : "bg-red-400"
+                        ? status(set.status)?.color
                         : set.active
                         ? "bg-slate-400"
                         : "bg-slate-200"
@@ -67,7 +82,7 @@ const Exercise = ({ session, handleFinishSet }: ExerciesProps) => {
                     </Text>
                     {set.status && (
                       <Text className="font-pbold text-xs">{`${
-                        set.status === "goal" ? "Level Up ✊" : "Nice Try 🤌"
+                        status(set.status)?.text
                       } `}</Text>
                     )}
                   </View>

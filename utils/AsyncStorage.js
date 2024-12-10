@@ -17,5 +17,3 @@ export const getItem = async (key) => {
     return null;
   }
 };
-
-console.log("stoarge");

@@ -36,7 +36,7 @@ export const useSessionStore = create<InitialState>((set) => ({
                 return {
                   ...exercise,
                   sets: exercise.sets.map((set) => {
-                    if (set.active) {
+                    if (set.id === currentSet.id) {
                       return {
                         ...set,
                         weight: Number(currentSet.weight),
