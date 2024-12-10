@@ -6,7 +6,7 @@ import {
   View,
 } from "react-native";
 import React from "react";
-import { InitialState, SessionData } from "@/app";
+import { InitialState, SessionData } from "@/types/session";
 
 type ExerciesProps = {
   session: SessionData;

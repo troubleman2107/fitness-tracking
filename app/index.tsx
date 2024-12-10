@@ -5,37 +5,29 @@ import Exercise from "@/components/Exercise";
 import ModalSetOfRep from "@/components/ModalSetOfRep";
 import CountDownRest from "@/components/CountDownRest";
 import { setItem, getItem } from "@/utils/AsyncStorage";
+import { SessionData, Set } from "@/types/session";
+import {
+  Calendar,
+  CalendarList,
+  Agenda,
+  WeekCalendar,
+  CalendarProvider,
+  ExpandableCalendar,
+  DateData,
+} from "react-native-calendars";
+
 const data = require("@/data/data.json");
 
 setItem("sessionData", data);
 
-export interface Exercise {
-  id: string;
-  name: string;
-  muscleGroup: string;
-  sets: Set[];
-}
-interface Set {
-  id: string;
-  reps: number | null;
-  weight?: number | null;
-  restTime?: number | null;
-  active?: boolean;
-  status?: string;
-}
-export interface SessionData {
-  id: string;
-  date: string;
-  name: string;
-  exercises: Exercise[];
-}
-
 export interface InitialState {
+  allSessionData: SessionData[] | null;
   sessionData: SessionData | null;
   currentSet: Set;
 }
 
 const initialState: InitialState = {
+  allSessionData: null,
   sessionData: null,
   currentSet: {
     reps: null,
@@ -47,6 +39,7 @@ const initialState: InitialState = {
 };
 
 type ACTIONTYPE =
+  | { type: "setAllSessionData"; payload: InitialState["allSessionData"] }
   | { type: "setSessionData"; payload: InitialState["sessionData"] }
   | { type: "setCurrentSet"; payload: typeof initialState.currentSet }
   | { type: "doneSet"; payload: InitialState["currentSet"] }
@@ -54,6 +47,8 @@ type ACTIONTYPE =
 
 function reducer(state: typeof initialState, action: ACTIONTYPE) {
   switch (action.type) {
+    case "setAllSessionData":
+      return { ...state, allSessionData: action.payload };
     case "setSessionData":
       return { ...state, sessionData: action.payload };
     case "setCurrentSet":
@@ -110,24 +105,27 @@ const App = () => {
   const [isFinishSet, setIsFinishSet] = useState(false);
   const [state, dispatch] = useReducer(reducer, initialState);
   const [isRest, setIsRest] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   useEffect(() => {
     const getSessionData = async () => {
       const res = await getItem("sessionData");
       if (res) {
         const filterToday = res.find((item: SessionData) => {
-          const toDay = new Date();
+          const toDay = selectedDate;
           toDay.setHours(0, 0, 0, 0);
           const dataDay = new Date(item.date);
           dataDay.setHours(0, 0, 0, 0);
           return toDay.getTime() === dataDay.getTime();
         });
-        console.log("🚀 ~ getSessionData ~ filterToday:", filterToday);
+
+        dispatch({ type: "setAllSessionData", payload: res });
+
         dispatch({ type: "setSessionData", payload: filterToday });
       }
     };
     getSessionData();
-  }, []);
+  }, [selectedDate]);
 
   const handleFinishSet = (infoSet: InitialState["currentSet"]) => {
     if (!infoSet.active) return;
@@ -192,60 +190,72 @@ const App = () => {
   };
 
   return (
-    <SafeAreaView className="h-full bg-slate-50">
-      <View className="p-2 h-full">
-        <View className="px-3 pt-3 pb-6 bg-slate-100 mb-[6px] rounded-[20px]">
-          <View className="mb-2 flex items-center justify-center gap-2">
-            <Text className="font-pbold text-xl text-slate-600">
-              {state.sessionData && state.sessionData.name}
-            </Text>
-            <Text className="font-plight text-[14px] text-slate-600">
-              Mon - 04/12/2024
-            </Text>
-            <Text className="font-plight text-xl text-slate-600">
-              Time: 04:20
-            </Text>
-          </View>
-          <View className="flex flex-row gap-3 overflow-hidden">
-            {Array.from({ length: 3 }, (i, k) => {
-              return (
-                <View
-                  key={k}
-                  className="w-[30px] h-[45px] bg-slate-200 rounded-[10px] mt-[14px]"
-                ></View>
-              );
-            })}
-          </View>
-        </View>
-        <View className="flex-row justify-center ">
-          {isRest && (
-            <>
-              <Text className="font-plight text-xl text-slate-600">Rest: </Text>
-              <CountDownRest
-                seconds={
-                  state.currentSet.restTime ? state.currentSet.restTime : 0
-                }
-                isRunning={isRest}
-                onStop={handleStopRest}
+    <View className="flex-1 mt-20">
+      <Agenda
+        onDayPress={(date: DateData) => {
+          setSelectedDate(new Date(date.dateString));
+          console.log("date", date);
+        }}
+        style={{}}
+        items={{ items: [] }}
+        renderEmptyData={() => {
+          return (
+            <SafeAreaView className="h-full bg-slate-50 relative">
+              <View className="p-2 h-full">
+                <View className="px-3 pt-3 pb-6 bg-slate-100 mb-[6px] rounded-[20px]">
+                  <View className="mb-2 flex items-center justify-center gap-2">
+                    <Text className="font-pbold text-xl text-slate-600">
+                      {state.sessionData && state.sessionData.name}
+                    </Text>
+                    <Text className="font-plight text-[14px] text-slate-600">
+                      Mon - 04/12/2024
+                    </Text>
+                    <Text className="font-plight text-xl text-slate-600">
+                      Time: 04:20
+                    </Text>
+                  </View>
+                </View>
+                <View className="flex-row justify-center">
+                  {isRest && (
+                    <>
+                      <Text className="font-plight text-xl text-slate-600">
+                        Rest:{" "}
+                      </Text>
+                      <CountDownRest
+                        seconds={
+                          state.currentSet.restTime
+                            ? state.currentSet.restTime
+                            : 0
+                        }
+                        isRunning={isRest}
+                        onStop={handleStopRest}
+                      />
+                    </>
+                  )}
+                </View>
+                {state.sessionData ? (
+                  <Exercise
+                    session={state.sessionData}
+                    handleFinishSet={handleFinishSet}
+                  />
+                ) : (
+                  <View className="h-full flex flex-1 items-center mt-20">
+                    <Text className="font-plight text-xl">No exercisess.</Text>
+                  </View>
+                )}
+              </View>
+              <ModalSetOfRep
+                isVisible={isFinishSet}
+                toggle={() => setIsFinishSet(false)}
+                infoSet={state.currentSet}
+                handleRest={handleRest}
               />
-            </>
-          )}
-        </View>
-        {state.sessionData && (
-          <Exercise
-            session={state.sessionData}
-            handleFinishSet={handleFinishSet}
-          />
-        )}
-      </View>
-      <ModalSetOfRep
-        isVisible={isFinishSet}
-        toggle={() => setIsFinishSet(false)}
-        infoSet={state.currentSet}
-        handleRest={handleRest}
+              <StatusBar style="light" backgroundColor="#161622" />
+            </SafeAreaView>
+          );
+        }}
       />
-      <StatusBar style="light" backgroundColor="#161622" />
-    </SafeAreaView>
+    </View>
   );
 };
 
