@@ -13,7 +13,7 @@
             "id": "set_001",
             "reps": 10,
             "weight": 135,
-            "restTime": 60,
+            "restTime": 10,
             "active": true
           },
           {

@@ -16,6 +16,8 @@ import {
   DateData,
 } from "react-native-calendars";
 
+import { useSessionStore } from "@/store/useSessionStore";
+
 const data = require("@/data/data.json");
 
 setItem("sessionData", data);
@@ -104,8 +106,12 @@ function reducer(state: typeof initialState, action: ACTIONTYPE) {
 const App = () => {
   const [isFinishSet, setIsFinishSet] = useState(false);
   const [state, dispatch] = useReducer(reducer, initialState);
-  const [isRest, setIsRest] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+
+  const sessionIsRest = useSessionStore.getState().isRest;
+  const { toggleRest, isRest } = useSessionStore();
+
+  console.log("🚀 ~ App ~ sessionIsRest:", sessionIsRest);
 
   useEffect(() => {
     const getSessionData = async () => {
@@ -135,7 +141,7 @@ const App = () => {
 
   const handleRest = (infoSet: InitialState["currentSet"]) => {
     dispatch({ type: "doneSet", payload: infoSet });
-    setIsRest(true);
+    toggleRest && toggleRest();
   };
 
   const handleStopRest = (param: boolean) => {
@@ -186,7 +192,7 @@ const App = () => {
       dispatch({ type: "nextSet", payload: updatedSession });
     }
 
-    setIsRest(false);
+    toggleRest && toggleRest();
   };
 
   return (
@@ -194,7 +200,6 @@ const App = () => {
       <Agenda
         onDayPress={(date: DateData) => {
           setSelectedDate(new Date(date.dateString));
-          console.log("date", date);
         }}
         style={{}}
         items={{ items: [] }}
