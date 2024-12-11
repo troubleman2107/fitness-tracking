@@ -1,4 +1,4 @@
-import React, { createContext, useMemo, useContext } from 'react';
+import React, { createContext, useMemo, useContext } from "react";
 import {
   Table as ExpoTable,
   THead as ExpoTHead,
@@ -6,7 +6,7 @@ import {
   TFoot as ExpoTFoot,
   TR as ExpoTR,
   Caption as ExpoTCaption,
-} from '@expo/html-elements';
+} from "@expo/html-elements";
 
 import {
   tableStyle,
@@ -17,8 +17,9 @@ import {
   tableRowStyleStyle,
   tableDataStyle,
   tableCaptionStyle,
-} from './styles';
-import { Text, View } from 'react-native';
+} from "./styles";
+import { Text, TextInput, View } from "react-native";
+import { Input, InputField } from "../input";
 
 const TableHeaderContext = createContext<{
   isHeaderRow: boolean;
@@ -41,6 +42,8 @@ type ITableHeadProps = React.ComponentProps<typeof View | typeof Text> & {
 type ITableRowProps = React.ComponentProps<typeof ExpoTR>;
 type ITableDataProps = React.ComponentProps<typeof View | typeof Text> & {
   useRNView?: boolean;
+  isTextInput?: boolean;
+  content?: JSX.Element;
 };
 type ITableCaptionProps = React.ComponentProps<typeof ExpoTCaption>;
 
@@ -160,25 +163,30 @@ const TableRow = React.forwardRef<
 const TableData = React.forwardRef<
   React.ElementRef<typeof View | typeof Text>,
   ITableDataProps
->(({ useRNView = false, className, ...props }, ref) => {
-  if (useRNView) {
-    return (
-      <View
-        ref={ref}
-        className={tableDataStyle({ class: className })}
-        {...props}
-      />
-    );
-  } else {
-    return (
-      <Text
-        ref={ref}
-        className={tableDataStyle({ class: className })}
-        {...props}
-      />
-    );
+>(
+  (
+    { content, isTextInput = false, useRNView = false, className, ...props },
+    ref
+  ) => {
+    if (useRNView) {
+      return (
+        <View
+          ref={ref}
+          className={tableDataStyle({ class: className })}
+          {...props}
+        />
+      );
+    } else {
+      return (
+        <Text
+          ref={ref}
+          className={tableDataStyle({ class: className })}
+          {...props}
+        />
+      );
+    }
   }
-});
+);
 
 const TableCaption = React.forwardRef<
   React.ElementRef<typeof ExpoTCaption>,
@@ -194,14 +202,14 @@ const TableCaption = React.forwardRef<
   );
 });
 
-Table.displayName = 'Table';
-TableHeader.displayName = 'TableHeader';
-TableBody.displayName = 'TableBody';
-TableFooter.displayName = 'TableFooter';
-TableHead.displayName = 'TableHead';
-TableRow.displayName = 'TableRow';
-TableData.displayName = 'TableData';
-TableCaption.displayName = 'TableCaption';
+Table.displayName = "Table";
+TableHeader.displayName = "TableHeader";
+TableBody.displayName = "TableBody";
+TableFooter.displayName = "TableFooter";
+TableHead.displayName = "TableHead";
+TableRow.displayName = "TableRow";
+TableData.displayName = "TableData";
+TableCaption.displayName = "TableCaption";
 
 export {
   Table,
