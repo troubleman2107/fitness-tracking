@@ -1,4 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
+import "@/global.css";
+import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import React, { useEffect } from "react";
 import { router, Slot, SplashScreen, Stack } from "expo-router";
 import { Link } from "expo-router";
@@ -32,11 +34,13 @@ const RootLayout = () => {
   if (!fontsLoaded && !error) return null;
 
   return (
-    <Stack>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-    </Stack>
+    <GluestackUIProvider mode="light">
+      <Stack>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
+    </GluestackUIProvider>
   );
 };
 

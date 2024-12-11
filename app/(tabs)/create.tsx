@@ -1,4 +1,6 @@
 import {
+  KeyboardAvoidingView,
+  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -15,11 +17,26 @@ import {
 } from "react-native-safe-area-context";
 import { Icon } from "@rneui/base";
 import CreateExercise from "@/components/CreateExercise";
+import {
+  Actionsheet,
+  ActionsheetBackdrop,
+  ActionsheetContent,
+  ActionsheetDragIndicator,
+  ActionsheetDragIndicatorWrapper,
+} from "@/components/ui/actionsheet";
+import { VStack } from "@/components/ui/vstack";
+import { HStack } from "@/components/ui/hstack";
+import { Box } from "@/components/ui/box";
+import {
+  FormControl,
+  FormControlLabel,
+  FormControlLabelText,
+} from "@/components/ui/form-control";
+import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
+import { Button, ButtonText } from "@/components/ui/button";
 
 const Create = () => {
-  const [isCreateTemplate, setIsCreateTemplate] = useState(false);
-
-  console.log("render create");
+  const [isCreateTemplate, setIsCreateTemplate] = useState(true);
 
   return (
     <SafeAreaProvider>
@@ -42,7 +59,25 @@ const Create = () => {
           </View>
         </View>
       </SafeAreaView>
-      <BottomSheetComponent
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <Actionsheet
+          useRNModal={true}
+          snapPoints={[85]}
+          isOpen={isCreateTemplate}
+          onClose={() => setIsCreateTemplate(false)}
+        >
+          <ActionsheetBackdrop />
+          <ActionsheetContent className="p-2">
+            <ActionsheetDragIndicatorWrapper>
+              <ActionsheetDragIndicator />
+            </ActionsheetDragIndicatorWrapper>
+            <CreateExercise />
+          </ActionsheetContent>
+        </Actionsheet>
+      </KeyboardAvoidingView>
+      {/* <BottomSheetComponent
         toggle={() => setIsCreateTemplate(!isCreateTemplate)}
         isVisible={isCreateTemplate}
         content={
@@ -58,7 +93,7 @@ const Create = () => {
             <CreateExercise />
           </View>
         }
-      />
+      /> */}
     </SafeAreaProvider>
   );
 };
