@@ -15,15 +15,15 @@ const BottomSheetComponent: React.FunctionComponent<
   BottomSheetComponentProps
 > = ({ isVisible, toggle, content }: BottomSheetComponentProps) => {
   return (
-    <SafeAreaProvider>
-      <BottomSheet
-        modalProps={{}}
-        isVisible={isVisible}
-        onBackdropPress={toggle}
-      >
-        {content}
-      </BottomSheet>
-    </SafeAreaProvider>
+    <BottomSheet
+      backdropStyle={{ backgroundColor: "transparent" }}
+      modalProps={{ presentationStyle: "fullScreen", transparent: false }}
+      isVisible={isVisible}
+      onBackdropPress={toggle}
+      containerStyle={{ flex: 1 }}
+    >
+      {content}
+    </BottomSheet>
   );
 };
 
