@@ -1,13 +1,14 @@
 import {
+  NativeSyntheticEvent,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
+  TextInputChangeEventData,
   View,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import CustomButton from "./CustomButton";
 import {
   Table,
   TableHeader,
@@ -19,39 +20,30 @@ import {
   TableCaption,
 } from "@/components/ui/table";
 import { Button, ButtonIcon, ButtonText } from "./ui/button";
-import { Exercise } from "@/types/session";
+import { Exercise, Set } from "@/types/session";
 import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
 import { Input, InputField } from "./ui/input";
-import {
-  Modal,
-  ModalBackdrop,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "./ui/modal";
-import { Heading } from "./ui/heading";
 import {
   FormControl,
   FormControlLabel,
   FormControlLabelText,
 } from "./ui/form-control";
 
-const EXERCISES_DATA = [
-  {
-    name: "Bench Press",
-  },
-  {
-    name: "Lat Pulldown",
-  },
-];
+interface infoSetsForm {
+  id: string;
+  set: string;
+  weight: number;
+  reps: number;
+  resTime: number;
+}
 
 const CreateExercise = () => {
   const [isAdd, setIsAdd] = useState(false);
 
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [nameExercise, setNameExercise] = useState("");
+  const [infoSets, setInfoSets] = useState<infoSetsForm[]>([]);
 
   console.log("🚀 ~ CreateExercise ~ exercises:", exercises);
 
@@ -71,24 +63,47 @@ const CreateExercise = () => {
     if (exercises) {
       const addSets = exercises.map((exercise) => {
         if (exercise.id === idExercise) {
-          exercise.sets.push({
-            id: uuidv4(),
-            reps: null,
-            weight: null,
-            restTime: null,
-          });
+          return {
+            ...exercise,
+            sets: [
+              ...exercise.sets,
+              {
+                id: uuidv4(),
+                reps: null,
+                weight: null,
+                restTime: null,
+              },
+            ],
+          };
         }
 
-        return exercise;
+        return { ...exercise };
       });
 
       setExercises(addSets);
     }
   };
 
-  // useEffect(() => {
-  //   setExercises([...exercises,])
-  // }, []);
+  const infoSetInit: Record<string, any> = {};
+  const handleSetChange = (text: string, type: string, idSet: string) => {
+    // Dynamically add/overwrite key-value pairs
+    infoSetInit[type] = text;
+    infoSetInit["id"] = idSet;
+
+    if (exercises) {
+      const saveSets = exercises.map((exercise) => {
+        const updateSet = exercise.sets.map((set) => {
+          if (set.id === infoSetInit.id) {
+            return { ...set, ...infoSetInit };
+          }
+          return { ...set };
+        });
+        return { ...exercise, sets: updateSet };
+      });
+
+      setExercises(saveSets);
+    }
+  };
 
   return (
     <ScrollView>
@@ -135,7 +150,12 @@ const CreateExercise = () => {
                               isInvalid={false}
                               isReadOnly={false}
                             >
-                              <InputField placeholder="60" />
+                              <InputField
+                                onChangeText={(text) =>
+                                  handleSetChange(text, "weight", set.id)
+                                }
+                                placeholder="60"
+                              />
                             </Input>
                           </TableData>
                           <TableData
@@ -150,7 +170,12 @@ const CreateExercise = () => {
                               isInvalid={false}
                               isReadOnly={false}
                             >
-                              <InputField placeholder="12" />
+                              <InputField
+                                onChangeText={(text) =>
+                                  handleSetChange(text, "reps", set.id)
+                                }
+                                placeholder="12"
+                              />
                             </Input>
                           </TableData>
                           <TableData
@@ -161,11 +186,13 @@ const CreateExercise = () => {
                               className={`px-1 h-6 w-[50px]`}
                               variant="outline"
                               size="md"
-                              isDisabled={false}
-                              isInvalid={false}
-                              isReadOnly={false}
                             >
-                              <InputField placeholder="60" />
+                              <InputField
+                                onChangeText={(text) =>
+                                  handleSetChange(text, "restTime", set.id)
+                                }
+                                placeholder="60"
+                              />
                             </Input>
                           </TableData>
                           <TableData className="text-center text-base">
