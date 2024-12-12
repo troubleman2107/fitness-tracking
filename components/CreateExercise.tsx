@@ -1,6 +1,6 @@
 import {
+  Alert,
   findNodeHandle,
-  KeyboardAvoidingView,
   NativeSyntheticEvent,
   Platform,
   SafeAreaView,
@@ -32,7 +32,10 @@ import {
   FormControlLabel,
   FormControlLabelText,
 } from "./ui/form-control";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import {
+  KeyboardAvoidingView,
+  KeyboardAwareScrollView,
+} from "react-native-keyboard-controller";
 
 interface infoSetsForm {
   id: string;
@@ -47,6 +50,8 @@ const CreateExercise = () => {
 
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [nameExercise, setNameExercise] = useState("");
+  const keyRef = useRef(null);
+  const weightRef = useRef(null);
 
   const handleAddExercise = () => {
     const exerciseInfo: Exercise = {
@@ -106,156 +111,144 @@ const CreateExercise = () => {
   };
 
   return (
-    <View className="w-full flex items-center justify-center mt-20 gap-3">
-      <View className="p-2 flex flex-row">
-        <View className="w-full">
-          <FormControl className="w-full">
-            <FormControlLabel>
-              <FormControlLabelText>Name of Exercise</FormControlLabelText>
-            </FormControlLabel>
-            <Input className="w-full">
-              <InputField
-                placeholder="Barbel Bench Press"
-                value={nameExercise}
-                onChangeText={(text) => setNameExercise(text)}
-              />
-            </Input>
-            <Button
-              className="mt-3 w-full"
-              size="md"
-              variant="solid"
-              action="primary"
-              onPress={handleAddExercise}
-            >
-              <ButtonText>Add Exercise</ButtonText>
-            </Button>
-          </FormControl>
+    <View className="flex-1">
+      <View className="w-full">
+        <View className="p-2 flex flex-row">
+          <View className="w-full">
+            <FormControl className="w-full">
+              <FormControlLabel>
+                <FormControlLabelText>Name of Exercise</FormControlLabelText>
+              </FormControlLabel>
+              <Input className="w-full">
+                <InputField
+                  placeholder="Barbel Bench Press"
+                  value={nameExercise}
+                  onChangeText={(text) => setNameExercise(text)}
+                />
+              </Input>
+              <Button
+                className="mt-3 w-full"
+                size="md"
+                variant="solid"
+                action="primary"
+                onPress={handleAddExercise}
+              >
+                <ButtonText>Add Exercise</ButtonText>
+              </Button>
+            </FormControl>
+          </View>
         </View>
       </View>
-      <KeyboardAwareScrollView
-        extraScrollHeight={50}
-        extraHeight={120}
-        contentContainerStyle={{
-          justifyContent: "center",
-          padding: 5,
-          marginBottom: 60,
-        }}
-      >
-        <ScrollView className="">
-          {exercises &&
-            exercises.map((exercise, iExercise) => (
-              <View key={iExercise}>
-                <Text className="text-base font-psemibold">
-                  {exercise.name}
-                </Text>
-                <View className="flex flex-row gap-5 mb-6">
-                  <Table className="w-full">
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="text-center text-base">
-                          Set
-                        </TableHead>
-                        <TableHead className="text-center text-base">
-                          Kg
-                        </TableHead>
-                        <TableHead className="text-center text-base">
-                          Reps
-                        </TableHead>
-                        <TableHead className="text-center text-base">
-                          Rest
-                        </TableHead>
-                        <TableHead className="text-center text-base">
-                          v
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {exercise.sets &&
-                        exercise.sets.map((set, iSet) => (
-                          <TableRow key={iSet}>
-                            <TableData className="text-center text-base">
-                              {iSet + 1}
-                            </TableData>
-                            <TableData
-                              useRNView={true}
-                              className="flex flex-row justify-center items-center"
+      <KeyboardAwareScrollView bottomOffset={50}>
+        {exercises &&
+          exercises.map((exercise, iExercise) => (
+            <View key={iExercise}>
+              <Text className="text-base font-psemibold">{exercise.name}</Text>
+              <View className="flex flex-row gap-5 mb-6">
+                <Table className="w-full">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-center text-base">
+                        Set
+                      </TableHead>
+                      <TableHead className="text-center text-base">
+                        Kg
+                      </TableHead>
+                      <TableHead className="text-center text-base">
+                        Reps
+                      </TableHead>
+                      <TableHead className="text-center text-base">
+                        Rest
+                      </TableHead>
+                      <TableHead className="text-center text-base">v</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {exercise.sets &&
+                      exercise.sets.map((set, iSet) => (
+                        <TableRow key={iSet}>
+                          <TableData className="text-center text-base">
+                            {iSet + 1}
+                          </TableData>
+                          <TableData
+                            useRNView={true}
+                            className="flex flex-row justify-center items-center"
+                          >
+                            <Input
+                              ref={weightRef}
+                              className={`px-1 h-6 w-[50px]`}
+                              variant="outline"
+                              size="md"
+                              isDisabled={false}
+                              isInvalid={false}
+                              isReadOnly={false}
                             >
-                              <Input
-                                className={`px-1 h-6 w-[50px]`}
-                                variant="outline"
-                                size="md"
-                                isDisabled={false}
-                                isInvalid={false}
-                                isReadOnly={false}
-                              >
-                                <InputField
-                                  keyboardType="numeric"
-                                  onChangeText={(text) =>
-                                    handleSetChange(text, "weight", set.id)
-                                  }
-                                  placeholder="60"
-                                />
-                              </Input>
-                            </TableData>
-                            <TableData
-                              useRNView={true}
-                              className="flex flex-row justify-center items-center"
+                              <InputField
+                                onChangeText={(text) =>
+                                  handleSetChange(text, "weight", set.id)
+                                }
+                                placeholder="60"
+                              />
+                            </Input>
+                          </TableData>
+                          <TableData
+                            useRNView={true}
+                            className="flex flex-row justify-center items-center"
+                          >
+                            <Input
+                              className={`px-1 h-6 w-[50px]`}
+                              variant="outline"
+                              size="md"
+                              isDisabled={false}
+                              isInvalid={false}
+                              isReadOnly={false}
                             >
-                              <Input
-                                className={`px-1 h-6 w-[50px]`}
-                                variant="outline"
-                                size="md"
-                                isDisabled={false}
-                                isInvalid={false}
-                                isReadOnly={false}
-                              >
-                                <InputField
-                                  onChangeText={(text) =>
-                                    handleSetChange(text, "reps", set.id)
-                                  }
-                                  placeholder="12"
-                                />
-                              </Input>
-                            </TableData>
-                            <TableData
-                              useRNView={true}
-                              className="flex flex-row justify-center items-center"
+                              <InputField
+                                onChangeText={(text) =>
+                                  handleSetChange(text, "reps", set.id)
+                                }
+                                placeholder="12"
+                              />
+                            </Input>
+                          </TableData>
+                          <TableData
+                            useRNView={true}
+                            className="flex flex-row justify-center items-center"
+                          >
+                            <Input
+                              className={`px-1 h-6 w-[50px]`}
+                              variant="outline"
+                              size="md"
                             >
-                              <Input
-                                className={`px-1 h-6 w-[50px]`}
-                                variant="outline"
-                                size="md"
-                              >
-                                <InputField
-                                  onChangeText={(text) =>
-                                    handleSetChange(text, "restTime", set.id)
-                                  }
-                                  placeholder="60"
-                                />
-                              </Input>
-                            </TableData>
-                            <TableData className="text-center text-base">
-                              Done
-                            </TableData>
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                    <TableFooter className="p-2 mb-16">
-                      <Button
-                        className="mt-3"
-                        size="md"
-                        variant="solid"
-                        action="primary"
-                        onPress={() => handleAddSets(exercise.id)}
-                      >
-                        <ButtonText>Add sets</ButtonText>
-                      </Button>
-                    </TableFooter>
-                  </Table>
-                </View>
+                              <InputField
+                                onChangeText={(text) =>
+                                  handleSetChange(text, "restTime", set.id)
+                                }
+                                placeholder="60"
+                              />
+                            </Input>
+                          </TableData>
+                          <TableData className="text-center text-base">
+                            Done
+                          </TableData>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                  <TableFooter className="p-2 mb-16">
+                    <Button
+                      className="mt-3"
+                      size="md"
+                      variant="solid"
+                      action="primary"
+                      onPress={() => handleAddSets(exercise.id)}
+                    >
+                      <ButtonText>Add sets</ButtonText>
+                    </Button>
+                  </TableFooter>
+                </Table>
               </View>
-            ))}
-        </ScrollView>
+            </View>
+          ))}
       </KeyboardAwareScrollView>
     </View>
   );

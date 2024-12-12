@@ -58,6 +58,7 @@
     "react-native-gesture-handler": "~2.20.2",
     "react-native-get-random-values": "^1.11.0",
     "react-native-keyboard-aware-scroll-view": "^0.9.5",
+    "react-native-keyboard-controller": "^1.14.5",
     "react-native-reanimated": "~3.16.1",
     "react-native-safe-area-context": "^5.0.0",
     "react-native-screens": "~4.1.0",

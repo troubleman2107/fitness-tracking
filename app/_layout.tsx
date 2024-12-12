@@ -7,6 +7,7 @@ import { Link } from "expo-router";
 import "../global.css";
 import { useFonts } from "expo-font";
 import TabNavBar from "@/components/TabNavBar";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -35,11 +36,13 @@ const RootLayout = () => {
 
   return (
     <GluestackUIProvider mode="light">
-      <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
+      <KeyboardProvider>
+        <Stack>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+      </KeyboardProvider>
     </GluestackUIProvider>
   );
 };
