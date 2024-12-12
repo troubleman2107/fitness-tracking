@@ -47,14 +47,15 @@ const Create = () => {
               <Text className="font-pbold text-xl text-slate-600">
                 Template
               </Text>
-              <CustomButton
-                handlePress={() => {
-                  setIsCreateTemplate(true);
-                }}
-                title="Create"
-                containerStyles={"w-[75px] min-h-[25px]"}
-                textStyles="text-sm"
-              />
+              <Button>
+                <ButtonText
+                  onPress={() => {
+                    setIsCreateTemplate(true);
+                  }}
+                >
+                  Create
+                </ButtonText>
+              </Button>
             </View>
           </View>
         </View>

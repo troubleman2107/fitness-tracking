@@ -8,6 +8,14 @@ import { setItem, getItem } from "@/utils/AsyncStorage";
 import { SessionData, Set } from "@/types/session";
 import { Agenda, DateData } from "react-native-calendars";
 import { InitialState, useSessionStore } from "@/store/useSessionStore";
+import {
+  Actionsheet,
+  ActionsheetBackdrop,
+  ActionsheetContent,
+  ActionsheetDragIndicator,
+  ActionsheetDragIndicatorWrapper,
+} from "@/components/ui/actionsheet";
+import { KeyboardStickyView } from "react-native-keyboard-controller";
 
 const data = require("@/data/data.json");
 
@@ -213,12 +221,30 @@ const Session = () => {
                   </View>
                 )}
               </View>
-              <ModalSetOfRep
-                isVisible={isFinishSet}
-                toggle={() => setIsFinishSet(false)}
-                infoSet={currentSet}
-                handleRest={handleRest}
-              />
+              <Actionsheet
+                useRNModal={true}
+                snapPoints={[25]}
+                isOpen={isFinishSet}
+                onClose={() => setIsFinishSet(false)}
+              >
+                <KeyboardStickyView offset={{ closed: 0, opened: 20 }}>
+                  <ActionsheetBackdrop
+                    onPress={() => {
+                      setIsFinishSet(false);
+                    }}
+                  />
+                  <ActionsheetContent className="p-2">
+                    <ActionsheetDragIndicatorWrapper>
+                      <ActionsheetDragIndicator />
+                    </ActionsheetDragIndicatorWrapper>
+                    <ModalSetOfRep
+                      infoSet={currentSet}
+                      toggle={() => setIsFinishSet(false)}
+                      handleRest={handleRest}
+                    />
+                  </ActionsheetContent>
+                </KeyboardStickyView>
+              </Actionsheet>
               <StatusBar style="light" backgroundColor="#161622" />
             </SafeAreaView>
           );

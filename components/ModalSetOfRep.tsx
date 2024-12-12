@@ -1,5 +1,4 @@
 import React, { useEffect, useReducer, useState } from "react";
-import { BottomSheet, Button, ListItem, Dialog } from "@rneui/themed";
 import {
   StyleSheet,
   Text,
@@ -14,9 +13,11 @@ import FormField from "./FormField";
 import CustomButton from "./CustomButton";
 import Modal from "./Modal";
 import { InitialState } from "@/store/useSessionStore";
+import { KeyboardStickyView } from "react-native-keyboard-controller";
+import { Button, ButtonIcon, ButtonText } from "./ui/button";
 
 type ModalSetOfRepProps = {
-  isVisible: boolean;
+  isVisible?: boolean;
   toggle: () => void;
   infoSet: InitialState["currentSet"];
   handleRest?: (infoSet: InitialState["currentSet"]) => void;
@@ -61,59 +62,56 @@ const ModalSetOfRep: React.FunctionComponent<ModalSetOfRepProps> = ({
 
   return (
     <SafeAreaProvider>
-      <Modal
-        children={
-          <View className="py-2 px-5 rounded-[20px]">
-            <View className="w-full flex flex-row items-center justify-center gap-3">
-              <Text className="text-['#67BC5F'] font-psemibold">
-                Goal: {infoSet.reps} x {infoSet.weight}
-              </Text>
-            </View>
-            <View className="mt-3 flex flex-row justify-center gap-2 items-center">
-              <View className="flex flex-row items-center justify-center gap-2 ">
-                <FormField
-                  type="number"
-                  handleChangeText={(value) => {
-                    setReps(Number(value));
-                  }}
-                  value={reps ? String(reps) : ""}
-                  placeholder="Reps"
-                  otherStyles="flex flex-row items-center w-[100px] gap-2 mb-2 mr-[]"
-                />
-              </View>
-              <View className="flex flex-row items-center gap-2  justify-center">
-                <FormField
-                  type="number"
-                  handleChangeText={(value) => {
-                    setWeight(Number(value));
-                  }}
-                  value={weight ? String(weight) : ""}
-                  placeholder="Weight"
-                  otherStyles="flex flex-row items-center w-[100px] gap-2 mb-2 mr-[]"
-                />
-              </View>
-            </View>
-            <View className="w-full flex items-center mt-3">
-              <CustomButton
-                containerStyles="w-full"
-                title="SUBMIT"
-                handlePress={() =>
-                  handleSubmit({
-                    reps: reps,
-                    weight: weight,
-                    id: infoSet.id,
-                    status: infoSet.status,
-                    isDone: infoSet.isDone,
-                  })
-                }
-              />
-            </View>
+      <View className="py-2 px-5 rounded-[20px]">
+        <View className="w-full flex flex-row items-center justify-center gap-3">
+          <Text className="text-['#67BC5F'] font-psemibold mb-3">
+            Goal: {infoSet.reps} x {infoSet.weight}
+          </Text>
+        </View>
+        <View className="flex flex-row justify-center gap-2 items-center">
+          <View className="flex flex-row items-center justify-center gap-2 ">
+            <FormField
+              type="number"
+              handleChangeText={(value) => {
+                setReps(Number(value));
+              }}
+              value={reps ? String(reps) : ""}
+              placeholder="Reps"
+              otherStyles="flex flex-row items-center w-[100px] gap-2 mb-2 mr-[]"
+            />
           </View>
-        }
-        isVisible={isVisible}
-        onClose={toggle}
-        title={"Set 1 / 3"}
-      />
+          <View className="flex flex-row items-center gap-2  justify-center">
+            <FormField
+              type="number"
+              handleChangeText={(value) => {
+                setWeight(Number(value));
+              }}
+              value={weight ? String(weight) : ""}
+              placeholder="Weight"
+              otherStyles="flex flex-row items-center w-[100px] gap-2 mb-2 mr-[]"
+            />
+          </View>
+        </View>
+        <View className="w-full flex items-center">
+          <Button
+            className="mt-3"
+            size="md"
+            variant="solid"
+            action="primary"
+            onPress={() =>
+              handleSubmit({
+                reps: reps,
+                weight: weight,
+                id: infoSet.id,
+                status: infoSet.status,
+                isDone: infoSet.isDone,
+              })
+            }
+          >
+            <ButtonText>Submit</ButtonText>
+          </Button>
+        </View>
+      </View>
     </SafeAreaProvider>
   );
 };

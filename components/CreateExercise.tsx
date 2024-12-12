@@ -112,12 +112,14 @@ const CreateExercise = () => {
 
   return (
     <View className="flex-1">
-      <View className="w-full">
+      <View className="w-full mb-6">
         <View className="p-2 flex flex-row">
           <View className="w-full">
             <FormControl className="w-full">
               <FormControlLabel>
-                <FormControlLabelText>Name of Exercise</FormControlLabelText>
+                <FormControlLabelText className="font-psemibold">
+                  Name of Exercise
+                </FormControlLabelText>
               </FormControlLabel>
               <Input className="w-full">
                 <InputField
@@ -160,7 +162,6 @@ const CreateExercise = () => {
                       <TableHead className="text-center text-base">
                         Rest
                       </TableHead>
-                      <TableHead className="text-center text-base">v</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -228,13 +229,10 @@ const CreateExercise = () => {
                               />
                             </Input>
                           </TableData>
-                          <TableData className="text-center text-base">
-                            Done
-                          </TableData>
                         </TableRow>
                       ))}
                   </TableBody>
-                  <TableFooter className="p-2 mb-16">
+                  <TableFooter className="p-2 mb-3">
                     <Button
                       className="mt-3"
                       size="md"
