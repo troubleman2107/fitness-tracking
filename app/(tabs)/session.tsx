@@ -4,7 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import Exercise from "@/components/Exercise";
 import ModalSetOfRep from "@/components/ModalSetOfRep";
 import CountDownRest from "@/components/CountDownRest";
-import { setItem, getItem } from "@/utils/AsyncStorage";
+import { loadData } from "@/utils/AsyncStorage";
 import { SessionData, Set } from "@/types/session";
 import { Agenda, DateData } from "react-native-calendars";
 import { InitialState, useSessionStore } from "@/store/useSessionStore";
@@ -18,8 +18,6 @@ import {
 import { KeyboardStickyView } from "react-native-keyboard-controller";
 
 const data = require("@/data/data.json");
-
-setItem("sessionData", data);
 
 const Session = () => {
   const [isFinishSet, setIsFinishSet] = useState(false);
@@ -63,7 +61,7 @@ const Session = () => {
 
   useEffect(() => {
     const getSessionData = async () => {
-      const res = await getItem("sessionData");
+      const res = await loadData("sessionData");
       if (res) {
         const filterToday = res.find((item: SessionData) => {
           const toDay = selectedDate;
@@ -94,7 +92,6 @@ const Session = () => {
   };
 
   const handleRest = (infoSet: InitialState["currentSet"]) => {
-    console.log("🚀 ~ handleRest ~ infoSet: 1", infoSet);
     doneSet && doneSet(infoSet);
     if (!infoSet.isDone) {
       toggleRest && toggleRest();

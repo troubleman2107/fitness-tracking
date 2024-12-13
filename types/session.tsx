@@ -1,3 +1,17 @@
+export interface Template {
+  id: string;
+  name: string;
+  createDate: string;
+  sessions: SessionData[];
+}
+
+export interface SessionData {
+  id: string;
+  date: string;
+  name: string;
+  exercises: Exercise[];
+}
+
 export interface Exercise {
   id: string;
   name: string;
@@ -12,10 +26,4 @@ export interface Set {
   active?: boolean;
   status?: string;
   isDone?: boolean;
-}
-export interface SessionData {
-  id: string;
-  date: string;
-  name: string;
-  exercises: Exercise[];
 }

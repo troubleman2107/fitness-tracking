@@ -8,6 +8,7 @@ import "../global.css";
 import { useFonts } from "expo-font";
 import TabNavBar from "@/components/TabNavBar";
 import { KeyboardProvider } from "react-native-keyboard-controller";
+import { useStore } from "@/store/useTemplateStore";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -23,6 +24,17 @@ const RootLayout = () => {
     "Poppins-SemiBold": require("../assets/fonts/Poppins-SemiBold.ttf"),
     "Poppins-Thin": require("../assets/fonts/Poppins-Thin.ttf"),
   });
+
+  const loadData = useStore((state) => state.loadData);
+
+  useEffect(() => {
+    const initializeData = async () => {
+      const res = await loadData(); // Load data from AsyncStorage into Zustand
+      console.log("loadData", res);
+    };
+
+    initializeData();
+  }, []);
 
   useEffect(() => {
     if (error) throw error;

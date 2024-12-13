@@ -40,6 +40,9 @@ import {
 import { CloseIcon, Icon } from "./ui/icon";
 import CloseIconButton from "./ui/CloseButton";
 import { Agenda, DateData } from "react-native-calendars";
+import { useSessionStore } from "@/store/useSessionStore";
+import { useStore } from "@/store/useTemplateStore";
+import { clear } from "@/utils/AsyncStorage";
 
 interface infoSetsForm {
   id: string;
@@ -54,14 +57,34 @@ interface CreateExerciseProps {
 }
 
 const CreateExercise = ({ onClose }: CreateExerciseProps) => {
-  const [isAdd, setIsAdd] = useState(false);
   const [session, setSession] = useState<SessionData[]>([]);
-  console.log("🚀 ~ CreateExercise ~ session:", session);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [nameExerciseInput, setnameExerciseInput] = useState("");
   const [templateInput, setTemplateInput] = useState("");
   const [sessionNameInput, setSessionNameInput] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [isSaved, setIsSaved] = useState(false);
+  const addTemplate = useStore((state) => state.addTemplate);
+  const templates = useStore((state) => state.templates);
+  console.log("🚀 ~ CreateExercise ~ templates:", templates);
+
+  //Handle save template
+  useEffect(() => {
+    if (session.length > 0) {
+      const idTemplate = uuidv4();
+      const nameTemplate = templateInput;
+      const createdDate = new Date().toISOString();
+
+      addTemplate({
+        id: idTemplate,
+        name: nameTemplate,
+        createDate: createdDate,
+        sessions: session,
+      });
+
+      console.log("session", session);
+    }
+  }, [session]);
 
   const handleAddExercise = () => {
     const exerciseInfo: Exercise = {
@@ -139,7 +162,12 @@ const CreateExercise = ({ onClose }: CreateExerciseProps) => {
       ...session,
       { id: uuidv4(), date: dateCreated, name: name, exercises: exercises },
     ]);
+    setIsSaved(true);
   };
+
+  // const clearSessionData = () => {
+  //   setnameExerciseInput(""),
+  // }
 
   return (
     <View className="p-2 flex-1 pt-14">
@@ -182,7 +210,9 @@ const CreateExercise = ({ onClose }: CreateExerciseProps) => {
         style={{ backgroundColor: "#000" }}
         contentContainerStyle={{ backgroundColor: "#000" }}
         onDayPress={(date: DateData) => {
+          setIsSaved(false);
           setSelectedDate(new Date(date.dateString));
+          setExercises([]);
         }}
         items={{ items: [] }}
         renderEmptyData={() => {
@@ -260,7 +290,7 @@ const CreateExercise = ({ onClose }: CreateExerciseProps) => {
                                       size="md"
                                       isDisabled={false}
                                       isInvalid={false}
-                                      isReadOnly={false}
+                                      isReadOnly={isSaved}
                                     >
                                       <InputField
                                         onChangeText={(text) =>
@@ -284,7 +314,7 @@ const CreateExercise = ({ onClose }: CreateExerciseProps) => {
                                       size="md"
                                       isDisabled={false}
                                       isInvalid={false}
-                                      isReadOnly={false}
+                                      isReadOnly={isSaved}
                                     >
                                       <InputField
                                         onChangeText={(text) =>
@@ -302,6 +332,7 @@ const CreateExercise = ({ onClose }: CreateExerciseProps) => {
                                       className={`px-1 h-6 w-[50px]`}
                                       variant="outline"
                                       size="md"
+                                      isReadOnly={isSaved}
                                     >
                                       <InputField
                                         onChangeText={(text) =>
@@ -333,15 +364,27 @@ const CreateExercise = ({ onClose }: CreateExerciseProps) => {
                       </View>
                     </View>
                   ))}
-                <Button
-                  className="mt-3 bg-success-300"
-                  size="md"
-                  variant="solid"
-                  action="primary"
-                  onPress={handleOnSaveSession}
-                >
-                  <ButtonText>Save Session</ButtonText>
-                </Button>
+                {!isSaved ? (
+                  <Button
+                    className="mt-3 bg-success-300"
+                    size="md"
+                    variant="solid"
+                    action="primary"
+                    onPress={handleOnSaveSession}
+                  >
+                    <ButtonText>Save Session</ButtonText>
+                  </Button>
+                ) : (
+                  <Button
+                    className="mt-3 bg-success-300"
+                    size="md"
+                    variant="solid"
+                    action="primary"
+                    onPress={() => setIsSaved(false)}
+                  >
+                    <ButtonText>Edit Session</ButtonText>
+                  </Button>
+                )}
               </KeyboardAwareScrollView>
             </View>
           );

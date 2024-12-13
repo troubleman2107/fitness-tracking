@@ -4,18 +4,10 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
-  Touchable,
-  TouchableOpacity,
   View,
 } from "react-native";
 import React, { useState } from "react";
-import CustomButton from "@/components/CustomButton";
-import BottomSheetComponent from "@/components/BottomSheetComponent";
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
-import { Icon } from "@rneui/base";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import CreateExercise from "@/components/CreateExercise";
 import {
   Actionsheet,
@@ -24,15 +16,6 @@ import {
   ActionsheetDragIndicator,
   ActionsheetDragIndicatorWrapper,
 } from "@/components/ui/actionsheet";
-import { VStack } from "@/components/ui/vstack";
-import { HStack } from "@/components/ui/hstack";
-import { Box } from "@/components/ui/box";
-import {
-  FormControl,
-  FormControlLabel,
-  FormControlLabelText,
-} from "@/components/ui/form-control";
-import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
 import { Button, ButtonText } from "@/components/ui/button";
 
 const Create = () => {
