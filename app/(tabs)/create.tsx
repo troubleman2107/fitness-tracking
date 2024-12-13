@@ -47,14 +47,12 @@ const Create = () => {
               <Text className="font-pbold text-xl text-slate-600">
                 Template
               </Text>
-              <Button>
-                <ButtonText
-                  onPress={() => {
-                    setIsCreateTemplate(true);
-                  }}
-                >
-                  Create
-                </ButtonText>
+              <Button
+                onPress={() => {
+                  setIsCreateTemplate(true);
+                }}
+              >
+                <ButtonText>Create</ButtonText>
               </Button>
             </View>
           </View>
@@ -65,7 +63,7 @@ const Create = () => {
       >
         <Actionsheet
           useRNModal={true}
-          snapPoints={[85]}
+          snapPoints={[100]}
           isOpen={isCreateTemplate}
           onClose={() => setIsCreateTemplate(false)}
         >
@@ -74,7 +72,7 @@ const Create = () => {
             <ActionsheetDragIndicatorWrapper>
               <ActionsheetDragIndicator />
             </ActionsheetDragIndicatorWrapper>
-            <CreateExercise />
+            <CreateExercise onClose={() => setIsCreateTemplate(false)} />
           </ActionsheetContent>
         </Actionsheet>
       </KeyboardAvoidingView>

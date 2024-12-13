@@ -32,3 +32,9 @@ _Color_
 
 - Init set x rep
 - When finish exercise will give input of set x rep
+
+_WorkFlow_
+
+- Add template name
+- Show calendar default by now
+-
