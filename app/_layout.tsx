@@ -30,7 +30,6 @@ const RootLayout = () => {
   useEffect(() => {
     const initializeData = async () => {
       const res = await loadData(); // Load data from AsyncStorage into Zustand
-      console.log("loadData", res);
     };
 
     initializeData();

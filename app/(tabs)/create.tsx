@@ -4,6 +4,8 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
+  TouchableHighlight,
+  TouchableOpacity,
   View,
 } from "react-native";
 import React, { useState } from "react";
@@ -17,16 +19,21 @@ import {
   ActionsheetDragIndicatorWrapper,
 } from "@/components/ui/actionsheet";
 import { Button, ButtonText } from "@/components/ui/button";
+import { useStore } from "@/store/useTemplateStore";
+import { Card } from "@/components/ui/card";
+import { Heading } from "@/components/ui/heading";
 
 const Create = () => {
-  const [isCreateTemplate, setIsCreateTemplate] = useState(true);
+  const [isCreateTemplate, setIsCreateTemplate] = useState(false);
+  const templates = useStore((state) => state.templates);
+  console.log("🚀 ~ Create ~ templates:", templates);
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView className="h-full bg-slate-50 flex-1">
+      <SafeAreaView className="bg-slate-50 flex-1">
         <View className="p-2">
-          <View className="p-8 bg-slate-100 mb-[6px] rounded-[20px] h-full">
-            <View className="flex flex-row justify-between items-center">
+          <View className="p-4 bg-slate-100 mb-[6px] rounded-[20px] h-full">
+            <View className="flex flex-row justify-between items-center mb-10">
               <Text className="font-pbold text-xl text-slate-600">
                 Template
               </Text>
@@ -38,9 +45,35 @@ const Create = () => {
                 <ButtonText>Create</ButtonText>
               </Button>
             </View>
+            {templates.length > 0 &&
+              templates.map((template, iTemplate) => (
+                <TouchableOpacity>
+                  <Card
+                    size="md"
+                    variant="outline"
+                    className=""
+                    key={iTemplate}
+                  >
+                    <Heading size="md" className="mb-1">
+                      {template.name}
+                    </Heading>
+                    <Text>
+                      {new Date(template.createDate).toLocaleDateString(
+                        "en-GB",
+                        {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        }
+                      )}
+                    </Text>
+                  </Card>
+                </TouchableOpacity>
+              ))}
           </View>
         </View>
       </SafeAreaView>
+
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >

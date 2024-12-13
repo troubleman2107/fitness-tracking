@@ -65,8 +65,6 @@ const CreateExercise = ({ onClose }: CreateExerciseProps) => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isSaved, setIsSaved] = useState(false);
   const addTemplate = useStore((state) => state.addTemplate);
-  const templates = useStore((state) => state.templates);
-  console.log("🚀 ~ CreateExercise ~ templates:", templates);
 
   //Handle save template
   useEffect(() => {
