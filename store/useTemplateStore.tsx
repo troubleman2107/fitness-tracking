@@ -54,6 +54,12 @@ export const useStore = create<StoreState>((set, get) => ({
     saveData("templates", updatedTemplates);
   },
 
+  deleteTemplate: (id) => {
+    const templates = get().templates.filter((template) => template.id !== id);
+    set({ templates });
+    saveData("templates", templates);
+  },
+
   addSession: (session) => {
     const sessions = get().sessions;
     const updatedSessions = [...sessions, session];
@@ -74,9 +80,4 @@ export const useStore = create<StoreState>((set, get) => ({
     set({ sets: updatedSets });
     saveData("sets", updatedSets);
   },
-
-  deleteTemplate: (id) =>
-    set((state) => ({
-      templates: state.templates.filter((template) => template.id !== id),
-    })),
 }));
