@@ -37,12 +37,9 @@ import {
   KeyboardAvoidingView,
   KeyboardAwareScrollView,
 } from "react-native-keyboard-controller";
-import { CloseIcon, Icon } from "./ui/icon";
 import CloseIconButton from "./ui/CloseButton";
 import { Agenda, DateData } from "react-native-calendars";
-import { useSessionStore } from "@/store/useSessionStore";
 import { useStore } from "@/store/useTemplateStore";
-import { clear } from "@/utils/AsyncStorage";
 
 interface infoSetsForm {
   id: string;
@@ -149,17 +146,33 @@ const CreateExercise = ({ onClose }: CreateExerciseProps) => {
     setExercises(deleteExercise);
   };
 
-  const handleOnSaveSession = () => {
-    const dateCreated = selectedDate.toLocaleDateString("en-GB", {
+  const formatDate = (date: Date): string => {
+    return date.toLocaleDateString("en-GB", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
     });
-    const name = sessionNameInput;
-    setSession([
-      ...session,
-      { id: uuidv4(), date: dateCreated, name: name, exercises: exercises },
-    ]);
+  };
+
+  const handleOnSaveSession = () => {
+    if (!sessionNameInput.trim()) {
+      Alert.alert("Error", "Please enter a session name");
+      return;
+    }
+
+    if (exercises.length === 0) {
+      Alert.alert("Error", "Please add at least one exercise");
+      return;
+    }
+
+    const newSession: SessionData = {
+      id: uuidv4(),
+      date: formatDate(selectedDate),
+      name: sessionNameInput.trim(),
+      exercises: exercises,
+    };
+
+    setSession((prevSessions) => [...prevSessions, newSession]);
     setIsSaved(true);
   };
 
@@ -243,8 +256,8 @@ const CreateExercise = ({ onClose }: CreateExerciseProps) => {
               </View>
               <KeyboardAwareScrollView bottomOffset={50}>
                 {exercises &&
-                  exercises.map((exercise, iExercise) => (
-                    <View key={iExercise}>
+                  exercises.map((exercise) => (
+                    <View key={exercise.id}>
                       <View className="flex flex-row items-center justify-between">
                         <Text className="text-base font-psemibold">
                           {exercise.name}
@@ -274,7 +287,7 @@ const CreateExercise = ({ onClose }: CreateExerciseProps) => {
                           <TableBody>
                             {exercise.sets &&
                               exercise.sets.map((set, iSet) => (
-                                <TableRow key={iSet}>
+                                <TableRow key={set.id}>
                                   <TableData className="text-center text-base">
                                     {iSet + 1}
                                   </TableData>

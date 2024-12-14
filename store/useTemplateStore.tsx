@@ -16,6 +16,7 @@ interface StoreState {
   addSession: (session: SessionData) => void;
   addExercise: (exercise: Exercise) => void;
   addSet: (set: Set) => void;
+  deleteTemplate: (id: string) => void;
 }
 
 export const useStore = create<StoreState>((set, get) => ({
@@ -73,4 +74,9 @@ export const useStore = create<StoreState>((set, get) => ({
     set({ sets: updatedSets });
     saveData("sets", updatedSets);
   },
+
+  deleteTemplate: (id) =>
+    set((state) => ({
+      templates: state.templates.filter((template) => template.id !== id),
+    })),
 }));
