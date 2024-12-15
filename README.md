@@ -38,3 +38,6 @@ _WorkFlow_
 - Add template name
 - Show calendar default by now
 -
+
+- First when init create session for create page
+-

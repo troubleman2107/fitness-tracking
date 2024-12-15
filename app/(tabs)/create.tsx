@@ -4,6 +4,7 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
+  Touchable,
   TouchableHighlight,
   TouchableOpacity,
   View,
@@ -27,35 +28,49 @@ import { Animated } from "react-native";
 import { Template } from "@/types/session";
 
 const Create = () => {
-  const [isCreateTemplate, setIsCreateTemplate] = useState(false);
+  const [isCreateTemplate, setIsCreateTemplate] = useState(true);
+  const [isShowHiddenItem, setIsShowHiddenItem] = useState(false);
+  const [templateSelect, setTemplateSelect] = useState<Template | null>(null);
   const templates = useStore((state) => state.templates);
   const deleteTemplate = useStore((state) => state.deleteTemplate);
 
+  const handleCreateTemplate = (template: Template) => {
+    setTemplateSelect(template);
+    setIsCreateTemplate(true);
+  };
+
   const renderItem = ({ item }: { item: Template }) => (
-    <View style={{ marginBottom: 8 }} className="mr-1">
-      <Card size="md" variant="outline" className="bg-white">
-        <Heading size="md" className="mb-1">
-          {item.name}
-        </Heading>
-        <Text>
-          {new Date(item.createDate).toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          })}
-        </Text>
-      </Card>
-    </View>
+    <TouchableOpacity
+      className=" z-20"
+      onPress={() => handleCreateTemplate(item)}
+    >
+      <View style={{ marginBottom: 8 }} className="mr-1">
+        <Card size="md" variant="outline" className="bg-white">
+          <Heading size="md" className="mb-1">
+            {item.name}
+          </Heading>
+          <Text>
+            {new Date(item.createDate).toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            })}
+          </Text>
+        </Card>
+      </View>
+    </TouchableOpacity>
   );
 
   const renderHiddenItem = ({ item }: { item: Template }) => (
     <View className="flex-1 flex-row justify-end bg-slate-200 mb-3 rounded-lg">
-      <TouchableOpacity
-        className="bg-red-500 justify-center px-4 rounded-lg"
-        onPress={() => deleteTemplate(item.id)}
-      >
-        <Text className="text-white font-bold">Delete</Text>
-      </TouchableOpacity>
+      {isShowHiddenItem && (
+        <TouchableOpacity
+          className="bg-red-500 justify-center px-4 rounded-lg"
+          onPress={() => deleteTemplate(item.id)}
+        >
+          <Text className="text-white font-bold">Delete</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 
@@ -83,6 +98,12 @@ const Create = () => {
               rightOpenValue={-75}
               disableRightSwipe
               keyExtractor={(item) => item.id}
+              onRowOpen={(rowKey) => {
+                setIsShowHiddenItem(true);
+              }}
+              onRowClose={(rowKey) => {
+                setIsShowHiddenItem(false);
+              }}
             />
           </View>
         </View>
@@ -102,27 +123,13 @@ const Create = () => {
             <ActionsheetDragIndicatorWrapper>
               <ActionsheetDragIndicator />
             </ActionsheetDragIndicatorWrapper>
-            <CreateExercise onClose={() => setIsCreateTemplate(false)} />
+            <CreateExercise
+              templateSelect={templateSelect}
+              onClose={() => setIsCreateTemplate(false)}
+            />
           </ActionsheetContent>
         </Actionsheet>
       </KeyboardAvoidingView>
-      {/* <BottomSheetComponent
-        toggle={() => setIsCreateTemplate(!isCreateTemplate)}
-        isVisible={isCreateTemplate}
-        content={
-          <View
-            className="h-[100vh] bg-white pt-20 flex-1"
-            style={{ paddingBottom: useSafeAreaInsets().bottom }}
-          >
-            <View className="w-full flex flex-row justify-end pr-5">
-              <TouchableOpacity onPress={() => setIsCreateTemplate(false)}>
-                <Icon name="close" className="w-7 h-7" />
-              </TouchableOpacity>
-            </View>
-            <CreateExercise />
-          </View>
-        }
-      /> */}
     </SafeAreaProvider>
   );
 };

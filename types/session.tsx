@@ -15,7 +15,7 @@ export interface SessionData {
 export interface Exercise {
   id: string;
   name: string;
-  muscleGroup: string;
+  muscleGroup?: string;
   sets: Set[];
 }
 export interface Set {

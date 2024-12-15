@@ -24,7 +24,7 @@ import {
   TableCaption,
 } from "@/components/ui/table";
 import { Button, ButtonIcon, ButtonText } from "./ui/button";
-import { Exercise, SessionData, Set } from "@/types/session";
+import { Exercise, SessionData, Set, Template } from "@/types/session";
 import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
 import { Input, InputField } from "./ui/input";
@@ -40,6 +40,7 @@ import {
 import CloseIconButton from "./ui/CloseButton";
 import { Agenda, DateData } from "react-native-calendars";
 import { useStore } from "@/store/useTemplateStore";
+import { clear } from "@/utils/AsyncStorage";
 
 interface infoSetsForm {
   id: string;
@@ -51,11 +52,15 @@ interface infoSetsForm {
 
 interface CreateExerciseProps {
   onClose: () => void;
+  templateSelect?: Template | null;
 }
 
-const CreateExercise = ({ onClose }: CreateExerciseProps) => {
+// clear();
+
+const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
   const [session, setSession] = useState<SessionData[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
+
   const [nameExerciseInput, setnameExerciseInput] = useState("");
   const [templateInput, setTemplateInput] = useState("");
   const [sessionNameInput, setSessionNameInput] = useState("");
@@ -63,32 +68,63 @@ const CreateExercise = ({ onClose }: CreateExerciseProps) => {
   const [isSaved, setIsSaved] = useState(false);
   const addTemplate = useStore((state) => state.addTemplate);
 
-  //Handle save template
+  const [templateData, setTemplateData] = useState<Template>({
+    id: "",
+    createDate: new Date().toISOString(),
+    name: "",
+    sessions: [],
+  });
+
+  const handleSetTemplateName = (name: string) => {
+    setTemplateData({ ...templateData, name: name });
+  };
+
   useEffect(() => {
-    if (session.length > 0) {
-      const idTemplate = uuidv4();
-      const nameTemplate = templateInput;
-      const createdDate = new Date().toISOString();
-
-      addTemplate({
-        id: idTemplate,
-        name: nameTemplate,
-        createDate: createdDate,
-        sessions: session,
-      });
-
-      console.log("session", session);
+    if (templateData) {
+      const dataByDate = templateData.sessions.filter(
+        (session) => session.date === formatDate(selectedDate)
+      )[0];
+      dataByDate?.exercises && setExercises(dataByDate.exercises);
+      dataByDate?.name && setSessionNameInput(dataByDate.name);
     }
-  }, [session]);
+  }, [selectedDate]);
+
+  //Handle save template
+  // useEffect(() => {
+  //   if (session.length > 0) {
+  //     const idTemplate = uuidv4();
+  //     const nameTemplate = templateInput;
+  //     const createdDate = new Date().toISOString();
+
+  //     addTemplate({
+  //       id: idTemplate,
+  //       name: nameTemplate,
+  //       createDate: createdDate,
+  //       sessions: session,
+  //     });
+
+  //     console.log("session", session);
+  //   }
+  // }, [session]);
+
+  // useEffect(() => {
+  //   setSession([
+  //     ...session,
+  //     {
+  //       id: uuidv4(),
+  //       date: formatDate(selectedDate),
+  //       name: "",
+  //       exercises: [],
+  //     },
+  //   ]);
+  // }, []);
 
   const handleAddExercise = () => {
     const exerciseInfo: Exercise = {
       id: uuidv4(),
-      muscleGroup: "Chest",
       name: nameExerciseInput,
       sets: [],
     };
-
     setExercises([...exercises, exerciseInfo]);
     setnameExerciseInput("");
   };
@@ -119,6 +155,7 @@ const CreateExercise = ({ onClose }: CreateExerciseProps) => {
   };
 
   const infoSetInit: Record<string, any> = {};
+
   const handleSetChange = (text: string, type: string, idSet: string) => {
     infoSetInit[type] = text;
     infoSetInit["id"] = idSet;
@@ -172,13 +209,22 @@ const CreateExercise = ({ onClose }: CreateExerciseProps) => {
       exercises: exercises,
     };
 
-    setSession((prevSessions) => [...prevSessions, newSession]);
+    setTemplateData({
+      ...templateData,
+      sessions: [...templateData.sessions, newSession],
+    });
+
+    // setSession((prevSessions) => [...prevSessions, newSession]);
+    // setExercises([]);
     setIsSaved(true);
+    // onClose();
   };
 
-  // const clearSessionData = () => {
-  //   setnameExerciseInput(""),
-  // }
+  const handleChangeDate = (date: DateData) => {
+    setSelectedDate(new Date(date.dateString));
+    setIsSaved(false);
+    setExercises([]);
+  };
 
   return (
     <View className="p-2 flex-1 pt-14">
@@ -188,11 +234,14 @@ const CreateExercise = ({ onClose }: CreateExerciseProps) => {
           <InputField
             className="text-center"
             placeholder="Template Name"
-            value={templateInput}
-            onChangeText={(text) => setTemplateInput(text)}
+            value={templateData.name}
+            onChangeText={(text) => handleSetTemplateName(text)}
           />
         </Input>
-        <Button className="bg-success-300 focus:bg-success-50">
+        <Button
+          className="bg-success-300 focus:bg-success-50"
+          onPress={handleOnSaveSession}
+        >
           <ButtonText>Save</ButtonText>
         </Button>
       </View>
@@ -220,11 +269,7 @@ const CreateExercise = ({ onClose }: CreateExerciseProps) => {
       <Agenda
         style={{ backgroundColor: "#000" }}
         contentContainerStyle={{ backgroundColor: "#000" }}
-        onDayPress={(date: DateData) => {
-          setIsSaved(false);
-          setSelectedDate(new Date(date.dateString));
-          setExercises([]);
-        }}
+        onDayPress={(date: DateData) => handleChangeDate(date)}
         items={{ items: [] }}
         renderEmptyData={() => {
           return (
@@ -304,6 +349,9 @@ const CreateExercise = ({ onClose }: CreateExerciseProps) => {
                                       isReadOnly={isSaved}
                                     >
                                       <InputField
+                                        value={
+                                          set.weight ? String(set.weight) : ""
+                                        }
                                         onChangeText={(text) =>
                                           handleSetChange(
                                             text,
@@ -328,6 +376,7 @@ const CreateExercise = ({ onClose }: CreateExerciseProps) => {
                                       isReadOnly={isSaved}
                                     >
                                       <InputField
+                                        value={set.reps ? String(set.reps) : ""}
                                         onChangeText={(text) =>
                                           handleSetChange(text, "reps", set.id)
                                         }
@@ -346,6 +395,11 @@ const CreateExercise = ({ onClose }: CreateExerciseProps) => {
                                       isReadOnly={isSaved}
                                     >
                                       <InputField
+                                        value={
+                                          set.restTime
+                                            ? String(set.restTime)
+                                            : ""
+                                        }
                                         onChangeText={(text) =>
                                           handleSetChange(
                                             text,
@@ -377,7 +431,7 @@ const CreateExercise = ({ onClose }: CreateExerciseProps) => {
                   ))}
                 {!isSaved ? (
                   <Button
-                    className="mt-3 bg-success-300"
+                    className="bg-success-300"
                     size="md"
                     variant="solid"
                     action="primary"

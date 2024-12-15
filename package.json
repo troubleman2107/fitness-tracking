@@ -59,7 +59,7 @@
     "react-native-get-random-values": "^1.11.0",
     "react-native-keyboard-aware-scroll-view": "^0.9.5",
     "react-native-keyboard-controller": "^1.14.5",
-    "react-native-reanimated": "~3.16.1",
+    "react-native-reanimated": "^3.16.2",
     "react-native-safe-area-context": "^5.0.0",
     "react-native-screens": "~4.1.0",
     "react-native-svg": "^15.2.0",
@@ -71,6 +71,9 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@babel/plugin-proposal-export-namespace-from": "^7.18.9",
+    "@babel/plugin-transform-flow-strip-types": "^7.25.9",
+    "@babel/plugin-transform-modules-commonjs": "^7.26.3",
     "@types/jest": "^29.5.12",
     "@types/react": "~18.3.12",
     "@types/react-test-renderer": "^18.3.0",
