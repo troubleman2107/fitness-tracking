@@ -13,10 +13,11 @@ interface StoreState {
   updateEntity: <T>(key: keyof StoreState, data: T[]) => Promise<void>;
 
   addTemplate: (template: Template) => void;
+  saveTemplate: (template: Template) => void;
+  deleteTemplate: (id: string) => void;
   addSession: (session: SessionData) => void;
   addExercise: (exercise: Exercise) => void;
   addSet: (set: Set) => void;
-  deleteTemplate: (id: string) => void;
 }
 
 export const useStore = create<StoreState>((set, get) => ({
@@ -58,6 +59,18 @@ export const useStore = create<StoreState>((set, get) => ({
     const templates = get().templates.filter((template) => template.id !== id);
     set({ templates });
     saveData("templates", templates);
+  },
+
+  saveTemplate: (template: Template) => {
+    const templates = get().templates;
+    const updatedTemplates = templates.map((t) => {
+      if (t.id === template.id) {
+        return template;
+      }
+      return t;
+    });
+    set({ templates: updatedTemplates });
+    saveData("templates", updatedTemplates);
   },
 
   addSession: (session) => {

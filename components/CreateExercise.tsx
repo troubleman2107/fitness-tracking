@@ -41,6 +41,7 @@ import CloseIconButton from "./ui/CloseButton";
 import { Agenda, DateData } from "react-native-calendars";
 import { useStore } from "@/store/useTemplateStore";
 import { clear } from "@/utils/AsyncStorage";
+import { set } from "date-fns";
 
 interface infoSetsForm {
   id: string;
@@ -58,6 +59,7 @@ interface CreateExerciseProps {
 // clear();
 
 const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
+  console.log("🚀 ~ CreateExercise ~ templateSelect:", templateSelect);
   const [session, setSession] = useState<SessionData[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
 
@@ -67,6 +69,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isSaved, setIsSaved] = useState(false);
   const addTemplate = useStore((state) => state.addTemplate);
+  const saveTemplate = useStore((state) => state.saveTemplate);
 
   const [templateData, setTemplateData] = useState<Template>({
     id: "",
@@ -75,9 +78,24 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     sessions: [],
   });
 
-  const handleSetTemplateName = (name: string) => {
-    setTemplateData({ ...templateData, name: name });
-  };
+  useEffect(() => {
+    if (templateSelect) {
+      setTemplateData(templateSelect);
+    }
+  }, [templateSelect]);
+
+  useEffect(() => {
+    if (templateData) {
+      console.log("🚀 ~ useEffect ~ templateData:", templateData);
+      const dataByDate = templateData.sessions.filter(
+        (session) => session.date === formatDate(selectedDate)
+      )[0];
+      if (dataByDate) {
+        setSessionNameInput(dataByDate?.name);
+        setExercises(dataByDate?.exercises);
+      }
+    }
+  }, [templateData]);
 
   useEffect(() => {
     if (templateData) {
@@ -86,9 +104,28 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
       )[0];
       dataByDate?.exercises && setExercises(dataByDate.exercises);
       dataByDate?.name && setSessionNameInput(dataByDate.name);
+
+      if (dataByDate) {
+        setIsSaved(true);
+      }
     }
   }, [selectedDate]);
 
+  // useEffect(() => {
+  //   if (selectedDate) {
+  //     const dataByDate = templateData.sessions.filter(
+  //       (session) => session.date === formatDate(selectedDate)
+  //     )[0];
+
+  //     if (dataByDate) {
+  //       setIsSaved(true);
+  //     }
+  //   }
+  // }, [selectedDate]);
+
+  const handleSetTemplateName = (name: string) => {
+    setTemplateData({ ...templateData, name: name });
+  };
   //Handle save template
   // useEffect(() => {
   //   if (session.length > 0) {
@@ -120,11 +157,17 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
   // }, []);
 
   const handleAddExercise = () => {
+    if (!nameExerciseInput) {
+      Alert.alert("Error", "Please enter a exercise name");
+      return;
+    }
+
     const exerciseInfo: Exercise = {
       id: uuidv4(),
       name: nameExerciseInput,
       sets: [],
     };
+    console.log("🚀 ~ handleAddExercise ~ exerciseInfo:", exercises);
     setExercises([...exercises, exerciseInfo]);
     setnameExerciseInput("");
   };
@@ -192,13 +235,30 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
   };
 
   const handleOnSaveSession = () => {
-    if (!sessionNameInput.trim()) {
-      Alert.alert("Error", "Please enter a session name");
-      return;
-    }
+    handleRequiredInput();
 
-    if (exercises.length === 0) {
-      Alert.alert("Error", "Please add at least one exercise");
+    setIsSaved(true);
+
+    const checkSession = templateData.sessions.filter(
+      (session) => session.date === formatDate(selectedDate)
+    );
+
+    if (checkSession.length > 0) {
+      const updateSession = templateData.sessions.map((session) => {
+        if (session.date === formatDate(selectedDate)) {
+          return {
+            ...session,
+            name: sessionNameInput.trim(),
+            exercises: exercises,
+          };
+        }
+        return { ...session };
+      });
+
+      setTemplateData({
+        ...templateData,
+        sessions: updateSession,
+      });
       return;
     }
 
@@ -216,56 +276,46 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
 
     // setSession((prevSessions) => [...prevSessions, newSession]);
     // setExercises([]);
-    setIsSaved(true);
     // onClose();
   };
 
   const handleChangeDate = (date: DateData) => {
-    setSelectedDate(new Date(date.dateString));
     setIsSaved(false);
     setExercises([]);
+    setSelectedDate(new Date(date.dateString));
+  };
+
+  const handleSaveTemplate = () => {
+    handleRequiredInput();
+
+    if (!templateSelect) {
+      addTemplate({
+        ...templateData,
+        id: uuidv4(),
+      });
+    } else {
+      saveTemplate({
+        ...templateData,
+      });
+    }
+
+    onClose();
+  };
+
+  const handleRequiredInput = () => {
+    if (!sessionNameInput.trim()) {
+      Alert.alert("Error", "Please enter a session name");
+      return;
+    }
+
+    if (exercises.length === 0) {
+      Alert.alert("Error", "Please add at least one exercise");
+      return;
+    }
   };
 
   return (
     <View className="p-2 flex-1 pt-14">
-      <View className="w-ful flex flex-row justify-between">
-        <CloseIconButton onClick={onClose} />
-        <Input className="w-[250px]">
-          <InputField
-            className="text-center"
-            placeholder="Template Name"
-            value={templateData.name}
-            onChangeText={(text) => handleSetTemplateName(text)}
-          />
-        </Input>
-        <Button
-          className="bg-success-300 focus:bg-success-50"
-          onPress={handleOnSaveSession}
-        >
-          <ButtonText>Save</ButtonText>
-        </Button>
-      </View>
-      <View className="w-full mb-6 mt-5">
-        <View className="flex flex-row">
-          <View className="w-full">
-            <FormControl>
-              <FormControlLabel>
-                <FormControlLabelText className="font-psemibold">
-                  Session Name
-                </FormControlLabelText>
-              </FormControlLabel>
-              <Input className="w-full mb-3">
-                <InputField
-                  placeholder="Session Name"
-                  value={sessionNameInput}
-                  onChangeText={(text) => setSessionNameInput(text)}
-                />
-              </Input>
-            </FormControl>
-          </View>
-        </View>
-      </View>
-      <Text className="font-psemibold text-typography-900">Day Workout</Text>
       <Agenda
         style={{ backgroundColor: "#000" }}
         contentContainerStyle={{ backgroundColor: "#000" }}
@@ -273,8 +323,45 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
         items={{ items: [] }}
         renderEmptyData={() => {
           return (
-            <View className=" h-full bg-white">
-              <View className="mb-6">
+            <View className="h-full bg-white">
+              <View className="w-ful mt-2 flex flex-row justify-between">
+                <CloseIconButton onClick={onClose} />
+                <Input className="w-[250px]">
+                  <InputField
+                    className="text-center"
+                    placeholder="Template Name"
+                    value={templateData.name}
+                    onChangeText={(text) => handleSetTemplateName(text)}
+                  />
+                </Input>
+                <Button
+                  className="bg-success-300 focus:bg-success-50"
+                  onPress={handleSaveTemplate}
+                >
+                  <ButtonText>Save</ButtonText>
+                </Button>
+              </View>
+              <View className="w-full mt-2">
+                <View className="flex flex-row">
+                  <View className="w-full">
+                    <FormControl>
+                      <FormControlLabel>
+                        <FormControlLabelText className="font-psemibold">
+                          Session Name
+                        </FormControlLabelText>
+                      </FormControlLabel>
+                      <Input className="w-full" isReadOnly={isSaved}>
+                        <InputField
+                          placeholder="Session Name"
+                          value={sessionNameInput}
+                          onChangeText={(text) => setSessionNameInput(text)}
+                        />
+                      </Input>
+                    </FormControl>
+                  </View>
+                </View>
+              </View>
+              <View className="mt-3">
                 <FormControl className="w-full">
                   <FormControlLabel>
                     <FormControlLabelText className="font-psemibold">
@@ -299,7 +386,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
                   </Button>
                 </FormControl>
               </View>
-              <KeyboardAwareScrollView bottomOffset={50}>
+              <KeyboardAwareScrollView bottomOffset={50} className="mt-3">
                 {exercises &&
                   exercises.map((exercise) => (
                     <View key={exercise.id}>
@@ -441,7 +528,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
                   </Button>
                 ) : (
                   <Button
-                    className="mt-3 bg-success-300"
+                    className="bg-success-300"
                     size="md"
                     variant="solid"
                     action="primary"

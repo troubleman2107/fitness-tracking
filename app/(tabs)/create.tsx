@@ -28,7 +28,7 @@ import { Animated } from "react-native";
 import { Template } from "@/types/session";
 
 const Create = () => {
-  const [isCreateTemplate, setIsCreateTemplate] = useState(true);
+  const [isCreateTemplate, setIsCreateTemplate] = useState(false);
   const [isShowHiddenItem, setIsShowHiddenItem] = useState(false);
   const [templateSelect, setTemplateSelect] = useState<Template | null>(null);
   const templates = useStore((state) => state.templates);
@@ -37,6 +37,11 @@ const Create = () => {
   const handleCreateTemplate = (template: Template) => {
     setTemplateSelect(template);
     setIsCreateTemplate(true);
+  };
+
+  const handleOnCloseCreateModal = () => {
+    setIsCreateTemplate(false);
+    setTemplateSelect(null);
   };
 
   const renderItem = ({ item }: { item: Template }) => (
@@ -114,7 +119,7 @@ const Create = () => {
       >
         <Actionsheet
           useRNModal={true}
-          snapPoints={[100]}
+          snapPoints={[85]}
           isOpen={isCreateTemplate}
           onClose={() => setIsCreateTemplate(false)}
         >
@@ -125,7 +130,7 @@ const Create = () => {
             </ActionsheetDragIndicatorWrapper>
             <CreateExercise
               templateSelect={templateSelect}
-              onClose={() => setIsCreateTemplate(false)}
+              onClose={handleOnCloseCreateModal}
             />
           </ActionsheetContent>
         </Actionsheet>
