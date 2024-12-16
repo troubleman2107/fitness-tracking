@@ -31,7 +31,10 @@ import { Link, useRouter } from "expo-router";
 const Create = () => {
   const router = useRouter();
   const [isCreateTemplate, setIsCreateTemplate] = useState(false);
-  const [isShowHiddenItem, setIsShowHiddenItem] = useState(false);
+  const [isShowHiddenItem, setIsShowHiddenItem] = useState<{
+    id: string;
+    isHidden: boolean;
+  }>({ id: "", isHidden: false });
   const [templateSelect, setTemplateSelect] = useState<Template | null>(null);
   const templates = useStore((state) => state.templates);
   const deleteTemplate = useStore((state) => state.deleteTemplate);
@@ -71,7 +74,7 @@ const Create = () => {
 
   const renderHiddenItem = ({ item }: { item: Template }) => (
     <View className="flex-1 flex-row justify-end bg-slate-200 mb-3 rounded-lg">
-      {isShowHiddenItem && (
+      {isShowHiddenItem["id"] === item.id && isShowHiddenItem["isHidden"] && (
         <TouchableOpacity
           className="bg-red-500 justify-center px-4 rounded-lg"
           onPress={() => deleteTemplate(item.id)}
@@ -117,10 +120,10 @@ const Create = () => {
               disableRightSwipe
               keyExtractor={(item) => item.id}
               onRowOpen={(rowKey) => {
-                setIsShowHiddenItem(true);
+                setIsShowHiddenItem({ id: rowKey, isHidden: true });
               }}
               onRowClose={(rowKey) => {
-                setIsShowHiddenItem(false);
+                setIsShowHiddenItem({ id: rowKey, isHidden: false });
               }}
             />
           </View>
