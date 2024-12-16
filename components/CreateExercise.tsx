@@ -38,10 +38,19 @@ import {
   KeyboardAwareScrollView,
 } from "react-native-keyboard-controller";
 import CloseIconButton from "./ui/CloseButton";
-import { Agenda, DateData } from "react-native-calendars";
+import { Agenda, Calendar, DateData } from "react-native-calendars";
 import { useStore } from "@/store/useTemplateStore";
 import { clear } from "@/utils/AsyncStorage";
 import { set } from "date-fns";
+import {
+  AlertDialog,
+  AlertDialogBackdrop,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+} from "./ui/alert-dialog";
+import { Heading } from "./ui/heading";
 
 interface infoSetsForm {
   id: string;
@@ -66,7 +75,10 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
   const [nameExerciseInput, setnameExerciseInput] = useState("");
   const [templateInput, setTemplateInput] = useState("");
   const [sessionNameInput, setSessionNameInput] = useState("");
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState("");
+  const [isCalendarVisible, setIsCalendarVisible] = useState(false);
+  const [showAlertDialog, setShowAlertDialog] = useState(false); // [showAlertDialog]
+
   const [isSaved, setIsSaved] = useState(false);
   const addTemplate = useStore((state) => state.addTemplate);
   const saveTemplate = useStore((state) => state.saveTemplate);
@@ -79,6 +91,12 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
   });
 
   useEffect(() => {
+    // Set the initial selected date to today
+    const today = new Date().toISOString().split("T")[0];
+    setSelectedDate(today);
+  }, []);
+
+  useEffect(() => {
     if (templateSelect) {
       setTemplateData(templateSelect);
     }
@@ -86,9 +104,8 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
 
   useEffect(() => {
     if (templateData) {
-      console.log("🚀 ~ useEffect ~ templateData:", templateData);
       const dataByDate = templateData.sessions.filter(
-        (session) => session.date === formatDate(selectedDate)
+        (session) => session.date === selectedDate
       )[0];
       if (dataByDate) {
         setSessionNameInput(dataByDate?.name);
@@ -100,7 +117,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
   useEffect(() => {
     if (templateData) {
       const dataByDate = templateData.sessions.filter(
-        (session) => session.date === formatDate(selectedDate)
+        (session) => session.date === selectedDate
       )[0];
       dataByDate?.exercises && setExercises(dataByDate.exercises);
       dataByDate?.name && setSessionNameInput(dataByDate.name);
@@ -111,50 +128,9 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     }
   }, [selectedDate]);
 
-  // useEffect(() => {
-  //   if (selectedDate) {
-  //     const dataByDate = templateData.sessions.filter(
-  //       (session) => session.date === formatDate(selectedDate)
-  //     )[0];
-
-  //     if (dataByDate) {
-  //       setIsSaved(true);
-  //     }
-  //   }
-  // }, [selectedDate]);
-
   const handleSetTemplateName = (name: string) => {
     setTemplateData({ ...templateData, name: name });
   };
-  //Handle save template
-  // useEffect(() => {
-  //   if (session.length > 0) {
-  //     const idTemplate = uuidv4();
-  //     const nameTemplate = templateInput;
-  //     const createdDate = new Date().toISOString();
-
-  //     addTemplate({
-  //       id: idTemplate,
-  //       name: nameTemplate,
-  //       createDate: createdDate,
-  //       sessions: session,
-  //     });
-
-  //     console.log("session", session);
-  //   }
-  // }, [session]);
-
-  // useEffect(() => {
-  //   setSession([
-  //     ...session,
-  //     {
-  //       id: uuidv4(),
-  //       date: formatDate(selectedDate),
-  //       name: "",
-  //       exercises: [],
-  //     },
-  //   ]);
-  // }, []);
 
   const handleAddExercise = () => {
     if (!nameExerciseInput) {
@@ -240,12 +216,12 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     setIsSaved(true);
 
     const checkSession = templateData.sessions.filter(
-      (session) => session.date === formatDate(selectedDate)
+      (session) => session.date === selectedDate
     );
 
     if (checkSession.length > 0) {
       const updateSession = templateData.sessions.map((session) => {
-        if (session.date === formatDate(selectedDate)) {
+        if (session.date === selectedDate) {
           return {
             ...session,
             name: sessionNameInput.trim(),
@@ -264,7 +240,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
 
     const newSession: SessionData = {
       id: uuidv4(),
-      date: formatDate(selectedDate),
+      date: selectedDate,
       name: sessionNameInput.trim(),
       exercises: exercises,
     };
@@ -273,16 +249,14 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
       ...templateData,
       sessions: [...templateData.sessions, newSession],
     });
-
-    // setSession((prevSessions) => [...prevSessions, newSession]);
-    // setExercises([]);
-    // onClose();
   };
 
   const handleChangeDate = (date: DateData) => {
     setIsSaved(false);
+    setnameExerciseInput("");
     setExercises([]);
-    setSelectedDate(new Date(date.dateString));
+    setSelectedDate(date.dateString);
+    setIsCalendarVisible(!isCalendarVisible);
   };
 
   const handleSaveTemplate = () => {
@@ -315,233 +289,274 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
   };
 
   return (
-    <View className="p-2 flex-1 pt-14">
-      <Agenda
-        style={{ backgroundColor: "#000" }}
-        contentContainerStyle={{ backgroundColor: "#000" }}
-        onDayPress={(date: DateData) => handleChangeDate(date)}
-        items={{ items: [] }}
-        renderEmptyData={() => {
-          return (
-            <View className="h-full bg-white">
-              <View className="w-ful mt-2 flex flex-row justify-between">
-                <CloseIconButton onClick={onClose} />
-                <Input className="w-[250px]">
+    <View className="flex-1">
+      <View className="h-full">
+        <View className="w-ful mt-2 flex flex-row justify-between">
+          <CloseIconButton onClick={onClose} />
+          <Input className="w-[250px]">
+            <InputField
+              className="text-center"
+              placeholder="Template Name"
+              value={templateData.name}
+              onChangeText={(text) => handleSetTemplateName(text)}
+            />
+          </Input>
+          <Button
+            className="bg-success-300 focus:bg-success-50"
+            // onPress={handleSaveTemplate}
+            onPress={() => setShowAlertDialog(true)}
+          >
+            <ButtonText>Save</ButtonText>
+          </Button>
+        </View>
+        <View className="w-full mt-2">
+          <View className="flex flex-row">
+            <View className="w-full">
+              <FormControl>
+                <FormControlLabel>
+                  <FormControlLabelText className="font-psemibold">
+                    Session Name
+                  </FormControlLabelText>
+                </FormControlLabel>
+                <Input className="w-full" isReadOnly={isSaved}>
                   <InputField
-                    className="text-center"
-                    placeholder="Template Name"
-                    value={templateData.name}
-                    onChangeText={(text) => handleSetTemplateName(text)}
+                    placeholder="Session Name"
+                    value={sessionNameInput}
+                    onChangeText={(text) => setSessionNameInput(text)}
                   />
                 </Input>
-                <Button
-                  className="bg-success-300 focus:bg-success-50"
-                  onPress={handleSaveTemplate}
-                >
-                  <ButtonText>Save</ButtonText>
-                </Button>
-              </View>
-              <View className="w-full mt-2">
-                <View className="flex flex-row">
-                  <View className="w-full">
-                    <FormControl>
-                      <FormControlLabel>
-                        <FormControlLabelText className="font-psemibold">
-                          Session Name
-                        </FormControlLabelText>
-                      </FormControlLabel>
-                      <Input className="w-full" isReadOnly={isSaved}>
-                        <InputField
-                          placeholder="Session Name"
-                          value={sessionNameInput}
-                          onChangeText={(text) => setSessionNameInput(text)}
-                        />
-                      </Input>
-                    </FormControl>
-                  </View>
+              </FormControl>
+            </View>
+          </View>
+        </View>
+        <View className="mt-3">
+          <Text className="mb-2 font-psemibold text-typography-900">
+            Day Workout
+          </Text>
+          <Button
+            action="primary"
+            onPress={() => setIsCalendarVisible(!isCalendarVisible)}
+          >
+            <ButtonText>{selectedDate}</ButtonText>
+          </Button>
+          {isCalendarVisible && (
+            <Calendar
+              // Mark the selected date
+              markedDates={{
+                [selectedDate]: {
+                  selected: true,
+                  marked: true,
+                },
+              }}
+              current={selectedDate}
+              // Event handler for selecting a day
+              onDayPress={handleChangeDate}
+            />
+          )}
+        </View>
+
+        <View className="mt-3">
+          <FormControl className="w-full">
+            <FormControlLabel>
+              <FormControlLabelText className="font-psemibold">
+                Name of Exercise
+              </FormControlLabelText>
+            </FormControlLabel>
+            <Input className="w-full">
+              <InputField
+                placeholder="Barbel Bench Press"
+                value={nameExerciseInput}
+                onChangeText={(text) => setnameExerciseInput(text)}
+              />
+            </Input>
+            <Button
+              className="mt-3 w-full"
+              size="md"
+              variant="solid"
+              action="primary"
+              onPress={handleAddExercise}
+            >
+              <ButtonText>Add Exercise</ButtonText>
+            </Button>
+          </FormControl>
+        </View>
+        <KeyboardAwareScrollView bottomOffset={50} className="mt-3">
+          {exercises &&
+            exercises.map((exercise) => (
+              <View key={exercise.id}>
+                <View className="flex flex-row items-center justify-between">
+                  <Text className="text-base font-psemibold">
+                    {exercise.name}
+                  </Text>
+                  <CloseIconButton
+                    onClick={() => handleDeleteExercise(exercise.id)}
+                  />
+                </View>
+                <View className="flex flex-row gap-5 mb-6">
+                  <Table className="w-full">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-center text-base">
+                          Set
+                        </TableHead>
+                        <TableHead className="text-center text-base">
+                          Kg
+                        </TableHead>
+                        <TableHead className="text-center text-base">
+                          Reps
+                        </TableHead>
+                        <TableHead className="text-center text-base">
+                          Rest
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {exercise.sets &&
+                        exercise.sets.map((set, iSet) => (
+                          <TableRow key={set.id}>
+                            <TableData className="text-center text-base">
+                              {iSet + 1}
+                            </TableData>
+                            <TableData
+                              useRNView={true}
+                              className="flex flex-row justify-center items-center"
+                            >
+                              <Input
+                                className={`px-1 h-6 w-[50px]`}
+                                variant="outline"
+                                size="md"
+                                isDisabled={false}
+                                isInvalid={false}
+                                isReadOnly={isSaved}
+                              >
+                                <InputField
+                                  value={set.weight ? String(set.weight) : ""}
+                                  onChangeText={(text) =>
+                                    handleSetChange(text, "weight", set.id)
+                                  }
+                                  placeholder="60"
+                                />
+                              </Input>
+                            </TableData>
+                            <TableData
+                              useRNView={true}
+                              className="flex flex-row justify-center items-center"
+                            >
+                              <Input
+                                className={`px-1 h-6 w-[50px]`}
+                                variant="outline"
+                                size="md"
+                                isDisabled={false}
+                                isInvalid={false}
+                                isReadOnly={isSaved}
+                              >
+                                <InputField
+                                  value={set.reps ? String(set.reps) : ""}
+                                  onChangeText={(text) =>
+                                    handleSetChange(text, "reps", set.id)
+                                  }
+                                  placeholder="12"
+                                />
+                              </Input>
+                            </TableData>
+                            <TableData
+                              useRNView={true}
+                              className="flex flex-row justify-center items-center"
+                            >
+                              <Input
+                                className={`px-1 h-6 w-[50px]`}
+                                variant="outline"
+                                size="md"
+                                isReadOnly={isSaved}
+                              >
+                                <InputField
+                                  value={
+                                    set.restTime ? String(set.restTime) : ""
+                                  }
+                                  onChangeText={(text) =>
+                                    handleSetChange(text, "restTime", set.id)
+                                  }
+                                  placeholder="60"
+                                />
+                              </Input>
+                            </TableData>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                    <TableFooter>
+                      <Button
+                        className="mt-3"
+                        size="md"
+                        variant="solid"
+                        action="primary"
+                        onPress={() => handleAddSets(exercise.id)}
+                      >
+                        <ButtonText>Add sets</ButtonText>
+                      </Button>
+                    </TableFooter>
+                  </Table>
                 </View>
               </View>
-              <View className="mt-3">
-                <FormControl className="w-full">
-                  <FormControlLabel>
-                    <FormControlLabelText className="font-psemibold">
-                      Name of Exercise
-                    </FormControlLabelText>
-                  </FormControlLabel>
-                  <Input className="w-full">
-                    <InputField
-                      placeholder="Barbel Bench Press"
-                      value={nameExerciseInput}
-                      onChangeText={(text) => setnameExerciseInput(text)}
-                    />
-                  </Input>
-                  <Button
-                    className="mt-3 w-full"
-                    size="md"
-                    variant="solid"
-                    action="primary"
-                    onPress={handleAddExercise}
-                  >
-                    <ButtonText>Add Exercise</ButtonText>
-                  </Button>
-                </FormControl>
-              </View>
-              <KeyboardAwareScrollView bottomOffset={50} className="mt-3">
-                {exercises &&
-                  exercises.map((exercise) => (
-                    <View key={exercise.id}>
-                      <View className="flex flex-row items-center justify-between">
-                        <Text className="text-base font-psemibold">
-                          {exercise.name}
-                        </Text>
-                        <CloseIconButton
-                          onClick={() => handleDeleteExercise(exercise.id)}
-                        />
-                      </View>
-                      <View className="flex flex-row gap-5 mb-6">
-                        <Table className="w-full">
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead className="text-center text-base">
-                                Set
-                              </TableHead>
-                              <TableHead className="text-center text-base">
-                                Kg
-                              </TableHead>
-                              <TableHead className="text-center text-base">
-                                Reps
-                              </TableHead>
-                              <TableHead className="text-center text-base">
-                                Rest
-                              </TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {exercise.sets &&
-                              exercise.sets.map((set, iSet) => (
-                                <TableRow key={set.id}>
-                                  <TableData className="text-center text-base">
-                                    {iSet + 1}
-                                  </TableData>
-                                  <TableData
-                                    useRNView={true}
-                                    className="flex flex-row justify-center items-center"
-                                  >
-                                    <Input
-                                      className={`px-1 h-6 w-[50px]`}
-                                      variant="outline"
-                                      size="md"
-                                      isDisabled={false}
-                                      isInvalid={false}
-                                      isReadOnly={isSaved}
-                                    >
-                                      <InputField
-                                        value={
-                                          set.weight ? String(set.weight) : ""
-                                        }
-                                        onChangeText={(text) =>
-                                          handleSetChange(
-                                            text,
-                                            "weight",
-                                            set.id
-                                          )
-                                        }
-                                        placeholder="60"
-                                      />
-                                    </Input>
-                                  </TableData>
-                                  <TableData
-                                    useRNView={true}
-                                    className="flex flex-row justify-center items-center"
-                                  >
-                                    <Input
-                                      className={`px-1 h-6 w-[50px]`}
-                                      variant="outline"
-                                      size="md"
-                                      isDisabled={false}
-                                      isInvalid={false}
-                                      isReadOnly={isSaved}
-                                    >
-                                      <InputField
-                                        value={set.reps ? String(set.reps) : ""}
-                                        onChangeText={(text) =>
-                                          handleSetChange(text, "reps", set.id)
-                                        }
-                                        placeholder="12"
-                                      />
-                                    </Input>
-                                  </TableData>
-                                  <TableData
-                                    useRNView={true}
-                                    className="flex flex-row justify-center items-center"
-                                  >
-                                    <Input
-                                      className={`px-1 h-6 w-[50px]`}
-                                      variant="outline"
-                                      size="md"
-                                      isReadOnly={isSaved}
-                                    >
-                                      <InputField
-                                        value={
-                                          set.restTime
-                                            ? String(set.restTime)
-                                            : ""
-                                        }
-                                        onChangeText={(text) =>
-                                          handleSetChange(
-                                            text,
-                                            "restTime",
-                                            set.id
-                                          )
-                                        }
-                                        placeholder="60"
-                                      />
-                                    </Input>
-                                  </TableData>
-                                </TableRow>
-                              ))}
-                          </TableBody>
-                          <TableFooter>
-                            <Button
-                              className="mt-3"
-                              size="md"
-                              variant="solid"
-                              action="primary"
-                              onPress={() => handleAddSets(exercise.id)}
-                            >
-                              <ButtonText>Add sets</ButtonText>
-                            </Button>
-                          </TableFooter>
-                        </Table>
-                      </View>
-                    </View>
-                  ))}
-                {!isSaved ? (
-                  <Button
-                    className="bg-success-300"
-                    size="md"
-                    variant="solid"
-                    action="primary"
-                    onPress={handleOnSaveSession}
-                  >
-                    <ButtonText>Save Session</ButtonText>
-                  </Button>
-                ) : (
-                  <Button
-                    className="bg-success-300"
-                    size="md"
-                    variant="solid"
-                    action="primary"
-                    onPress={() => setIsSaved(false)}
-                  >
-                    <ButtonText>Edit Session</ButtonText>
-                  </Button>
-                )}
-              </KeyboardAwareScrollView>
-            </View>
-          );
-        }}
-      ></Agenda>
+            ))}
+          {!isSaved ? (
+            <Button
+              className="bg-success-300"
+              size="md"
+              variant="solid"
+              action="primary"
+              onPress={handleOnSaveSession}
+            >
+              <ButtonText>Save Session</ButtonText>
+            </Button>
+          ) : (
+            <Button
+              className="bg-success-300"
+              size="md"
+              variant="solid"
+              action="primary"
+              onPress={() => setIsSaved(false)}
+            >
+              <ButtonText>Edit Session</ButtonText>
+            </Button>
+          )}
+        </KeyboardAwareScrollView>
+      </View>
+      <AlertDialog
+        isOpen={showAlertDialog}
+        onClose={() => setShowAlertDialog(!showAlertDialog)}
+        size="md"
+      >
+        <AlertDialogBackdrop />
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <Heading className="text-typography-950 font-semibold" size="md">
+              Are you sure you want to delete this post?
+            </Heading>
+          </AlertDialogHeader>
+          <AlertDialogBody className="mt-3 mb-4">
+            <Text className="mb-2 font-psemibold text-typography-900">
+              Deleting the post will remove it permanently and cannot be undone.
+              Please confirm if you want to proceed.
+            </Text>
+          </AlertDialogBody>
+          <AlertDialogFooter className="">
+            <Button
+              variant="outline"
+              action="secondary"
+              onPress={() => setShowAlertDialog(!showAlertDialog)}
+              size="sm"
+            >
+              <ButtonText>Cancel</ButtonText>
+            </Button>
+            <Button
+              size="sm"
+              onPress={() => setShowAlertDialog(!showAlertDialog)}
+            >
+              <ButtonText>Delete</ButtonText>
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </View>
   );
 };

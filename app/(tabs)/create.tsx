@@ -26,8 +26,10 @@ import { Heading } from "@/components/ui/heading";
 import { SwipeListView } from "react-native-swipe-list-view";
 import { Animated } from "react-native";
 import { Template } from "@/types/session";
+import { Link, useRouter } from "expo-router";
 
 const Create = () => {
+  const router = useRouter();
   const [isCreateTemplate, setIsCreateTemplate] = useState(false);
   const [isShowHiddenItem, setIsShowHiddenItem] = useState(false);
   const [templateSelect, setTemplateSelect] = useState<Template | null>(null);
@@ -88,13 +90,23 @@ const Create = () => {
               <Text className="font-pbold text-xl text-slate-600">
                 Template
               </Text>
-              <Button
+              <Link
+                className="bg-primary-500 py-2 px-4 rounded-lg text-slate-50 font-pbold"
+                href={"/create-detail/new"}
+              >
+                Create
+              </Link>
+              {/* <Button
+                // onPress={() => {
+                //   setIsCreateTemplate(true);
+                // }}
                 onPress={() => {
-                  setIsCreateTemplate(true);
+                  // router.push('(tabs)/create-detail/create');
+                  router.push("");
                 }}
               >
                 <ButtonText>Create</ButtonText>
-              </Button>
+              </Button> */}
             </View>
             <SwipeListView
               data={templates}
@@ -119,7 +131,7 @@ const Create = () => {
       >
         <Actionsheet
           useRNModal={true}
-          snapPoints={[85]}
+          snapPoints={[90]}
           isOpen={isCreateTemplate}
           onClose={() => setIsCreateTemplate(false)}
         >
