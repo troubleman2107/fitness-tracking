@@ -37,8 +37,9 @@ const Create = () => {
   const deleteTemplate = useStore((state) => state.deleteTemplate);
 
   const handleCreateTemplate = (template: Template) => {
-    setTemplateSelect(template);
-    setIsCreateTemplate(true);
+    router.push(`/create-detail/${template.id}`);
+    // setTemplateSelect(template);
+    // setIsCreateTemplate(true);
   };
 
   const handleOnCloseCreateModal = () => {

@@ -51,6 +51,8 @@ import {
   AlertDialogHeader,
 } from "./ui/alert-dialog";
 import { Heading } from "./ui/heading";
+import PrevIconButton from "./ui/PrevButton";
+import { useRouter } from "expo-router";
 
 interface infoSetsForm {
   id: string;
@@ -68,7 +70,7 @@ interface CreateExerciseProps {
 // clear();
 
 const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
-  console.log("🚀 ~ CreateExercise ~ templateSelect:", templateSelect);
+  const router = useRouter();
   const [session, setSession] = useState<SessionData[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
 
@@ -124,6 +126,8 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
 
       if (dataByDate) {
         setIsSaved(true);
+      } else {
+        setExercises([]);
       }
     }
   }, [selectedDate]);
@@ -143,7 +147,6 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
       name: nameExerciseInput,
       sets: [],
     };
-    console.log("🚀 ~ handleAddExercise ~ exerciseInfo:", exercises);
     setExercises([...exercises, exerciseInfo]);
     setnameExerciseInput("");
   };
@@ -211,7 +214,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
   };
 
   const handleOnSaveSession = () => {
-    handleRequiredInput();
+    // handleRequiredInput();
 
     setIsSaved(true);
 
@@ -253,14 +256,23 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
 
   const handleChangeDate = (date: DateData) => {
     setIsSaved(false);
-    setnameExerciseInput("");
-    setExercises([]);
+    setSessionNameInput("");
+    // setExercises([]);
     setSelectedDate(date.dateString);
     setIsCalendarVisible(!isCalendarVisible);
   };
 
   const handleSaveTemplate = () => {
-    handleRequiredInput();
+    // handleRequiredInput();
+    if (!sessionNameInput.trim()) {
+      Alert.alert("Error", "Please enter a session name");
+      return;
+    }
+
+    if (exercises.length === 0) {
+      Alert.alert("Error", "Please add at least one exercise");
+      return;
+    }
 
     if (!templateSelect) {
       addTemplate({
@@ -274,6 +286,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     }
 
     onClose();
+    router.back();
   };
 
   const handleRequiredInput = () => {
@@ -292,7 +305,11 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     <View className="flex-1">
       <View className="h-full">
         <View className="w-ful mt-2 flex flex-row justify-between">
-          <CloseIconButton onClick={onClose} />
+          <PrevIconButton
+            onClick={() => {
+              router.back();
+            }}
+          />
           <Input className="w-[250px]">
             <InputField
               className="text-center"
@@ -303,8 +320,11 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
           </Input>
           <Button
             className="bg-success-300 focus:bg-success-50"
-            // onPress={handleSaveTemplate}
-            onPress={() => setShowAlertDialog(true)}
+            onPress={handleSaveTemplate}
+            // onPress={() => {
+            //   setShowAlertDialog(true);
+            //   router.navigate("/(tabs)/create", { relativeToDirectory: true });
+            // }}
           >
             <ButtonText>Save</ButtonText>
           </Button>
