@@ -41,7 +41,7 @@ import CloseIconButton from "./ui/CloseButton";
 import { Agenda, Calendar, DateData } from "react-native-calendars";
 import { useStore } from "@/store/useTemplateStore";
 import { clear } from "@/utils/AsyncStorage";
-import { set } from "date-fns";
+import { set, addDays, getDay } from "date-fns";
 import {
   AlertDialog,
   AlertDialogBackdrop,
@@ -67,6 +67,12 @@ interface CreateExerciseProps {
   templateSelect?: Template | null;
 }
 
+interface RepeatOption {
+  enabled: boolean;
+  daysToRepeat: number[];
+  endDate?: string;
+}
+
 // clear();
 
 const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
@@ -90,6 +96,11 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     createDate: new Date().toISOString(),
     name: "",
     sessions: [],
+  });
+
+  const [repeatOptions, setRepeatOptions] = useState<RepeatOption>({
+    enabled: false,
+    daysToRepeat: [],
   });
 
   useEffect(() => {
@@ -213,33 +224,38 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     });
   };
 
-  const handleOnSaveSession = () => {
-    // handleRequiredInput();
-
-    setIsSaved(true);
-
-    const checkSession = templateData.sessions.filter(
-      (session) => session.date === selectedDate
-    );
-
-    if (checkSession.length > 0) {
-      const updateSession = templateData.sessions.map((session) => {
-        if (session.date === selectedDate) {
-          return {
-            ...session,
-            name: sessionNameInput.trim(),
-            exercises: exercises,
-          };
-        }
-        return { ...session };
-      });
-
-      setTemplateData({
-        ...templateData,
-        sessions: updateSession,
-      });
-      return;
+  const generateRepeatedSessions = (
+    baseSession: SessionData
+  ): SessionData[] => {
+    if (!repeatOptions.enabled || repeatOptions.daysToRepeat.length === 0) {
+      return [baseSession];
     }
+
+    const sessions: SessionData[] = [baseSession];
+    const startDate = new Date(baseSession.date);
+    const endDate = repeatOptions.endDate
+      ? new Date(repeatOptions.endDate)
+      : addDays(startDate, 90); // Default to 90 days if no end date
+
+    let currentDate = addDays(startDate, 1);
+
+    while (currentDate <= endDate) {
+      const dayOfWeek = getDay(currentDate);
+      if (repeatOptions.daysToRepeat.includes(dayOfWeek)) {
+        sessions.push({
+          ...baseSession,
+          id: uuidv4(),
+          date: currentDate.toISOString().split("T")[0],
+        });
+      }
+      currentDate = addDays(currentDate, 1);
+    }
+
+    return sessions;
+  };
+
+  const handleOnSaveSession = () => {
+    setIsSaved(true);
 
     const newSession: SessionData = {
       id: uuidv4(),
@@ -248,9 +264,17 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
       exercises: exercises,
     };
 
+    const repeatedSessions = generateRepeatedSessions(newSession);
+
+    // Update template data with all sessions
     setTemplateData({
       ...templateData,
-      sessions: [...templateData.sessions, newSession],
+      sessions: [
+        ...templateData.sessions.filter(
+          (s) => !repeatedSessions.some((rs) => rs.date === s.date)
+        ),
+        ...repeatedSessions,
+      ],
     });
   };
 
@@ -348,6 +372,60 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
               </FormControl>
             </View>
           </View>
+        </View>
+        <View className="mt-3">
+          <FormControl>
+            <FormControlLabel>
+              <FormControlLabelText className="font-psemibold">
+                Repeat Session
+              </FormControlLabelText>
+            </FormControlLabel>
+            <View className="flex-row items-center">
+              <Button
+                variant={repeatOptions.enabled ? "solid" : "outline"}
+                onPress={() =>
+                  setRepeatOptions((prev) => ({
+                    ...prev,
+                    enabled: !prev.enabled,
+                  }))
+                }
+                className="mr-2"
+              >
+                <ButtonText>
+                  {repeatOptions.enabled ? "Repeat On" : "Repeat Off"}
+                </ButtonText>
+              </Button>
+            </View>
+            {repeatOptions.enabled && (
+              <View className="mt-2">
+                <Text className="mb-2 font-psemibold">Repeat on:</Text>
+                <View className="flex-row flex-wrap gap-2">
+                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
+                    (day, index) => (
+                      <Button
+                        key={day}
+                        variant={
+                          repeatOptions.daysToRepeat.includes(index)
+                            ? "solid"
+                            : "outline"
+                        }
+                        onPress={() => {
+                          setRepeatOptions((prev) => ({
+                            ...prev,
+                            daysToRepeat: prev.daysToRepeat.includes(index)
+                              ? prev.daysToRepeat.filter((d) => d !== index)
+                              : [...prev.daysToRepeat, index],
+                          }));
+                        }}
+                      >
+                        <ButtonText>{day}</ButtonText>
+                      </Button>
+                    )
+                  )}
+                </View>
+              </View>
+            )}
+          </FormControl>
         </View>
         <View className="mt-3">
           <Text className="mb-2 font-psemibold text-typography-900">
