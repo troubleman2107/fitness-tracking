@@ -39,6 +39,15 @@ const Create = () => {
   const templates = useStore((state) => state.templates);
   const deleteTemplate = useStore((state) => state.deleteTemplate);
 
+  const handleStartTemplate = (template: Template) => {
+    useStore.setState(() => ({
+      templateSelect: template,
+    }));
+    router.push(`/(tabs)/session`);
+    // setTemplateSelect(template);
+    // setIsCreateTemplate(true);
+  };
+
   const handleCreateTemplate = (template: Template) => {
     router.push(`/create-detail/${template.id}`);
     // setTemplateSelect(template);
@@ -73,14 +82,22 @@ const Create = () => {
   );
 
   const renderHiddenItem = ({ item }: { item: Template }) => (
-    <View className="flex-1 flex-row justify-end bg-slate-200 mb-3 rounded-lg">
+    <View className="flex-1 flex-row justify-end bg-slate-200 mb-3 rounded-lg gap-1">
       {isShowHiddenItem["id"] === item.id && isShowHiddenItem["isHidden"] && (
-        <TouchableOpacity
-          className="bg-red-500 justify-center px-4 rounded-lg"
-          onPress={() => deleteTemplate(item.id)}
-        >
-          <Text className="text-white font-bold">Delete</Text>
-        </TouchableOpacity>
+        <>
+          <TouchableOpacity
+            className="bg-success-500 justify-center items-center rounded-lg w-[70px]"
+            onPress={() => handleStartTemplate(item)}
+          >
+            <Text className="text-white font-bold">Start</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="bg-red-500 justify-center items-center rounded-lg w-[70px]"
+            onPress={() => deleteTemplate(item.id)}
+          >
+            <Text className="text-white font-bold">Delete</Text>
+          </TouchableOpacity>
+        </>
       )}
     </View>
   );
@@ -116,7 +133,7 @@ const Create = () => {
               data={templates}
               renderItem={renderItem}
               renderHiddenItem={renderHiddenItem}
-              rightOpenValue={-75}
+              rightOpenValue={-150}
               disableRightSwipe
               keyExtractor={(item) => item.id}
               onRowOpen={(rowKey) => {

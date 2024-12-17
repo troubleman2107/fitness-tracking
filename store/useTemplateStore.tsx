@@ -8,6 +8,7 @@ interface StoreState {
   sessions: SessionData[];
   exercises: Exercise[];
   sets: Set[];
+  templateSelect: Template | null;
 
   loadData: () => Promise<void>;
   updateEntity: <T>(key: keyof StoreState, data: T[]) => Promise<void>;
@@ -25,7 +26,7 @@ export const useStore = create<StoreState>((set, get) => ({
   sessions: [],
   exercises: [],
   sets: [],
-
+  templateSelect: null,
   // Load all data from AsyncStorage
   loadData: async () => {
     const templates = await loadData<Template[]>("templates");

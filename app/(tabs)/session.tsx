@@ -16,6 +16,7 @@ import {
   ActionsheetDragIndicatorWrapper,
 } from "@/components/ui/actionsheet";
 import { KeyboardStickyView } from "react-native-keyboard-controller";
+import { useStore } from "@/store/useTemplateStore";
 
 const data = require("@/data/data.json");
 
@@ -24,6 +25,7 @@ const Session = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isDateNow, setIsDateNow] = useState(false);
   const [sessionShow, setSessionShow] = useState<SessionData>();
+  const templateSelect = useStore((state) => state.templateSelect);
 
   const {
     isRest,
@@ -34,23 +36,37 @@ const Session = () => {
     doneSet,
   } = useSessionStore();
 
-  const anotherDay = allSessionData?.find((item) => {
-    const toDay = selectedDate;
-    toDay.setHours(0, 0, 0, 0);
-    const dataDay = new Date(item.date);
-    dataDay.setHours(0, 0, 0, 0);
-    return toDay.getTime() === dataDay.getTime();
-  });
+  const getDateWithoutTime = (date: Date) => {
+    const newDate = new Date(date);
+    newDate.setHours(0, 0, 0, 0);
+    return newDate;
+  };
 
   useEffect(() => {
     if (selectedDate) {
-      const toDay = new Date();
-      toDay.setHours(0, 0, 0, 0);
-      const dataDay = selectedDate;
-      dataDay.setHours(0, 0, 0, 0);
+      const toDay = getDateWithoutTime(new Date());
+      const dataDay = getDateWithoutTime(selectedDate);
+      // const setActiveSessionData = {
+      //   ...sessionData,
+      //   exercises: sessionData?.exercises.map((e, i) => {
+      //     if (i === 0) {
+      //       return {
+      //         ...e,
+      //         sets: e.sets.map((s, iSet) => {
+      //           if (iSet === 0) {
+      //             return { ...s, active: true };
+      //           }
+      //           return s;
+      //         }),
+      //       };
+      //     }
+      //     return e;
+      //   }),
+      // };
+      console.log("🚀 ~ useEffect ~ sessionData:", sessionData);
 
       if (toDay.getTime() !== dataDay.getTime()) {
-        sessionData && setSessionShow(anotherDay);
+        sessionData && setSessionShow(sessionData);
         setIsDateNow(false);
       } else {
         sessionData && setSessionShow(sessionData);
@@ -60,28 +76,63 @@ const Session = () => {
   }, [selectedDate, sessionData]);
 
   useEffect(() => {
-    const getSessionData = async () => {
-      const res = await loadData("sessionData");
-      if (res) {
-        const filterToday = res.find((item: SessionData) => {
-          const toDay = selectedDate;
-          toDay.setHours(0, 0, 0, 0);
-          const dataDay = new Date(item.date);
-          dataDay.setHours(0, 0, 0, 0);
-          return toDay.getTime() === dataDay.getTime();
-        });
+    if (templateSelect) {
+      console.log("templateSelect", templateSelect);
+      useSessionStore.setState(() => ({
+        allSessionData: templateSelect.sessions,
+      }));
 
-        useSessionStore.setState(() => ({
-          allSessionData: res,
-        }));
+      useSessionStore.setState(() => ({
+        sessionData: (() => {
+          const foundSession = templateSelect.sessions.find((item) => {
+            const toDay = getDateWithoutTime(new Date());
+            const dataDay = getDateWithoutTime(new Date(item.date));
+            return toDay.getTime() === dataDay.getTime();
+          });
 
-        useSessionStore.setState(() => ({
-          sessionData: filterToday,
-        }));
-      }
-    };
-    getSessionData();
-  }, []);
+          if (foundSession) {
+            return {
+              ...foundSession,
+              exercises: foundSession.exercises.map(
+                (exercise, exerciseIndex) => ({
+                  ...exercise,
+                  sets: exercise.sets.map((set, setIndex) => ({
+                    ...set,
+                    active: exerciseIndex === 0 && setIndex === 0,
+                  })),
+                })
+              ),
+            };
+          }
+          return foundSession;
+        })(),
+      }));
+    }
+  }, [templateSelect]);
+
+  // useEffect(() => {
+  //   const getSessionData = async () => {
+  //     const res = await loadData("sessionData");
+  //     if (res) {
+  //       const filterToday = res.find((item: SessionData) => {
+  //         const toDay = selectedDate;
+  //         toDay.setHours(0, 0, 0, 0);
+  //         const dataDay = new Date(item.date);
+  //         dataDay.setHours(0, 0, 0, 0);
+  //         return toDay.getTime() === dataDay.getTime();
+  //       });
+
+  //       useSessionStore.setState(() => ({
+  //         allSessionData: res,
+  //       }));
+
+  //       useSessionStore.setState(() => ({
+  //         sessionData: filterToday,
+  //       }));
+  //     }
+  //   };
+  //   getSessionData();
+  // }, []);
 
   const handleFinishSet = (infoSet: InitialState["currentSet"]) => {
     if (!infoSet.active && !infoSet.isDone) return;
