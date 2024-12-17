@@ -17,6 +17,14 @@ import {
 } from "@/components/ui/actionsheet";
 import { KeyboardStickyView } from "react-native-keyboard-controller";
 import { useStore } from "@/store/useTemplateStore";
+import {
+  Modal,
+  ModalContent,
+  ModalBody,
+  ModalFooter,
+} from "@/components/ui/modal";
+import { Button, ButtonText } from "@/components/ui/button";
+import { router, useNavigation } from "expo-router";
 
 const data = require("@/data/data.json");
 
@@ -26,9 +34,11 @@ const Session = () => {
   const [isDateNow, setIsDateNow] = useState(false);
   const [sessionShow, setSessionShow] = useState<SessionData>();
   const templateSelect = useStore((state) => state.templateSelect);
-  const [startTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   const [elapsedTime, setElapsedTime] = useState(0);
   const saveTemplate = useStore((state) => state.saveTemplate);
+  const [showExitModal, setShowExitModal] = useState(false);
+  const navigation = useNavigation();
 
   const { isRest, currentSet, sessionData, toggleRest, doneSet } =
     useSessionStore();
@@ -100,9 +110,10 @@ const Session = () => {
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
 
-    console.log("sessionData", sessionData);
-
     if (sessionData) {
+      setStartTime(Date.now());
+      setElapsedTime(0);
+
       intervalId = setInterval(() => {
         setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
       }, 1000);
@@ -111,7 +122,24 @@ const Session = () => {
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
-  }, [sessionData, startTime]);
+  }, [sessionData]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", (e) => {
+      if (!sessionData) {
+        // If no session is active, allow navigation
+        return;
+      }
+
+      // Prevent default navigation
+      e.preventDefault();
+
+      // Show confirmation modal
+      setShowExitModal(true);
+    });
+
+    return unsubscribe;
+  }, [navigation, sessionData]);
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -160,7 +188,7 @@ const Session = () => {
       saveTemplate(updatedTemplate);
     }
 
-    if (!infoSet.isDone) {
+    if (infoSet.isDone) {
       toggleRest && toggleRest();
     }
   };
@@ -218,6 +246,48 @@ const Session = () => {
     toggleRest && toggleRest();
   };
 
+  const handleFinishSession = () => {
+    // Reset timer states
+    setElapsedTime(0);
+    setStartTime(Date.now());
+
+    // Close modal
+    setShowExitModal(false);
+
+    // Reset session store but maintain the template selection
+    useSessionStore.setState(useSessionStore.getInitialState());
+
+    // Reload the session data for the selected date
+    if (templateSelect) {
+      const foundSession = templateSelect.sessions.find((item) => {
+        const toDay = getDateWithoutTime(selectedDate);
+        const dataDay = getDateWithoutTime(new Date(item.date));
+        return toDay.getTime() === dataDay.getTime();
+      });
+
+      if (foundSession) {
+        useSessionStore.setState(() => ({
+          allSessionData: templateSelect.sessions,
+          sessionData: {
+            ...foundSession,
+            exercises: foundSession.exercises.map(
+              (exercise, exerciseIndex) => ({
+                ...exercise,
+                sets: exercise.sets.map((set, setIndex) => ({
+                  ...set,
+                  active: exerciseIndex === 0 && setIndex === 0,
+                })),
+              })
+            ),
+          },
+        }));
+      }
+    }
+
+    // Navigate back
+    router.navigate("/(tabs)/create");
+  };
+
   return (
     <SafeAreaView className="h-full bg-slate-50 flex-1">
       <Agenda
@@ -252,6 +322,13 @@ const Session = () => {
                       <Text className="font-plight text-xl text-slate-600">
                         Time: {formatTime(elapsedTime)}
                       </Text>
+                      <Button
+                        variant="solid"
+                        onPress={() => setShowExitModal(true)}
+                        className="mt-2 bg-red-500"
+                      >
+                        <ButtonText>Finish Session</ButtonText>
+                      </Button>
                     </View>
                   )}
                 </View>
@@ -314,6 +391,27 @@ const Session = () => {
           );
         }}
       />
+      <Modal isOpen={showExitModal} onClose={() => setShowExitModal(false)}>
+        <ModalContent>
+          <ModalBody>
+            <Text className="text-center text-lg">
+              Are you sure you want to finish this session?
+            </Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              variant="outline"
+              onPress={() => setShowExitModal(false)}
+              className="mr-2"
+            >
+              <ButtonText>Cancel</ButtonText>
+            </Button>
+            <Button variant="solid" onPress={handleFinishSession}>
+              <ButtonText>Finish Session</ButtonText>
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </SafeAreaView>
   );
 };
