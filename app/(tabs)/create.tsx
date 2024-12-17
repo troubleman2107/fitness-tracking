@@ -44,14 +44,10 @@ const Create = () => {
       templateSelect: template,
     }));
     router.push(`/(tabs)/session`);
-    // setTemplateSelect(template);
-    // setIsCreateTemplate(true);
   };
 
   const handleCreateTemplate = (template: Template) => {
     router.push(`/create-detail/${template.id}`);
-    // setTemplateSelect(template);
-    // setIsCreateTemplate(true);
   };
 
   const handleOnCloseCreateModal = () => {

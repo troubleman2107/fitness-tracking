@@ -26,15 +26,11 @@ const Session = () => {
   const [isDateNow, setIsDateNow] = useState(false);
   const [sessionShow, setSessionShow] = useState<SessionData>();
   const templateSelect = useStore((state) => state.templateSelect);
+  const [startTime] = useState(Date.now());
+  const [elapsedTime, setElapsedTime] = useState(0);
 
-  const {
-    isRest,
-    currentSet,
-    sessionData,
-    allSessionData,
-    toggleRest,
-    doneSet,
-  } = useSessionStore();
+  const { isRest, currentSet, sessionData, toggleRest, doneSet } =
+    useSessionStore();
 
   const getDateWithoutTime = (date: Date) => {
     const newDate = new Date(date);
@@ -43,41 +39,7 @@ const Session = () => {
   };
 
   useEffect(() => {
-    if (selectedDate) {
-      const toDay = getDateWithoutTime(new Date());
-      const dataDay = getDateWithoutTime(selectedDate);
-      // const setActiveSessionData = {
-      //   ...sessionData,
-      //   exercises: sessionData?.exercises.map((e, i) => {
-      //     if (i === 0) {
-      //       return {
-      //         ...e,
-      //         sets: e.sets.map((s, iSet) => {
-      //           if (iSet === 0) {
-      //             return { ...s, active: true };
-      //           }
-      //           return s;
-      //         }),
-      //       };
-      //     }
-      //     return e;
-      //   }),
-      // };
-      console.log("🚀 ~ useEffect ~ sessionData:", sessionData);
-
-      if (toDay.getTime() !== dataDay.getTime()) {
-        sessionData && setSessionShow(sessionData);
-        setIsDateNow(false);
-      } else {
-        sessionData && setSessionShow(sessionData);
-        setIsDateNow(true);
-      }
-    }
-  }, [selectedDate, sessionData]);
-
-  useEffect(() => {
     if (templateSelect) {
-      console.log("templateSelect", templateSelect);
       useSessionStore.setState(() => ({
         allSessionData: templateSelect.sessions,
       }));
@@ -85,7 +47,7 @@ const Session = () => {
       useSessionStore.setState(() => ({
         sessionData: (() => {
           const foundSession = templateSelect.sessions.find((item) => {
-            const toDay = getDateWithoutTime(new Date());
+            const toDay = getDateWithoutTime(selectedDate);
             const dataDay = getDateWithoutTime(new Date(item.date));
             return toDay.getTime() === dataDay.getTime();
           });
@@ -108,7 +70,7 @@ const Session = () => {
         })(),
       }));
     }
-  }, [templateSelect]);
+  }, [templateSelect, selectedDate]);
 
   // useEffect(() => {
   //   const getSessionData = async () => {
@@ -133,6 +95,30 @@ const Session = () => {
   //   };
   //   getSessionData();
   // }, []);
+
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+
+    console.log("sessionData", sessionData);
+
+    if (sessionData) {
+      intervalId = setInterval(() => {
+        setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+      }, 1000);
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [sessionData, startTime]);
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${String(minutes).padStart(2, "0")}:${String(
+      remainingSeconds
+    ).padStart(2, "0")}`;
+  };
 
   const handleFinishSet = (infoSet: InitialState["currentSet"]) => {
     if (!infoSet.active && !infoSet.isDone) return;
@@ -215,16 +201,16 @@ const Session = () => {
             <SafeAreaView className="h-full bg-slate-50">
               <View className="p-2 h-full">
                 <View className="px-3 pt-3 pb-6 bg-slate-100 mb-[6px] rounded-[20px]">
-                  {sessionShow && (
+                  {sessionData && (
                     <View className="mb-2 flex items-center justify-center gap-2">
                       <Text className="font-pbold text-xl text-slate-600">
-                        {sessionShow && sessionShow.name}
+                        {sessionData && sessionData.name}
                       </Text>
                       <Text className="font-plight text-[14px] text-slate-600">
-                        {`${new Date(sessionShow.date).toLocaleString(
+                        {`${new Date(sessionData.date).toLocaleString(
                           "default",
                           { weekday: "short" }
-                        )} - ${new Date(sessionShow.date).toLocaleDateString(
+                        )} - ${new Date(sessionData.date).toLocaleDateString(
                           "en-GB",
                           {
                             day: "2-digit",
@@ -234,13 +220,13 @@ const Session = () => {
                         )}`}
                       </Text>
                       <Text className="font-plight text-xl text-slate-600">
-                        Time: 04:20
+                        Time: {formatTime(elapsedTime)}
                       </Text>
                     </View>
                   )}
                 </View>
 
-                {sessionShow ? (
+                {sessionData ? (
                   <>
                     <View className="flex-row justify-center">
                       {isRest && (
@@ -259,7 +245,7 @@ const Session = () => {
                       )}
                     </View>
                     <Exercise
-                      session={sessionShow}
+                      session={sessionData}
                       handleFinishSet={handleFinishSet}
                     />
                   </>
