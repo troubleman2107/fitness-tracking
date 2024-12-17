@@ -28,6 +28,7 @@ const Session = () => {
   const templateSelect = useStore((state) => state.templateSelect);
   const [startTime] = useState(Date.now());
   const [elapsedTime, setElapsedTime] = useState(0);
+  const saveTemplate = useStore((state) => state.saveTemplate);
 
   const { isRest, currentSet, sessionData, toggleRest, doneSet } =
     useSessionStore();
@@ -129,7 +130,36 @@ const Session = () => {
   };
 
   const handleRest = (infoSet: InitialState["currentSet"]) => {
+    console.log("🚀 ~ handleRest ~ infoSet:", infoSet);
     doneSet && doneSet(infoSet);
+
+    // Update template store
+    if (templateSelect && sessionData) {
+      const updatedTemplate = {
+        ...templateSelect,
+        sessions: templateSelect.sessions.map((session) => {
+          if (session.date === sessionData.date) {
+            return {
+              ...session,
+              exercises: session.exercises.map((exercise) => ({
+                ...exercise,
+                sets: exercise.sets.map((set) =>
+                  set.id === infoSet.id
+                    ? { ...set, ...infoSet, isDone: true }
+                    : set
+                ),
+              })),
+            };
+          }
+          return session;
+        }),
+      };
+
+      console.log("updatedTemplate", updatedTemplate);
+
+      saveTemplate(updatedTemplate);
+    }
+
     if (!infoSet.isDone) {
       toggleRest && toggleRest();
     }
