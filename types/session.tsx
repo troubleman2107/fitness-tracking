@@ -1,7 +1,6 @@
 export interface Template {
   id: string;
   name: string;
-  exercises: Exercise[];
   sessions: SessionData[];
   createDate: string;
 }
