@@ -10,6 +10,7 @@ export interface SessionData {
   date: string;
   name: string;
   exercises: Exercise[];
+  isDone?: boolean;
 }
 
 export interface Exercise {

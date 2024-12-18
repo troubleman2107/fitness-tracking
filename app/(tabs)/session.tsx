@@ -25,6 +25,8 @@ import {
 } from "@/components/ui/modal";
 import { Button, ButtonText } from "@/components/ui/button";
 import { router, useNavigation } from "expo-router";
+import { useSessionTimer } from "@/hooks/useSessionTimer";
+import { getDateWithoutTime } from "@/utils/dateHelpers";
 
 const data = require("@/data/data.json");
 
@@ -35,7 +37,7 @@ const Session = () => {
   const [sessionShow, setSessionShow] = useState<SessionData>();
   const templateSelect = useStore((state) => state.templateSelect);
   const [startTime, setStartTime] = useState(Date.now());
-  const [elapsedTime, setElapsedTime] = useState(0);
+  // const [elapsedTime, setElapsedTime] = useState(0);
   const saveTemplate = useStore((state) => state.saveTemplate);
   const [showExitModal, setShowExitModal] = useState(false);
   const navigation = useNavigation();
@@ -43,11 +45,14 @@ const Session = () => {
   const { isRest, currentSet, sessionData, toggleRest, doneSet } =
     useSessionStore();
 
-  const getDateWithoutTime = (date: Date) => {
-    const newDate = new Date(date);
-    newDate.setHours(0, 0, 0, 0);
-    return newDate;
-  };
+  const isSessionToday =
+    !!sessionData &&
+    !sessionData.isDone &&
+    getDateWithoutTime(new Date(sessionData.date)).getTime() ===
+      getDateWithoutTime(new Date()).getTime();
+
+  const { elapsedTime, formatTime, resetTimer } =
+    useSessionTimer(isSessionToday);
 
   useEffect(() => {
     if (templateSelect) {
@@ -83,47 +88,6 @@ const Session = () => {
     }
   }, [templateSelect, selectedDate]);
 
-  // useEffect(() => {
-  //   const getSessionData = async () => {
-  //     const res = await loadData("sessionData");
-  //     if (res) {
-  //       const filterToday = res.find((item: SessionData) => {
-  //         const toDay = selectedDate;
-  //         toDay.setHours(0, 0, 0, 0);
-  //         const dataDay = new Date(item.date);
-  //         dataDay.setHours(0, 0, 0, 0);
-  //         return toDay.getTime() === dataDay.getTime();
-  //       });
-
-  //       useSessionStore.setState(() => ({
-  //         allSessionData: res,
-  //       }));
-
-  //       useSessionStore.setState(() => ({
-  //         sessionData: filterToday,
-  //       }));
-  //     }
-  //   };
-  //   getSessionData();
-  // }, []);
-
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout;
-
-    if (sessionData) {
-      setStartTime(Date.now());
-      setElapsedTime(0);
-
-      intervalId = setInterval(() => {
-        setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
-      }, 1000);
-    }
-
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-    };
-  }, [sessionData]);
-
   useEffect(() => {
     const unsubscribe = navigation.addListener("beforeRemove", (e) => {
       if (!sessionData) {
@@ -140,14 +104,6 @@ const Session = () => {
 
     return unsubscribe;
   }, [navigation, sessionData]);
-
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${String(minutes).padStart(2, "0")}:${String(
-      remainingSeconds
-    ).padStart(2, "0")}`;
-  };
 
   const handleFinishSet = (infoSet: InitialState["currentSet"]) => {
     if (!infoSet.active && !infoSet.isDone) return;
@@ -248,8 +204,7 @@ const Session = () => {
 
   const handleFinishSession = () => {
     // Reset timer states
-    setElapsedTime(0);
-    setStartTime(Date.now());
+    resetTimer();
 
     // Close modal
     setShowExitModal(false);
@@ -279,6 +234,7 @@ const Session = () => {
                 })),
               })
             ),
+            isDone: true,
           },
         }));
       }
@@ -319,16 +275,25 @@ const Session = () => {
                           }
                         )}`}
                       </Text>
-                      <Text className="font-plight text-xl text-slate-600">
-                        Time: {formatTime(elapsedTime)}
-                      </Text>
-                      <Button
-                        variant="solid"
-                        onPress={() => setShowExitModal(true)}
-                        className="mt-2 bg-red-500"
-                      >
-                        <ButtonText>Finish Session</ButtonText>
-                      </Button>
+                      {isSessionToday && (
+                        <>
+                          <Text className="font-plight text-xl text-slate-600">
+                            Time: {formatTime(elapsedTime)}
+                          </Text>
+                          <Button
+                            variant="solid"
+                            onPress={() => setShowExitModal(true)}
+                            className="mt-2 bg-red-500"
+                          >
+                            <ButtonText>Finish Session</ButtonText>
+                          </Button>
+                        </>
+                      )}
+                      {sessionData.isDone && (
+                        <Text className="font-plight text-xl text-slate-600">
+                          Session is done
+                        </Text>
+                      )}
                     </View>
                   )}
                 </View>
