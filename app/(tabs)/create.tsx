@@ -35,13 +35,29 @@ const Create = () => {
     id: string;
     isHidden: boolean;
   }>({ id: "", isHidden: false });
+
   const [templateSelect, setTemplateSelect] = useState<Template | null>(null);
   const templates = useStore((state) => state.templates);
   const deleteTemplate = useStore((state) => state.deleteTemplate);
 
   const handleStartTemplate = (template: Template) => {
+    const initTemplate = {
+      ...template,
+      sessions: template.sessions.map((session) => ({
+        ...session,
+        exercises: session.exercises.map((exercise, indexExercise) => ({
+          ...exercise,
+          sets: exercise.sets.map((set, indexSet) => ({
+            ...set,
+            active: indexExercise === 0 && indexSet === 0,
+          })),
+        })),
+      })),
+    };
+    console.log("🚀 ~ handleStartTemplate ~ initTemplate:", initTemplate);
+
     useStore.setState(() => ({
-      templateSelect: template,
+      templateSelect: initTemplate,
     }));
     router.push(`/(tabs)/session`);
   };

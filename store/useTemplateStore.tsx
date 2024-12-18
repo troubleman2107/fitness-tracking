@@ -19,6 +19,8 @@ interface StoreState {
   addSession: (session: SessionData) => void;
   addExercise: (exercise: Exercise) => void;
   addSet: (set: Set) => void;
+  updateSetInTemplate: (setData: Set) => void;
+  progressToNextSet: (exercises: Exercise[]) => void;
 }
 
 export const useStore = create<StoreState>((set, get) => ({
@@ -93,5 +95,51 @@ export const useStore = create<StoreState>((set, get) => ({
     const updatedSets = [...sets, fSet];
     set({ sets: updatedSets });
     saveData("sets", updatedSets);
+  },
+
+  updateSetInTemplate: (setData: Set) => {
+    const templateSelect = get().templateSelect;
+    const getTemplates = get().templates;
+    if (!templateSelect || !getTemplates) return;
+
+    const updatedTemplatesSelect = {
+      ...templateSelect,
+      sessions: templateSelect.sessions.map((session) => ({
+        ...session,
+        exercises: session.exercises.map((exercise) => ({
+          ...exercise,
+          sets: exercise.sets.map((set) =>
+            set.id === setData.id ? { ...set, ...setData } : set
+          ),
+        })),
+      })),
+    };
+
+    const updatedTemplates = getTemplates.map((t) => {
+      if (t.id === templateSelect.id) {
+        return updatedTemplatesSelect;
+      }
+      return t;
+    });
+
+    set({ templateSelect: updatedTemplatesSelect });
+    set({ templates: updatedTemplates });
+    saveData("templates", updatedTemplates);
+  },
+
+  progressToNextSet: (exercises: Exercise[]) => {
+    const templateSelect = get().templateSelect;
+    if (!templateSelect) return;
+
+    const updatedTemplateSelect = {
+      ...templateSelect,
+      sessions: templateSelect.sessions.map((session) => ({
+        ...session,
+        exercises: session.exercises.map((exercise) => ({
+          ...exercise,
+          sets: exercise.sets.map((set) => ({ ...set, active: false })),
+        })),
+      })),
+    };
   },
 }));

@@ -1,7 +1,7 @@
 import { SafeAreaView, Text, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import Exercise from "@/components/Exercise";
+import Exercise from "@/components/Exercises";
 import ModalSetOfRep from "@/components/ModalSetOfRep";
 import CountDownRest from "@/components/CountDownRest";
 import { loadData } from "@/utils/AsyncStorage";
@@ -27,20 +27,24 @@ import { Button, ButtonText } from "@/components/ui/button";
 import { router, useNavigation } from "expo-router";
 import { useSessionTimer } from "@/hooks/useSessionTimer";
 import { getDateWithoutTime } from "@/utils/dateHelpers";
+import Exercises from "@/components/Exercises";
 
 const data = require("@/data/data.json");
 
 const Session = () => {
   const [isFinishSet, setIsFinishSet] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [isDateNow, setIsDateNow] = useState(false);
-  const [sessionShow, setSessionShow] = useState<SessionData>();
   const templateSelect = useStore((state) => state.templateSelect);
-  const [startTime, setStartTime] = useState(Date.now());
-  // const [elapsedTime, setElapsedTime] = useState(0);
   const saveTemplate = useStore((state) => state.saveTemplate);
   const [showExitModal, setShowExitModal] = useState(false);
   const navigation = useNavigation();
+
+  const sessionToday = templateSelect?.sessions.find((session) => {
+    const toDay = getDateWithoutTime(selectedDate);
+    const dataDay = getDateWithoutTime(new Date(session.date));
+    return toDay.getTime() === dataDay.getTime();
+  });
+  console.log("🚀 ~ sessionToday ~ sessionToday:", sessionToday);
 
   const { isRest, currentSet, sessionData, toggleRest, doneSet } =
     useSessionStore();
@@ -51,40 +55,38 @@ const Session = () => {
     getDateWithoutTime(new Date(sessionData.date)).getTime() ===
       getDateWithoutTime(new Date()).getTime();
 
-  const { elapsedTime, formatTime, resetTimer } =
-    useSessionTimer(isSessionToday);
+  // const { elapsedTime, formatTime, resetTimer } =
+  //   useSessionTimer(isSessionToday);
 
   useEffect(() => {
     if (templateSelect) {
-      useSessionStore.setState(() => ({
-        allSessionData: templateSelect.sessions,
-      }));
-
-      useSessionStore.setState(() => ({
-        sessionData: (() => {
-          const foundSession = templateSelect.sessions.find((item) => {
-            const toDay = getDateWithoutTime(selectedDate);
-            const dataDay = getDateWithoutTime(new Date(item.date));
-            return toDay.getTime() === dataDay.getTime();
-          });
-
-          if (foundSession) {
-            return {
-              ...foundSession,
-              exercises: foundSession.exercises.map(
-                (exercise, exerciseIndex) => ({
-                  ...exercise,
-                  sets: exercise.sets.map((set, setIndex) => ({
-                    ...set,
-                    active: exerciseIndex === 0 && setIndex === 0,
-                  })),
-                })
-              ),
-            };
-          }
-          return foundSession;
-        })(),
-      }));
+      // useSessionStore.setState(() => ({
+      //   allSessionData: templateSelect.sessions,
+      // }));
+      // useSessionStore.setState(() => ({
+      //   sessionData: (() => {
+      //     const foundSession = templateSelect.sessions.find((item) => {
+      //       const toDay = getDateWithoutTime(selectedDate);
+      //       const dataDay = getDateWithoutTime(new Date(item.date));
+      //       return toDay.getTime() === dataDay.getTime();
+      //     });
+      //     if (foundSession) {
+      //       return {
+      //         ...foundSession,
+      //         exercises: foundSession.exercises.map(
+      //           (exercise, exerciseIndex) => ({
+      //             ...exercise,
+      //             sets: exercise.sets.map((set, setIndex) => ({
+      //               ...set,
+      //               active: exerciseIndex === 0 && setIndex === 0,
+      //             })),
+      //           })
+      //         ),
+      //       };
+      //     }
+      //     return foundSession;
+      //   })(),
+      // }));
     }
   }, [templateSelect, selectedDate]);
 
@@ -114,7 +116,6 @@ const Session = () => {
   };
 
   const handleRest = (infoSet: InitialState["currentSet"]) => {
-    console.log("🚀 ~ handleRest ~ infoSet:", infoSet);
     doneSet && doneSet(infoSet);
 
     // Update template store
@@ -139,8 +140,6 @@ const Session = () => {
         }),
       };
 
-      console.log("updatedTemplate", updatedTemplate);
-
       saveTemplate(updatedTemplate);
     }
 
@@ -149,9 +148,9 @@ const Session = () => {
     }
   };
 
-  const handleStopRest = (param: boolean) => {
-    if (sessionData) {
-      const updatedSession = { ...sessionData }; // Clone the session object to avoid mutation
+  const handleStopRest = () => {
+    if (sessionToday) {
+      const updatedSession = { ...sessionToday }; // Clone the session object to avoid mutation
 
       const allSets: Set[] = [];
 
@@ -193,9 +192,22 @@ const Session = () => {
           ],
         };
       });
+      console.log(
+        "🚀 ~ updatedSession.exercises=updatedSession.exercises.map ~ updatedSession:",
+        updatedSession
+      );
 
-      useSessionStore.setState(() => ({
-        sessionData: updatedSession,
+      useStore.setState((state) => ({
+        ...state,
+        templateSelect: {
+          ...state.templateSelect!,
+          sessions: state.templateSelect!.sessions.map((session) => {
+            if (session.id === updatedSession.id) {
+              return updatedSession;
+            }
+            return session;
+          }),
+        },
       }));
     }
 
@@ -204,7 +216,7 @@ const Session = () => {
 
   const handleFinishSession = () => {
     // Reset timer states
-    resetTimer();
+    // resetTimer();
 
     // Close modal
     setShowExitModal(false);
@@ -275,7 +287,7 @@ const Session = () => {
                           }
                         )}`}
                       </Text>
-                      {isSessionToday && (
+                      {/* {isSessionToday && (
                         <>
                           <Text className="font-plight text-xl text-slate-600">
                             Time: {formatTime(elapsedTime)}
@@ -288,7 +300,7 @@ const Session = () => {
                             <ButtonText>Finish Session</ButtonText>
                           </Button>
                         </>
-                      )}
+                      )} */}
                       {sessionData.isDone && (
                         <Text className="font-plight text-xl text-slate-600">
                           Session is done
@@ -298,27 +310,12 @@ const Session = () => {
                   )}
                 </View>
 
-                {sessionData ? (
+                {sessionToday ? (
                   <>
-                    <View className="flex-row justify-center">
-                      {isRest && (
-                        <>
-                          <Text className="font-plight text-xl text-slate-600">
-                            Rest:{" "}
-                          </Text>
-                          <CountDownRest
-                            seconds={
-                              currentSet.restTime ? currentSet.restTime : 0
-                            }
-                            isRunning={isRest}
-                            onStop={handleStopRest}
-                          />
-                        </>
-                      )}
-                    </View>
-                    <Exercise
-                      session={sessionData}
+                    <Exercises
+                      exercises={sessionToday?.exercises || []}
                       handleFinishSet={handleFinishSet}
+                      handleStopRest={handleStopRest}
                     />
                   </>
                 ) : (

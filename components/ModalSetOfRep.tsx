@@ -55,6 +55,7 @@ const ModalSetOfRep: React.FunctionComponent<ModalSetOfRepProps> = ({
     }
 
     if (handleRest) {
+      console.log("infoSet", infoSet);
       handleRest(infoSet);
     }
     toggle();
