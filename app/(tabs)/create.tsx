@@ -8,8 +8,9 @@ import {
   TouchableHighlight,
   TouchableOpacity,
   View,
+  Image,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import CreateExercise from "@/components/CreateExercise";
 import {
@@ -27,6 +28,12 @@ import { SwipeListView } from "react-native-swipe-list-view";
 import { Animated } from "react-native";
 import { Template } from "@/types/session";
 import { Link, useRouter } from "expo-router";
+import { supabase } from "@/src/lib/supabaseClient";
+
+interface UserInfo {
+  full_name: string | null;
+  avatar_url: string | null;
+}
 
 const Create = () => {
   const router = useRouter();
@@ -39,6 +46,28 @@ const Create = () => {
   const [templateSelect, setTemplateSelect] = useState<Template | null>(null);
   const templates = useStore((state) => state.templates);
   const deleteTemplate = useStore((state) => state.deleteTemplate);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+
+  useEffect(() => {
+    const getUserInfo = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        const { data, error } = await supabase
+          .from("users")
+          .select("full_name, avatar_url")
+          .eq("id", user.id)
+          .single();
+
+        if (data && !error) {
+          setUserInfo(data);
+        }
+      }
+    };
+
+    getUserInfo();
+  }, []);
 
   const handleStartTemplate = (template: Template) => {
     const initTemplate = {
@@ -69,6 +98,19 @@ const Create = () => {
   const handleOnCloseCreateModal = () => {
     setIsCreateTemplate(false);
     setTemplateSelect(null);
+  };
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Error logging out:", error);
+        return;
+      }
+      router.replace("/login");
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
   };
 
   const renderItem = ({ item }: { item: Template }) => (
@@ -119,27 +161,47 @@ const Create = () => {
       <SafeAreaView className="bg-slate-50 flex-1">
         <View className="p-2">
           <View className="p-4 bg-slate-100 mb-[6px] rounded-[20px] h-full">
+            <View className="flex flex-row items-center mb-6">
+              <View className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 mr-3">
+                {userInfo?.avatar_url ? (
+                  <Image
+                    source={{ uri: userInfo.avatar_url }}
+                    className="w-full h-full"
+                  />
+                ) : (
+                  <View className="w-full h-full bg-primary-200 items-center justify-center">
+                    <Text className="text-primary-700 text-lg font-bold">
+                      {userInfo?.full_name?.[0]?.toUpperCase() || "?"}
+                    </Text>
+                  </View>
+                )}
+              </View>
+              <View className="flex-1">
+                <Text className="text-lg font-pbold text-slate-800">
+                  {userInfo?.full_name || "User"}
+                </Text>
+                <Text className="text-sm text-slate-500">Welcome back!</Text>
+              </View>
+            </View>
+
             <View className="flex flex-row justify-between items-center mb-10">
               <Text className="font-pbold text-xl text-slate-600">
                 Template
               </Text>
-              <Link
-                className="bg-primary-500 py-2 px-4 rounded-lg text-slate-50 font-pbold"
-                href={"/create-detail/new"}
-              >
-                Create
-              </Link>
-              {/* <Button
-                // onPress={() => {
-                //   setIsCreateTemplate(true);
-                // }}
-                onPress={() => {
-                  // router.push('(tabs)/create-detail/create');
-                  router.push("");
-                }}
-              >
-                <ButtonText>Create</ButtonText>
-              </Button> */}
+              <View className="flex flex-row gap-2">
+                <TouchableOpacity
+                  className="bg-red-500 py-2 px-4 rounded-lg"
+                  onPress={handleLogout}
+                >
+                  <Text className="text-white font-pbold">Logout</Text>
+                </TouchableOpacity>
+                <Link
+                  className="bg-primary-500 py-2 px-4 rounded-lg text-slate-50 font-pbold"
+                  href={"/create-detail/new"}
+                >
+                  Create
+                </Link>
+              </View>
             </View>
             <SwipeListView
               data={templates}

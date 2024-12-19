@@ -17,7 +17,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.blackcat7013.fitnesstracking"
+      "package": "com.blackcat7013.fitnesstracking",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",

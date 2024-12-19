@@ -1,6 +1,8 @@
 PODS:
   - boost (1.84.0)
   - DoubleConversion (1.1.6)
+  - EXApplication (6.0.1):
+    - ExpoModulesCore
   - EXConstants (17.0.3):
     - ExpoModulesCore
   - Expo (52.0.11):
@@ -8,6 +10,8 @@ PODS:
   - ExpoAsset (11.0.1):
     - ExpoModulesCore
   - ExpoBlur (14.0.1):
+    - ExpoModulesCore
+  - ExpoCrypto (14.0.1):
     - ExpoModulesCore
   - ExpoFileSystem (18.0.4):
     - ExpoModulesCore
@@ -1914,10 +1918,12 @@ PODS:
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
+  - EXApplication (from `../node_modules/expo-application/ios`)
   - EXConstants (from `../node_modules/expo-constants/ios`)
   - Expo (from `../node_modules/expo`)
   - ExpoAsset (from `../node_modules/expo-asset/ios`)
   - ExpoBlur (from `../node_modules/expo-blur/ios`)
+  - ExpoCrypto (from `../node_modules/expo-crypto/ios`)
   - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
   - ExpoFont (from `../node_modules/expo-font/ios`)
   - ExpoHaptics (from `../node_modules/expo-haptics/ios`)
@@ -2012,6 +2018,8 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/third-party-podspecs/boost.podspec"
   DoubleConversion:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
+  EXApplication:
+    :path: "../node_modules/expo-application/ios"
   EXConstants:
     :path: "../node_modules/expo-constants/ios"
   Expo:
@@ -2020,6 +2028,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-asset/ios"
   ExpoBlur:
     :path: "../node_modules/expo-blur/ios"
+  ExpoCrypto:
+    :path: "../node_modules/expo-crypto/ios"
   ExpoFileSystem:
     :path: "../node_modules/expo-file-system/ios"
   ExpoFont:
@@ -2189,10 +2199,12 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   boost: 1dca942403ed9342f98334bf4c3621f011aa7946
   DoubleConversion: f16ae600a246532c4020132d54af21d0ddb2a385
+  EXApplication: e1ad9c950c98b2b134578092c948b10b403f3ea7
   EXConstants: dd2fe64c6cdb1383b694c309a63028a8e9f2be6d
   Expo: 148aac4ce0da148c63447d09ae41ddb153f35506
   ExpoAsset: 8138f2a9ec55ae1ad7c3871448379f7d97692d15
   ExpoBlur: 562b3da84d3cd79016c411671eaf71a404266415
+  ExpoCrypto: 8465f71eb3798c194c0a509d4a76e5c429656d83
   ExpoFileSystem: dc2679a2b5d4c465ca881129074da95faee943d5
   ExpoFont: 7522d869d84ee2ee8093ee997fef5b86f85d856b
   ExpoHaptics: e636188d1d5f7ccb79f3c1bfab47aaf5a1768c73
