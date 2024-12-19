@@ -11,6 +11,7 @@ import {
   TextInputChangeEventData,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -53,6 +54,8 @@ import {
 import { Heading } from "./ui/heading";
 import PrevIconButton from "./ui/PrevButton";
 import { useRouter } from "expo-router";
+import { supabase } from "@/src/lib/supabaseClient";
+import { templateService } from "@/src/lib/services/templateService";
 
 interface infoSetsForm {
   id: string;
@@ -89,7 +92,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
 
   const [isSaved, setIsSaved] = useState(false);
   const addTemplate = useStore((state) => state.addTemplate);
-  const saveTemplate = useStore((state) => state.saveTemplate);
+  // const saveTemplate = useStore((state) => state.saveTemplate);
 
   const [templateData, setTemplateData] = useState<Template>({
     id: "",
@@ -102,6 +105,10 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     enabled: false,
     daysToRepeat: [],
   });
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchTemplates = useStore((state) => state.fetchTemplates);
 
   useEffect(() => {
     // Set the initial selected date to today
@@ -286,8 +293,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     setIsCalendarVisible(!isCalendarVisible);
   };
 
-  const handleSaveTemplate = () => {
-    // handleRequiredInput();
+  const handleSaveTemplate = async () => {
     if (!sessionNameInput.trim()) {
       Alert.alert("Error", "Please enter a session name");
       return;
@@ -298,19 +304,41 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
       return;
     }
 
-    if (!templateSelect) {
-      addTemplate({
-        ...templateData,
-        id: uuidv4(),
-      });
-    } else {
-      saveTemplate({
-        ...templateData,
-      });
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user?.id) {
+      Alert.alert("Error", "You must be logged in");
+      return;
     }
 
-    onClose();
-    router.back();
+    try {
+      setIsLoading(true);
+
+      await templateService.saveFullTemplate(
+        templateData.name,
+        user.id,
+        templateData.sessions,
+        exercises
+      );
+
+      await fetchTemplates();
+
+      Alert.alert("Success", "Template saved successfully!");
+      onClose();
+      router.back();
+    } catch (error) {
+      console.error("Error saving template:", error);
+      Alert.alert(
+        "Error",
+        error instanceof Error
+          ? error.message
+          : "Failed to save template. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleRequiredInput = () => {
@@ -345,12 +373,9 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
           <Button
             className="bg-success-300 focus:bg-success-50"
             onPress={handleSaveTemplate}
-            // onPress={() => {
-            //   setShowAlertDialog(true);
-            //   router.navigate("/(tabs)/create", { relativeToDirectory: true });
-            // }}
+            isDisabled={isLoading}
           >
-            <ButtonText>Save</ButtonText>
+            <ButtonText>{isLoading ? "Saving..." : "Save"}</ButtonText>
           </Button>
         </View>
         <View className="w-full mt-2">
@@ -655,6 +680,14 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {isLoading && (
+        <View
+          style={StyleSheet.absoluteFill}
+          className="bg-black/30 items-center justify-center"
+        >
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
+      )}
     </View>
   );
 };

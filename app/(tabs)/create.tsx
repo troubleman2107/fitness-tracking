@@ -29,6 +29,7 @@ import { Animated } from "react-native";
 import { Template } from "@/types/session";
 import { Link, useRouter } from "expo-router";
 import { supabase } from "@/src/lib/supabaseClient";
+import { useFocusEffect } from "@react-navigation/native";
 
 interface UserInfo {
   full_name: string | null;
@@ -47,6 +48,7 @@ const Create = () => {
   const templates = useStore((state) => state.templates);
   const deleteTemplate = useStore((state) => state.deleteTemplate);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const fetchTemplates = useStore((state) => state.fetchTemplates);
 
   useEffect(() => {
     const getUserInfo = async () => {
@@ -69,6 +71,12 @@ const Create = () => {
     getUserInfo();
   }, []);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchTemplates();
+    }, [])
+  );
+
   const handleStartTemplate = (template: Template) => {
     const initTemplate = {
       ...template,
@@ -85,9 +93,9 @@ const Create = () => {
     };
     console.log("🚀 ~ handleStartTemplate ~ initTemplate:", initTemplate);
 
-    useStore.setState(() => ({
-      templateSelect: initTemplate,
-    }));
+    // useStore.setState(() => ({
+    //   templateSelect: initTemplate,
+    // }));
     router.push(`/(tabs)/session`);
   };
 

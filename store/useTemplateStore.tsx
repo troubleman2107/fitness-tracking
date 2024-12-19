@@ -1,145 +1,88 @@
 import { create } from "zustand";
-import { Template, SessionData, Exercise, Set } from "@/types/session";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { loadData, saveData } from "@/utils/AsyncStorage";
+import { Database } from "../src/types/database.types";
+import { supabaseService } from "@/src/services/supabaseService";
+
+type Template = Database["public"]["Tables"]["templates"]["Row"] & {
+  sessions?: (Database["public"]["Tables"]["sessions"]["Row"] & {
+    exercises?: (Database["public"]["Tables"]["exercises"]["Row"] & {
+      sets?: Database["public"]["Tables"]["sets"]["Row"][];
+    })[];
+  })[];
+};
 
 interface StoreState {
   templates: Template[];
-  sessions: SessionData[];
-  exercises: Exercise[];
-  sets: Set[];
-  templateSelect: Template | null;
+  loading: boolean;
+  error: string | null;
 
-  loadData: () => Promise<void>;
-  updateEntity: <T>(key: keyof StoreState, data: T[]) => Promise<void>;
-
-  addTemplate: (template: Template) => void;
-  saveTemplate: (template: Template) => void;
-  deleteTemplate: (id: string) => void;
-  addSession: (session: SessionData) => void;
-  addExercise: (exercise: Exercise) => void;
-  addSet: (set: Set) => void;
-  updateSetInTemplate: (setData: Set) => void;
-  progressToNextSet: (exercises: Exercise[]) => void;
+  fetchTemplates: () => Promise<void>;
+  addTemplate: (
+    template: Database["public"]["Tables"]["templates"]["Insert"]
+  ) => Promise<Template | undefined>;
+  updateTemplate: (
+    id: string,
+    template: Database["public"]["Tables"]["templates"]["Update"]
+  ) => Promise<void>;
+  deleteTemplate: (id: string) => Promise<void>;
 }
 
 export const useStore = create<StoreState>((set, get) => ({
   templates: [],
-  sessions: [],
-  exercises: [],
-  sets: [],
-  templateSelect: null,
-  // Load all data from AsyncStorage
-  loadData: async () => {
-    const templates = await loadData<Template[]>("templates");
-    const sessions = await loadData<SessionData[]>("sessions");
-    const exercises = await loadData<Exercise[]>("exercises");
-    const sets = await loadData<Set[]>("sets");
+  loading: false,
+  error: null,
 
-    set({
-      templates: templates || [],
-      sessions: sessions || [],
-      exercises: exercises || [],
-      sets: sets || [],
-    });
+  fetchTemplates: async () => {
+    set({ loading: true });
+    try {
+      const templates = await supabaseService.getTemplates();
+      set({ templates, error: null });
+    } catch (error) {
+      set({ error: (error as Error).message });
+    } finally {
+      set({ loading: false });
+    }
   },
 
-  // Update a specific entity and save it to AsyncStorage
-  updateEntity: async <T,>(key: keyof StoreState, data: T[]) => {
-    set({ [key]: data } as Partial<StoreState>);
-    await saveData(key, data);
+  addTemplate: async (template) => {
+    try {
+      const newTemplate = await supabaseService.createTemplate(template);
+      set((state) => ({
+        templates: [...state.templates, newTemplate],
+        error: null,
+      }));
+      return newTemplate;
+    } catch (error) {
+      set({ error: (error as Error).message });
+      return undefined;
+    }
   },
 
-  // Actions
-  addTemplate: (template) => {
-    const templates = get().templates;
-    const updatedTemplates = [...templates, template];
-    set({ templates: updatedTemplates });
-    saveData("templates", updatedTemplates);
+  updateTemplate: async (id, template) => {
+    try {
+      const updatedTemplate = await supabaseService.updateTemplate(
+        id,
+        template
+      );
+      set((state) => ({
+        templates: state.templates.map((t) =>
+          t.id === id ? updatedTemplate : t
+        ),
+        error: null,
+      }));
+    } catch (error) {
+      set({ error: (error as Error).message });
+    }
   },
 
-  deleteTemplate: (id) => {
-    const templates = get().templates.filter((template) => template.id !== id);
-    set({ templates });
-    saveData("templates", templates);
-  },
-
-  saveTemplate: (template: Template) => {
-    const templates = get().templates;
-    const updatedTemplates = templates.map((t) => {
-      if (t.id === template.id) {
-        return template;
-      }
-      return t;
-    });
-    set({ templates: updatedTemplates });
-    saveData("templates", updatedTemplates);
-  },
-
-  addSession: (session) => {
-    const sessions = get().sessions;
-    const updatedSessions = [...sessions, session];
-    set({ sessions: updatedSessions });
-    saveData("sessions", updatedSessions);
-  },
-
-  addExercise: (exercise) => {
-    const exercises = get().exercises;
-    const updatedExercises = [...exercises, exercise];
-    set({ exercises: updatedExercises });
-    saveData("exercises", updatedExercises);
-  },
-
-  addSet: (fSet) => {
-    const sets = get().sets;
-    const updatedSets = [...sets, fSet];
-    set({ sets: updatedSets });
-    saveData("sets", updatedSets);
-  },
-
-  updateSetInTemplate: (setData: Set) => {
-    const templateSelect = get().templateSelect;
-    const getTemplates = get().templates;
-    if (!templateSelect || !getTemplates) return;
-
-    const updatedTemplatesSelect = {
-      ...templateSelect,
-      sessions: templateSelect.sessions.map((session) => ({
-        ...session,
-        exercises: session.exercises.map((exercise) => ({
-          ...exercise,
-          sets: exercise.sets.map((set) =>
-            set.id === setData.id ? { ...set, ...setData } : set
-          ),
-        })),
-      })),
-    };
-
-    const updatedTemplates = getTemplates.map((t) => {
-      if (t.id === templateSelect.id) {
-        return updatedTemplatesSelect;
-      }
-      return t;
-    });
-
-    set({ templateSelect: updatedTemplatesSelect });
-    set({ templates: updatedTemplates });
-    saveData("templates", updatedTemplates);
-  },
-
-  progressToNextSet: (exercises: Exercise[]) => {
-    const templateSelect = get().templateSelect;
-    if (!templateSelect) return;
-
-    const updatedTemplateSelect = {
-      ...templateSelect,
-      sessions: templateSelect.sessions.map((session) => ({
-        ...session,
-        exercises: session.exercises.map((exercise) => ({
-          ...exercise,
-          sets: exercise.sets.map((set) => ({ ...set, active: false })),
-        })),
-      })),
-    };
+  deleteTemplate: async (id) => {
+    try {
+      await supabaseService.deleteTemplate(id);
+      set((state) => ({
+        templates: state.templates.filter((t) => t.id !== id),
+        error: null,
+      }));
+    } catch (error) {
+      set({ error: (error as Error).message });
+    }
   },
 }));
