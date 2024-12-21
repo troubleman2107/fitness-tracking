@@ -74,6 +74,23 @@ class TemplateService {
     if (error) throw new Error(`Failed to create sets: ${error.message}`);
   }
 
+  async saveSet(exerciseId: string, set: Set, userId: string): Promise<DbSet> {
+    const { data, error } = await supabase
+      .from("sets")
+      .update({
+        id: set.id,
+        exercise_id: exerciseId,
+        weight: set.weight,
+        reps: set.reps,
+        rest_time: set.restTime,
+      })
+      .select()
+      .single();
+
+    if (error) throw new Error(`Failed to save set: ${error.message}`);
+    return data;
+  }
+
   async saveFullTemplate(
     templateName: string,
     userId: string,

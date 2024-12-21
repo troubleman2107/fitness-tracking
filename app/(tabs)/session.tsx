@@ -24,7 +24,7 @@ import {
   ModalFooter,
 } from "@/components/ui/modal";
 import { Button, ButtonText } from "@/components/ui/button";
-import { router, useNavigation } from "expo-router";
+import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import { useSessionTimer } from "@/hooks/useSessionTimer";
 import { getDateWithoutTime } from "@/utils/dateHelpers";
 import Exercises from "@/components/Exercises";
@@ -34,16 +34,193 @@ const data = require("@/data/data.json");
 const Session = () => {
   const [isFinishSet, setIsFinishSet] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const templates = useStore((state) => state.templates);
+  const { templateId } = useLocalSearchParams();
+  const templateById = templates.find((template) => {
+    return template.id === templateId;
+  });
+  //Active first exercise of session today
+  const initialTemplate = {
+    ...templateById,
+    sessions: templateById?.sessions?.map((session) => {
+      if (
+        getDateWithoutTime(new Date(session.date)).getTime() ===
+        getDateWithoutTime(selectedDate).getTime()
+      ) {
+        return {
+          ...session,
+          exercises: session?.exercises?.map((exercise, indexExercise) => ({
+            ...exercise,
+            sets: exercise?.sets?.map((set, indexSet) => ({
+              ...set,
+              active: indexExercise === 0 && indexSet === 0,
+            })),
+          })),
+        };
+      }
+      return { ...session };
+    }),
+  };
+
+  const [sessions, setSessions] = useState(initialTemplate.sessions);
+  const [sessionSelect, setSessionSelect] = useState<SessionData | null>(null);
+
+  useEffect(() => {
+    const foundSession = sessions?.find((session) => {
+      const selectDay = getDateWithoutTime(selectedDate);
+      const dataDay = getDateWithoutTime(new Date(session.date));
+      return selectDay.getTime() === dataDay.getTime();
+    });
+
+    setSessionSelect(
+      foundSession
+        ? ({
+            ...foundSession,
+            exercises:
+              foundSession.exercises?.map((exercise) => ({
+                ...exercise,
+                sets: exercise.sets || [],
+              })) || [],
+          } as SessionData)
+        : null
+    );
+  }, [selectedDate]);
+
+  return (
+    <SafeAreaView className="h-full bg-slate-50 flex-1">
+      <Agenda
+        onDayPress={(date: DateData) => {
+          setSelectedDate(new Date(date.dateString));
+        }}
+        // theme={{ calendarBackground: "#ecfdf5", agendaKnobColor: "green" }}
+        items={{ items: [] }}
+        renderEmptyData={() => {
+          return (
+            <SafeAreaView className="h-full bg-slate-50">
+              <View className="p-2 h-full">
+                <View className="px-3 pt-3 pb-6 bg-slate-100 mb-[6px] rounded-[20px]">
+                  {sessionSelect && (
+                    <View className="mb-2 flex items-center justify-center gap-2">
+                      <Text className="font-pbold text-xl text-slate-600">
+                        {sessionSelect && sessionSelect.name}
+                      </Text>
+                      <Text className="font-plight text-[14px] text-slate-600">
+                        {`${new Date(sessionSelect.date).toLocaleString(
+                          "default",
+                          { weekday: "short" }
+                        )} - ${new Date(sessionSelect.date).toLocaleDateString(
+                          "en-GB",
+                          {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          }
+                        )}`}
+                      </Text>
+                      {/* {isSessionToday && (
+                        <>
+                          <Text className="font-plight text-xl text-slate-600">
+                            Time: {formatTime(elapsedTime)}
+                          </Text>
+                          <Button
+                            variant="solid"
+                            onPress={() => setShowExitModal(true)}
+                            className="mt-2 bg-red-500"
+                          >
+                            <ButtonText>Finish Session</ButtonText>
+                          </Button>
+                        </>
+                      )} */}
+                      {/* {sessionSelect.isDone && (
+                        <Text className="font-plight text-xl text-slate-600">
+                          Session is done
+                        </Text>
+                      )} */}
+                    </View>
+                  )}
+                </View>
+                {sessionSelect ? (
+                  <>
+                    <Exercises
+                      exercises={
+                        sessionSelect?.exercises?.map((exercise) => ({
+                          ...exercise,
+                          sets: exercise.sets || [],
+                        })) || []
+                      }
+                      handleFinishSet={handleFinishSet}
+                      handleStopRest={handleStopRest}
+                    />
+                  </>
+                ) : (
+                  <View className="h-full flex flex-1 items-center mt-20">
+                    <Text className="font-plight text-xl">No exercisess.</Text>
+                  </View>
+                )}
+              </View>
+              <Actionsheet
+                useRNModal={true}
+                snapPoints={[25]}
+                isOpen={isFinishSet}
+                onClose={() => setIsFinishSet(false)}
+              >
+                <KeyboardStickyView offset={{ closed: 0, opened: 20 }}>
+                  <ActionsheetBackdrop
+                    onPress={() => {
+                      setIsFinishSet(false);
+                    }}
+                  />
+                  <ActionsheetContent className="p-2">
+                    <ActionsheetDragIndicatorWrapper>
+                      <ActionsheetDragIndicator />
+                    </ActionsheetDragIndicatorWrapper>
+                    <ModalSetOfRep
+                      infoSet={currentSet}
+                      toggle={() => setIsFinishSet(false)}
+                      handleRest={handleRest}
+                    />
+                  </ActionsheetContent>
+                </KeyboardStickyView>
+              </Actionsheet>
+              <StatusBar style="light" backgroundColor="#161622" />
+            </SafeAreaView>
+          );
+        }}
+      />
+      <Modal isOpen={false} onClose={() => setShowExitModal(false)}>
+        <ModalContent>
+          <ModalBody>
+            <Text className="text-center text-lg">
+              Are you sure you want to finish this session?
+            </Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              variant="outline"
+              onPress={() => setShowExitModal(false)}
+              className="mr-2"
+            >
+              <ButtonText>Cancel</ButtonText>
+            </Button>
+            <Button variant="solid" onPress={() => {}}>
+              <ButtonText>Finish Session</ButtonText>
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </SafeAreaView>
+  );
+
   const templateSelect = useStore((state) => state.templateSelect);
   const saveTemplate = useStore((state) => state.saveTemplate);
   const [showExitModal, setShowExitModal] = useState(false);
   const navigation = useNavigation();
 
-  const sessionToday = templateSelect?.sessions.find((session) => {
-    const toDay = getDateWithoutTime(selectedDate);
-    const dataDay = getDateWithoutTime(new Date(session.date));
-    return toDay.getTime() === dataDay.getTime();
-  });
+  // const sessionToday = templateSelect?.sessions.find((session) => {
+  //   const toDay = getDateWithoutTime(selectedDate);
+  //   const dataDay = getDateWithoutTime(new Date(session.date));
+  //   return toDay.getTime() === dataDay.getTime();
+  // });
   console.log("🚀 ~ sessionToday ~ sessionToday:", sessionToday);
 
   const { isRest, currentSet, sessionData, toggleRest, doneSet } =
@@ -377,5 +554,7 @@ const Session = () => {
     </SafeAreaView>
   );
 };
+
+export default Session;
 
 export default Session;

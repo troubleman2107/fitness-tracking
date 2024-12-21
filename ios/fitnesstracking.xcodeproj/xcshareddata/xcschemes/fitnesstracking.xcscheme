@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "HelloWorld.app"
-               BlueprintName = "HelloWorld"
-               ReferencedContainer = "container:HelloWorld.xcodeproj">
+               BuildableName = "fitnesstracking.app"
+               BlueprintName = "fitnesstracking"
+               ReferencedContainer = "container:fitnesstracking.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "HelloWorldTests.xctest"
-               BlueprintName = "HelloWorldTests"
-               ReferencedContainer = "container:HelloWorld.xcodeproj">
+               BuildableName = "fitnesstrackingTests.xctest"
+               BlueprintName = "fitnesstrackingTests"
+               ReferencedContainer = "container:fitnesstracking.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -60,15 +60,6 @@
             ReferencedContainer = "container:fitnesstracking.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "HelloWorld.app"
-            BlueprintName = "HelloWorld"
-            ReferencedContainer = "container:HelloWorld.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -81,20 +72,11 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "HelloWorld.app"
-            BlueprintName = "HelloWorld"
-            ReferencedContainer = "container:HelloWorld.xcodeproj">
+            BuildableName = "fitnesstracking.app"
+            BlueprintName = "fitnesstracking"
+            ReferencedContainer = "container:fitnesstracking.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "HelloWorld.app"
-            BlueprintName = "HelloWorld"
-            ReferencedContainer = "container:HelloWorld.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

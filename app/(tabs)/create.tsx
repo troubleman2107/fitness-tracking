@@ -30,6 +30,7 @@ import { Template } from "@/types/session";
 import { Link, useRouter } from "expo-router";
 import { supabase } from "@/src/lib/supabaseClient";
 import { useFocusEffect } from "@react-navigation/native";
+import { DbTemplate } from "@/src/types/database";
 
 interface UserInfo {
   full_name: string | null;
@@ -77,29 +78,14 @@ const Create = () => {
     }, [])
   );
 
-  const handleStartTemplate = (template: Template) => {
-    const initTemplate = {
-      ...template,
-      sessions: template.sessions.map((session) => ({
-        ...session,
-        exercises: session.exercises.map((exercise, indexExercise) => ({
-          ...exercise,
-          sets: exercise.sets.map((set, indexSet) => ({
-            ...set,
-            active: indexExercise === 0 && indexSet === 0,
-          })),
-        })),
-      })),
-    };
-    console.log("🚀 ~ handleStartTemplate ~ initTemplate:", initTemplate);
-
-    // useStore.setState(() => ({
-    //   templateSelect: initTemplate,
-    // }));
-    router.push(`/(tabs)/session`);
+  const handleStartTemplate = (template: DbTemplate) => {
+    router.push({
+      pathname: `/(tabs)/session`,
+      params: { templateId: template.id },
+    });
   };
 
-  const handleCreateTemplate = (template: Template) => {
+  const handleCreateTemplate = (template: DbTemplate) => {
     router.push(`/create-detail/${template.id}`);
   };
 
@@ -121,7 +107,7 @@ const Create = () => {
     }
   };
 
-  const renderItem = ({ item }: { item: Template }) => (
+  const renderItem = ({ item }: { item: DbTemplate }) => (
     <TouchableOpacity
       className=" z-20"
       onPress={() => handleCreateTemplate(item)}
@@ -132,7 +118,7 @@ const Create = () => {
             {item.name}
           </Heading>
           <Text>
-            {new Date(item.createDate).toLocaleDateString("en-GB", {
+            {new Date(item.created_at).toLocaleDateString("en-GB", {
               day: "2-digit",
               month: "2-digit",
               year: "numeric",
@@ -143,7 +129,7 @@ const Create = () => {
     </TouchableOpacity>
   );
 
-  const renderHiddenItem = ({ item }: { item: Template }) => (
+  const renderHiddenItem = ({ item }: { item: DbTemplate }) => (
     <View className="flex-1 flex-row justify-end bg-slate-200 mb-3 rounded-lg gap-1">
       {isShowHiddenItem["id"] === item.id && isShowHiddenItem["isHidden"] && (
         <>

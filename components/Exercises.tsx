@@ -20,6 +20,9 @@ import {
 import { Actionsheet } from "./ui/actionsheet";
 import { KeyboardStickyView } from "react-native-keyboard-controller";
 import { useStore } from "@/store/useTemplateStore";
+import { templateService } from "@/src/lib/services/templateService";
+import { supabase } from "@/src/lib/supabaseClient";
+import { Alert } from "react-native";
 
 type ExerciesProps = {
   exercises: Exercise[];
@@ -32,16 +35,12 @@ const Exercises = ({
   handleFinishSet,
   handleStopRest,
 }: ExerciesProps) => {
-  console.log("🚀 ~ Exercises ~ exercises:", exercises);
+  const fetchTemplates = useStore((state) => state.fetchTemplates);
   const [isFinishSet, setIsFinishSet] = useState(false);
   const [currentSet, setCurrentSet] = useState<InitialState["currentSet"]>(
     {} as InitialState["currentSet"]
   );
   const [isRest, setIsRest] = useState(false);
-
-  const sets = useStore((state) => state.sets);
-  const updateSetInTemplate = useStore((state) => state.updateSetInTemplate);
-  const progressToNextSet = useStore((state) => state.progressToNextSet);
 
   useEffect(() => {
     const activeSet = exercises
@@ -58,27 +57,47 @@ const Exercises = ({
     setIsFinishSet(!isFinishSet);
   };
 
-  const handleRest = (currentSet: InitialState["currentSet"]) => {
-    // Update the sets state using the values from above
-    const updateSet = sets.map((set) => {
-      if (set.id === currentSet.id) {
-        return {
-          ...set,
-          isDone: true,
-          reps: currentSet.reps,
-          weight: currentSet.weight,
-        };
+  const handleRest = async (currentSet: InitialState["currentSet"]) => {
+    try {
+      // Find the current exercise that contains the active set
+      const currentExercise = exercises.find((exercise) =>
+        exercise.sets.some((set) => set.id === currentSet.id)
+      );
+
+      if (!currentExercise) {
+        throw new Error("Could not find current exercise");
       }
-      return set;
-    });
 
-    // Use the actions we got from the store
-    updateSetInTemplate({
-      ...currentSet,
-      isDone: true,
-    });
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    setIsRest(true);
+      if (!user?.id) {
+        Alert.alert("Error", "You must be logged in");
+        return;
+      }
+
+      // Save the completed set
+      await templateService.saveSet(
+        currentExercise.id,
+        {
+          id: currentSet.id,
+          weight: currentSet.weight || 0,
+          reps: currentSet.reps,
+          restTime: currentSet.restTime,
+        },
+        user.id
+      );
+
+      if (handleFinishSet) {
+        handleFinishSet(currentSet);
+      }
+
+      setIsRest(true);
+    } catch (error) {
+      console.error("Failed to save set:", error);
+      // You might want to add error handling UI here
+    }
   };
 
   const handleNextSet = () => {
@@ -180,21 +199,17 @@ const Exercises = ({
                   >
                     <View
                       className={`${
-                        set.status
-                          ? status(set.status)?.color
-                          : set.active
-                          ? "bg-slate-400"
-                          : "bg-slate-200"
+                        set.active ? "bg-slate-400" : "bg-slate-200"
                       }  px-[19px] py-[22px] rounded-[20px] mb-[6px] flex flex-row justify-between items-center`}
                     >
                       <Text className="font-pregular">
                         Set {index + 1}: {set.reps} reps x {set.weight}kg
                       </Text>
-                      {set.status && (
+                      {/* {set.status && (
                         <Text className="font-pbold text-xs">{`${
                           status(set.status)?.text
                         } `}</Text>
-                      )}
+                      )} */}
                     </View>
                   </TouchableOpacity>
                 ))}

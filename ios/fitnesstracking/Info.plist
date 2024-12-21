@@ -28,7 +28,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>fitness-tracking</string>
-          <string>com.blackcat7013.fitness-tracking</string>
+          <string>com.blackcat7013.fitnesstracking</string>
         </array>
       </dict>
     </array>

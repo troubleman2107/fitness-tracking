@@ -41,3 +41,12 @@ _WorkFlow_
 
 - First when init create session for create page
 -
+
+create in session store
+2 type of session
+
+- session today
+- session another day
+
+- session today will be init when user start session
+- session another day will be init when user open session page

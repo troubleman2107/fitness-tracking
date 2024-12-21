@@ -10,15 +10,14 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.blackcat7013.fitness-tracking"
+      "bundleIdentifier": "com.blackcat7013.fitnesstracking"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.blackcat7013.fitnesstracking",
-      "googleServicesFile": "./google-services.json"
+      "package": "com.blackcat7013.fitnesstracking"
     },
     "web": {
       "bundler": "metro",
