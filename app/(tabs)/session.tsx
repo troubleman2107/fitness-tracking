@@ -53,7 +53,7 @@ const Session = () => {
             ...exercise,
             sets: exercise?.sets?.map((set, indexSet) => ({
               ...set,
-              active: indexExercise === 0 && indexSet === 0,
+              active: indexExercise === 0 && set.setOrder === "1",
             })),
           })),
         };

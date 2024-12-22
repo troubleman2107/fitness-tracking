@@ -18,6 +18,11 @@ class TemplateService {
     return data;
   }
 
+  async deleteTemplate(id: string) {
+    const { error } = await supabase.from("templates").delete().eq("id", id);
+    if (error) throw error;
+  }
+
   async createSessions(
     sessions: SessionData[],
     templateId: string,
@@ -67,6 +72,7 @@ class TemplateService {
       weight: set.weight,
       reps: set.reps,
       rest_time: set.restTime,
+      setOrder: set.setOrder,
     }));
 
     const { error } = await supabase.from("sets").insert(setsToInsert);
@@ -78,12 +84,11 @@ class TemplateService {
     const { data, error } = await supabase
       .from("sets")
       .update({
-        id: set.id,
-        exercise_id: exerciseId,
         weight: set.weight,
         reps: set.reps,
         rest_time: set.restTime,
       })
+      .eq("id", set.id)
       .select()
       .single();
 
@@ -102,6 +107,7 @@ class TemplateService {
 
     // Create sessions
     const dbSessions = await this.createSessions(sessions, template.id, userId);
+    console.log("exercises", exercises);
 
     // Create exercises and sets for each session
     await Promise.all(

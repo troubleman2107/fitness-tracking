@@ -1,11 +1,12 @@
 import { create } from "zustand";
 import { Database } from "../src/types/database.types";
 import { supabaseService } from "@/src/services/supabaseService";
+import { DbExercise, DbSession, DbSet, DbTemplate } from "@/src/types/database";
 
-type Template = Database["public"]["Tables"]["templates"]["Row"] & {
-  sessions?: (Database["public"]["Tables"]["sessions"]["Row"] & {
-    exercises?: (Database["public"]["Tables"]["exercises"]["Row"] & {
-      sets?: Database["public"]["Tables"]["sets"]["Row"][];
+type Template = DbTemplate & {
+  sessions?: (DbSession & {
+    exercises?: (DbExercise & {
+      sets?: DbSet[];
     })[];
   })[];
 };

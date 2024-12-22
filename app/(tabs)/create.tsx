@@ -47,6 +47,7 @@ const Create = () => {
 
   const [templateSelect, setTemplateSelect] = useState<Template | null>(null);
   const templates = useStore((state) => state.templates);
+  console.log("🚀 ~ Create ~ templates:", templates);
   const deleteTemplate = useStore((state) => state.deleteTemplate);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const fetchTemplates = useStore((state) => state.fetchTemplates);

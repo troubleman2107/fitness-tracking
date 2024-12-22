@@ -154,6 +154,8 @@ const Exercises = ({
     }
   };
 
+  console.log("exercise", exercises);
+
   return (
     <>
       <View className="flex-row justify-center">
@@ -183,36 +185,33 @@ const Exercises = ({
               </View>
 
               <View className="mt-6">
-                {exercise.sets.map((set, index) => (
-                  <TouchableOpacity
-                    onPress={() =>
-                      handleOnSetPress({
-                        reps: set.reps,
-                        weight: set.weight ? set.weight : null,
-                        id: set.id,
-                        active: set.active,
-                        restTime: set.restTime,
-                        isDone: set.isDone,
-                      })
-                    }
-                    key={set.id}
-                  >
-                    <View
-                      className={`${
-                        set.active ? "bg-slate-400" : "bg-slate-200"
-                      }  px-[19px] py-[22px] rounded-[20px] mb-[6px] flex flex-row justify-between items-center`}
+                {exercise.sets
+                  .sort((a, b) => Number(a.setOrder) - Number(b.setOrder)) // Sort in descending order
+                  .map((set, index) => (
+                    <TouchableOpacity
+                      onPress={() =>
+                        handleOnSetPress({
+                          reps: set.reps,
+                          weight: set.weight ? set.weight : null,
+                          id: set.id,
+                          active: set.active,
+                          restTime: set.restTime,
+                          isDone: set.isDone,
+                        })
+                      }
+                      key={set.id}
                     >
-                      <Text className="font-pregular">
-                        Set {index + 1}: {set.reps} reps x {set.weight}kg
-                      </Text>
-                      {/* {set.status && (
-                        <Text className="font-pbold text-xs">{`${
-                          status(set.status)?.text
-                        } `}</Text>
-                      )} */}
-                    </View>
-                  </TouchableOpacity>
-                ))}
+                      <View
+                        className={`${
+                          set.active ? "bg-slate-400" : "bg-slate-200"
+                        }  px-[19px] py-[22px] rounded-[20px] mb-[6px] flex flex-row justify-between items-center`}
+                      >
+                        <Text className="font-pregular">
+                          Set {index + 1}: {set.reps} reps x {set.weight}kg
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
               </View>
             </View>
           ))}

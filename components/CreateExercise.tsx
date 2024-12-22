@@ -82,6 +82,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
   const router = useRouter();
   const [session, setSession] = useState<SessionData[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
+  console.log("🚀 ~ CreateExercise ~ exercises:", exercises);
 
   const [nameExerciseInput, setnameExerciseInput] = useState("");
   const [templateInput, setTemplateInput] = useState("");
@@ -179,6 +180,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
               ...exercise.sets,
               {
                 id: uuidv4(),
+                setOrder: String(exercise.sets.length + 1),
                 reps: null,
                 weight: null,
                 restTime: null,
