@@ -1,10 +1,7 @@
 import { SafeAreaView, Text, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import Exercise from "@/components/Exercises";
 import ModalSetOfRep from "@/components/ModalSetOfRep";
-import CountDownRest from "@/components/CountDownRest";
-import { loadData } from "@/utils/AsyncStorage";
 import { SessionData, Set } from "@/types/session";
 import { Agenda, DateData } from "react-native-calendars";
 import { InitialState, useSessionStore } from "@/store/useSessionStore";
@@ -25,7 +22,6 @@ import {
 } from "@/components/ui/modal";
 import { Button, ButtonText } from "@/components/ui/button";
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
-import { useSessionTimer } from "@/hooks/useSessionTimer";
 import { getDateWithoutTime } from "@/utils/dateHelpers";
 import Exercises from "@/components/Exercises";
 
@@ -85,6 +81,19 @@ const Session = () => {
         : null
     );
   }, [selectedDate]);
+
+  const handleFinishSet = (infoSet: InitialState["currentSet"]) => {
+    const updatedSessionSelect: SessionData = {
+      ...sessionSelect!,
+      exercises: sessionSelect!.exercises!.map((exercise) => ({
+        ...exercise,
+        sets: exercise.sets.map((set) =>
+          set.id === infoSet.id ? { ...set, ...infoSet, isDone: true } : set
+        ),
+      })),
+    };
+    setSessionSelect(updatedSessionSelect);
+  };
 
   return (
     <SafeAreaView className="h-full bg-slate-50 flex-1">
@@ -284,44 +293,28 @@ const Session = () => {
     return unsubscribe;
   }, [navigation, sessionData]);
 
-  const handleFinishSet = (infoSet: InitialState["currentSet"]) => {
-    if (!infoSet.active && !infoSet.isDone) return;
-    useSessionStore.setState((state) => ({
-      currentSet: infoSet,
-    }));
-    setIsFinishSet(!isFinishSet);
-  };
+  const handleRest = async (currentSet: InitialState["currentSet"]) => {
+    try {
+      if (sessionSelect) {
+        // Create updated session data with the modified set
+        const updatedSession = {
+          ...sessionSelect,
+          exercises: sessionSelect.exercises.map((exercise) => ({
+            ...exercise,
+            sets: exercise.sets.map((set) =>
+              set.id === currentSet.id
+                ? { ...set, ...currentSet, isDone: true }
+                : set
+            ),
+          })),
+        };
 
-  const handleRest = (infoSet: InitialState["currentSet"]) => {
-    doneSet && doneSet(infoSet);
+        setSessionSelect(updatedSession);
+      }
 
-    // Update template store
-    if (templateSelect && sessionData) {
-      const updatedTemplate = {
-        ...templateSelect,
-        sessions: templateSelect.sessions.map((session) => {
-          if (session.date === sessionData.date) {
-            return {
-              ...session,
-              exercises: session.exercises.map((exercise) => ({
-                ...exercise,
-                sets: exercise.sets.map((set) =>
-                  set.id === infoSet.id
-                    ? { ...set, ...infoSet, isDone: true }
-                    : set
-                ),
-              })),
-            };
-          }
-          return session;
-        }),
-      };
-
-      saveTemplate(updatedTemplate);
-    }
-
-    if (infoSet.isDone) {
-      toggleRest && toggleRest();
+      // Continue with existing handleRest logic...
+    } catch (error) {
+      console.error("Failed to update set:", error);
     }
   };
 

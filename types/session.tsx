@@ -21,7 +21,7 @@ export interface Exercise {
 }
 export interface Set {
   id: string;
-  setOrder: string;
+  setOrder?: string;
   reps: number | null;
   weight?: number | null;
   restTime?: number | null;

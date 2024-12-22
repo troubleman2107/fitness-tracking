@@ -7,7 +7,7 @@ import {
   View,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import { Exercise, SessionData } from "@/types/session";
+import { Exercise, SessionData, Set } from "@/types/session";
 import { InitialState } from "@/store/useSessionStore";
 import CountDownRest from "./CountDownRest";
 import ModalSetOfRep from "./ModalSetOfRep";
@@ -52,7 +52,7 @@ const Exercises = ({
     }
   }, [exercises]);
 
-  const handleOnSetPress = (infoSet: InitialState["currentSet"]) => {
+  const handleOnSetPress = (infoSet: Set) => {
     if (!infoSet.active && !infoSet.isDone) return;
     setIsFinishSet(!isFinishSet);
   };
