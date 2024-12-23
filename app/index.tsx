@@ -6,7 +6,6 @@ import { supabase } from "@/src/lib/supabaseClient";
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  console.log("🚀 ~ App ~ isAuthenticated:", isAuthenticated);
 
   useEffect(() => {
     checkSession();
@@ -15,7 +14,6 @@ const App = () => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("Auth state changed:", !!session);
       setIsAuthenticated(!!session);
       setIsLoading(false);
     });
@@ -31,13 +29,10 @@ const App = () => {
         data: { session },
         error,
       } = await supabase.auth.getSession();
-      console.log("Session check:", !!session, "Error:", error);
 
       if (session?.user) {
-        console.log("User found:", session.user.email);
         setIsAuthenticated(true);
       } else {
-        console.log("No session found");
         setIsAuthenticated(false);
       }
     } catch (error) {

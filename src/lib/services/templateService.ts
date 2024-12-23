@@ -71,7 +71,7 @@ class TemplateService {
       exercise_id: exerciseId,
       weight: set.weight,
       reps: set.reps,
-      rest_time: set.restTime,
+      rest_time: set.rest_time,
       setOrder: set.setOrder,
     }));
 
@@ -86,7 +86,7 @@ class TemplateService {
       .update({
         weight: set.weight,
         reps: set.reps,
-        rest_time: set.restTime,
+        rest_time: set.rest_time,
       })
       .eq("id", set.id)
       .select()
@@ -107,7 +107,6 @@ class TemplateService {
 
     // Create sessions
     const dbSessions = await this.createSessions(sessions, template.id, userId);
-    console.log("exercises", exercises);
 
     // Create exercises and sets for each session
     await Promise.all(

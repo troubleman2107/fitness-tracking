@@ -35,7 +35,6 @@ const Exercises = ({
   handleFinishSet,
   handleStopRest,
 }: ExerciesProps) => {
-  const fetchTemplates = useStore((state) => state.fetchTemplates);
   const [isFinishSet, setIsFinishSet] = useState(false);
   const [currentSet, setCurrentSet] = useState<InitialState["currentSet"]>(
     {} as InitialState["currentSet"]
@@ -84,7 +83,7 @@ const Exercises = ({
           id: currentSet.id,
           weight: currentSet.weight || 0,
           reps: currentSet.reps,
-          restTime: currentSet.restTime,
+          rest_time: currentSet.rest_time,
         },
         user.id
       );
@@ -154,8 +153,6 @@ const Exercises = ({
     }
   };
 
-  console.log("exercise", exercises);
-
   return (
     <>
       <View className="flex-row justify-center">
@@ -163,7 +160,7 @@ const Exercises = ({
           <>
             <Text className="font-plight text-xl text-slate-600">Rest: </Text>
             <CountDownRest
-              seconds={currentSet.restTime ? currentSet.restTime : 0}
+              seconds={currentSet.rest_time ? currentSet.rest_time : 0}
               isRunning={isRest}
               onStop={handleNextSet}
             />
@@ -195,7 +192,7 @@ const Exercises = ({
                           weight: set.weight ? set.weight : null,
                           id: set.id,
                           active: set.active,
-                          restTime: set.restTime,
+                          rest_time: set.rest_time,
                           isDone: set.isDone,
                         })
                       }

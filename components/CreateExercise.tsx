@@ -318,6 +318,8 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     try {
       setIsLoading(true);
 
+      console.log("templateData.sessions", templateData.sessions);
+
       await templateService.saveFullTemplate(
         templateData.name,
         user.id,
@@ -596,10 +598,10 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
                               >
                                 <InputField
                                   value={
-                                    set.restTime ? String(set.restTime) : ""
+                                    set.rest_time ? String(set.rest_time) : ""
                                   }
                                   onChangeText={(text) =>
-                                    handleSetChange(text, "restTime", set.id)
+                                    handleSetChange(text, "rest_time", set.id)
                                   }
                                   placeholder="60"
                                 />

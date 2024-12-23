@@ -24,7 +24,7 @@ export interface Set {
   setOrder?: string;
   reps: number | null;
   weight?: number | null;
-  restTime?: number | null;
+  rest_time?: number | null;
   active?: boolean;
   status?: string;
   isDone?: boolean;

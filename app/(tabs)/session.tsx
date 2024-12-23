@@ -60,10 +60,42 @@ const Session = () => {
 
   const [sessions, setSessions] = useState(initialTemplate.sessions);
   const [sessionSelect, setSessionSelect] = useState<SessionData | null>(null);
+  const [sessionAnother, setSessionAnother] = useState<SessionData | null>(
+    null
+  );
+  const [isAnother, setIsAnother] = useState<boolean>(false);
 
   useEffect(() => {
     const foundSession = sessions?.find((session) => {
+      const dayNow = getDateWithoutTime(new Date());
       const selectDay = getDateWithoutTime(selectedDate);
+      const dataDay = getDateWithoutTime(new Date(session.date));
+      if (selectDay.getTime() !== dayNow.getTime()) {
+        setIsAnother(true);
+      } else {
+        setIsAnother(false);
+      }
+
+      return selectDay.getTime() === dataDay.getTime();
+    });
+
+    setSessionAnother(
+      foundSession
+        ? ({
+            ...foundSession,
+            exercises:
+              foundSession.exercises?.map((exercise) => ({
+                ...exercise,
+                sets: exercise.sets || [],
+              })) || [],
+          } as SessionData)
+        : null
+    );
+  }, [selectedDate]);
+
+  useEffect(() => {
+    const foundSession = sessions?.find((session) => {
+      const selectDay = getDateWithoutTime(new Date());
       const dataDay = getDateWithoutTime(new Date(session.date));
       return selectDay.getTime() === dataDay.getTime();
     });
@@ -80,7 +112,7 @@ const Session = () => {
           } as SessionData)
         : null
     );
-  }, [selectedDate]);
+  }, []);
 
   const handleFinishSet = (infoSet: InitialState["currentSet"]) => {
     const updatedSessionSelect: SessionData = {
@@ -95,13 +127,61 @@ const Session = () => {
     setSessionSelect(updatedSessionSelect);
   };
 
+  const handleStopRest = () => {
+    if (sessionSelect) {
+      const updatedSession = { ...sessionSelect }; // Clone the session object to avoid mutation
+
+      const allSets: Set[] = [];
+
+      updatedSession.exercises.forEach((exercise) => {
+        exercise.sets.forEach((set) => {
+          allSets.push({ ...set });
+        });
+      });
+
+      let foundActive = false;
+
+      const nextSet = allSets.map((set, index) => {
+        if (set.active && !foundActive) {
+          foundActive = true;
+          set.active = false;
+
+          if (index + 1 < allSets.length) {
+            allSets[index + 1].active = true;
+          }
+
+          return { ...set, active: false };
+        }
+
+        return { ...set };
+      });
+
+      const findActiveSet = nextSet.find((set) => set.active);
+
+      updatedSession.exercises = updatedSession.exercises.map((exercise) => {
+        return {
+          ...exercise,
+          sets: [
+            ...exercise.sets.map((set) => {
+              return {
+                ...set,
+                active: set.id === findActiveSet?.id ? true : false,
+              };
+            }),
+          ],
+        };
+      });
+
+      setSessionSelect(updatedSession);
+    }
+  };
+
   return (
     <SafeAreaView className="h-full bg-slate-50 flex-1">
       <Agenda
         onDayPress={(date: DateData) => {
           setSelectedDate(new Date(date.dateString));
         }}
-        // theme={{ calendarBackground: "#ecfdf5", agendaKnobColor: "green" }}
         items={{ items: [] }}
         renderEmptyData={() => {
           return (
@@ -150,16 +230,47 @@ const Session = () => {
                 </View>
                 {sessionSelect ? (
                   <>
-                    <Exercises
-                      exercises={
-                        sessionSelect?.exercises?.map((exercise) => ({
-                          ...exercise,
-                          sets: exercise.sets || [],
-                        })) || []
-                      }
-                      handleFinishSet={handleFinishSet}
-                      handleStopRest={handleStopRest}
-                    />
+                    {sessionSelect ? (
+                      <View className={`${isAnother ? "hidden" : ""}`}>
+                        <Exercises
+                          exercises={
+                            sessionSelect?.exercises?.map((exercise) => ({
+                              ...exercise,
+                              sets: exercise.sets || [],
+                            })) || []
+                          }
+                          handleFinishSet={handleFinishSet}
+                          handleStopRest={handleStopRest}
+                        />
+                      </View>
+                    ) : (
+                      <View className="h-full flex flex-1 items-center mt-20">
+                        <Text className="font-plight text-xl">
+                          No exercisess.
+                        </Text>
+                      </View>
+                    )}
+
+                    {sessionAnother ? (
+                      <View className={`${!isAnother ? "hidden" : ""}`}>
+                        <Exercises
+                          exercises={
+                            sessionAnother?.exercises?.map((exercise) => ({
+                              ...exercise,
+                              sets: exercise.sets || [],
+                            })) || []
+                          }
+                          handleFinishSet={handleFinishSet}
+                          handleStopRest={handleStopRest}
+                        />
+                      </View>
+                    ) : (
+                      <View className="h-full flex flex-1 items-center mt-20">
+                        <Text className="font-plight text-xl">
+                          No exercisess.
+                        </Text>
+                      </View>
+                    )}
                   </>
                 ) : (
                   <View className="h-full flex flex-1 items-center mt-20">
@@ -316,72 +427,6 @@ const Session = () => {
     } catch (error) {
       console.error("Failed to update set:", error);
     }
-  };
-
-  const handleStopRest = () => {
-    if (sessionToday) {
-      const updatedSession = { ...sessionToday }; // Clone the session object to avoid mutation
-
-      const allSets: Set[] = [];
-
-      updatedSession.exercises.forEach((exercise) => {
-        exercise.sets.forEach((set) => {
-          allSets.push({ ...set });
-        });
-      });
-
-      let foundActive = false;
-
-      const nextSet = allSets.map((set, index) => {
-        if (set.active && !foundActive) {
-          foundActive = true;
-          set.active = false;
-
-          if (index + 1 < allSets.length) {
-            allSets[index + 1].active = true;
-          }
-
-          return { ...set, active: false };
-        }
-
-        return { ...set };
-      });
-
-      const findActiveSet = nextSet.find((set) => set.active);
-
-      updatedSession.exercises = updatedSession.exercises.map((exercise) => {
-        return {
-          ...exercise,
-          sets: [
-            ...exercise.sets.map((set) => {
-              return {
-                ...set,
-                active: set.id === findActiveSet?.id ? true : false,
-              };
-            }),
-          ],
-        };
-      });
-      console.log(
-        "🚀 ~ updatedSession.exercises=updatedSession.exercises.map ~ updatedSession:",
-        updatedSession
-      );
-
-      useStore.setState((state) => ({
-        ...state,
-        templateSelect: {
-          ...state.templateSelect!,
-          sessions: state.templateSelect!.sessions.map((session) => {
-            if (session.id === updatedSession.id) {
-              return updatedSession;
-            }
-            return session;
-          }),
-        },
-      }));
-    }
-
-    toggleRest && toggleRest();
   };
 
   const handleFinishSession = () => {

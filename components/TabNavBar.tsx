@@ -17,7 +17,6 @@ type TabIconProps = {
 };
 
 const TabIcon = ({ icon, color, name, focused }: TabIconProps) => {
-  console.log("🚀 ~ TabIcon ~ icon:", icon);
   return (
     <View className="flex items-center justify-center gap-2 w-24">
       <Image
@@ -37,7 +36,6 @@ const TabIcon = ({ icon, color, name, focused }: TabIconProps) => {
 };
 
 const TabNavBar = () => {
-  console.log("tabs run");
   return (
     <>
       <Tabs
