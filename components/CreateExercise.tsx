@@ -101,6 +101,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     name: "",
     sessions: [],
   });
+  console.log("🚀 ~ CreateExercise ~ templateData:", templateData);
 
   const [repeatOptions, setRepeatOptions] = useState<RepeatOption>({
     enabled: false,
@@ -318,14 +319,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     try {
       setIsLoading(true);
 
-      console.log("templateData.sessions", templateData.sessions);
-
-      await templateService.saveFullTemplate(
-        templateData.name,
-        user.id,
-        templateData.sessions,
-        exercises
-      );
+      await templateService.saveFullTemplate(templateData, user.id);
 
       await fetchTemplates();
 

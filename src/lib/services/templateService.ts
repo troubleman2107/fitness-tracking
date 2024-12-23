@@ -1,5 +1,5 @@
 import { supabase } from "../supabaseClient";
-import { Exercise, SessionData, Set } from "@/types/session";
+import { Exercise, SessionData, Set, Template } from "@/types/session";
 import { DbTemplate, DbSession, DbExercise, DbSet } from "@/src/types/database";
 
 class TemplateService {
@@ -97,39 +97,60 @@ class TemplateService {
   }
 
   async saveFullTemplate(
-    templateName: string,
-    userId: string,
-    sessions: SessionData[],
-    exercises: Exercise[]
+    templateData: Template,
+    userId: string
   ): Promise<void> {
-    // Create template
-    const template = await this.createTemplate(templateName, userId);
+    console.log("🚀 ~ TemplateService ~ templateData:", templateData);
+    try {
+      const dbTemplate = await this.createTemplate(templateData.name, userId);
 
-    // Create sessions
-    const dbSessions = await this.createSessions(sessions, template.id, userId);
+      const dbSessions = await this.createSessions(
+        templateData.sessions,
+        dbTemplate.id,
+        userId
+      );
 
-    // Create exercises and sets for each session
-    await Promise.all(
-      dbSessions.map(async (session) => {
-        const sessionExercises = await this.createExercises(
-          exercises,
-          session.id,
-          userId
-        );
+      await Promise.all(
+        dbSessions.map(async (dbSession, sessionIndex) => {
+          // Match session by index instead of name
+          // const sessionData = templateData.sessions[sessionIndex];
 
-        // Create sets for each exercise
-        await Promise.all(
-          sessionExercises.map(async (exercise) => {
-            const exerciseData = exercises.find(
-              (e) => e.name === exercise.name
+          const sessionData = templateData.sessions.find(
+            (session) => session.date === dbSession.date
+          );
+
+          if (!sessionData?.exercises) {
+            throw new Error(
+              `No exercises found for session: ${dbSession.name}`
             );
-            if (exerciseData?.sets) {
-              await this.createSets(exerciseData.sets, exercise.id, userId);
-            }
-          })
-        );
-      })
-    );
+          }
+
+          const dbExercises = await this.createExercises(
+            sessionData.exercises,
+            dbSession.id,
+            userId
+          );
+
+          await Promise.all(
+            dbExercises.map(async (dbExercise, exerciseIndex) => {
+              // Match exercise by index instead of name
+              const exerciseData = sessionData.exercises[exerciseIndex];
+
+              if (!exerciseData?.sets) {
+                throw new Error(
+                  `No sets found for exercise: ${dbExercise.name}`
+                );
+              }
+
+              await this.createSets(exerciseData.sets, dbExercise.id, userId);
+            })
+          );
+        })
+      );
+    } catch (error) {
+      const errorMessage = (error as any).message;
+      throw new Error(`Failed to save template: ${errorMessage}`);
+    }
   }
 }
 

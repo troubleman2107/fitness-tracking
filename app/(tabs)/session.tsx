@@ -188,16 +188,16 @@ const Session = () => {
             <SafeAreaView className="h-full bg-slate-50">
               <View className="p-2 h-full">
                 <View className="px-3 pt-3 pb-6 bg-slate-100 mb-[6px] rounded-[20px]">
-                  {sessionSelect && (
+                  {sessionAnother && (
                     <View className="mb-2 flex items-center justify-center gap-2">
                       <Text className="font-pbold text-xl text-slate-600">
-                        {sessionSelect && sessionSelect.name}
+                        {sessionAnother && sessionAnother.name}
                       </Text>
                       <Text className="font-plight text-[14px] text-slate-600">
-                        {`${new Date(sessionSelect.date).toLocaleString(
+                        {`${new Date(sessionAnother.date).toLocaleString(
                           "default",
                           { weekday: "short" }
-                        )} - ${new Date(sessionSelect.date).toLocaleDateString(
+                        )} - ${new Date(sessionAnother.date).toLocaleDateString(
                           "en-GB",
                           {
                             day: "2-digit",
