@@ -2,15 +2,18 @@ import { useState, useEffect } from "react";
 
 export const useSessionTimer = (isActive: boolean) => {
   const [startTime, setStartTime] = useState(Date.now());
-  console.log("🚀 ~ useSessionTimer ~ startTime:", startTime);
   const [elapsedTime, setElapsedTime] = useState(0);
-  console.log("🚀 ~ useSessionTimer ~ elapsedTime:", elapsedTime);
   const [isStop, setIsStop] = useState(false);
+  console.log("🚀 ~ useSessionTimer ~ isStop:", isStop);
+
+  useEffect(() => {
+    console.log("run this");
+  }, [isActive]);
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
 
-    if (isActive) {
+    if (isActive && !isStop) {
       setStartTime(Date.now());
       setElapsedTime(0);
 
@@ -26,6 +29,7 @@ export const useSessionTimer = (isActive: boolean) => {
   }, [isActive, isStop]);
 
   const stopTimer = () => {
+    setIsStop(true);
     setElapsedTime(0);
   };
 
@@ -37,5 +41,9 @@ export const useSessionTimer = (isActive: boolean) => {
     ).padStart(2, "0")}`;
   };
 
-  return { elapsedTime, formatTime, resetTimer: () => stopTimer() };
+  return {
+    elapsedTime,
+    formatTime,
+    resetTimer: () => stopTimer(),
+  };
 };

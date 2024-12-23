@@ -80,7 +80,7 @@ const Create = () => {
 
   const handleStartTemplate = (template: DbTemplate) => {
     router.push({
-      pathname: `/(tabs)/session`,
+      pathname: `/session/session`,
       params: { templateId: template.id },
     });
   };

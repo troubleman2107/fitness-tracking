@@ -51,6 +51,7 @@ const TabsLayout = () => {
             paddingTop: 15,
           },
         }}
+        detachInactiveScreens={true}
       >
         <Tabs.Screen
           name="create"
