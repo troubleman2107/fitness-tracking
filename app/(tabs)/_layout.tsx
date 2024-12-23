@@ -71,22 +71,6 @@ const TabsLayout = () => {
           }}
         />
         <Tabs.Screen
-          name="session"
-          options={{
-            headerShown: false,
-            tabBarIcon: ({ color, focused }): React.ReactNode => {
-              return (
-                <TabIcon
-                  color={color}
-                  focused={focused}
-                  name="Session"
-                  icon={icons.home as ImageSourcePropType}
-                />
-              );
-            },
-          }}
-        />
-        <Tabs.Screen
           name="report"
           options={{
             headerShown: false,
