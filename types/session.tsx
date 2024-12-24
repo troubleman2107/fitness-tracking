@@ -2,11 +2,11 @@ export interface Template {
   id: string;
   name: string;
   sessions: SessionData[];
-  createDate: string;
+  created_at: string;
 }
 
 export interface SessionData {
-  id: string;
+  id?: string;
   date: string;
   name: string;
   exercises: Exercise[];
@@ -18,7 +18,21 @@ export interface Exercise {
   name: string;
   muscle_group?: string;
   sets: Set[];
+  status?: string;
+  created_at: string;
+  updated_at: string;
 }
+
+// export interface DbExercise {
+//   id: string;
+//   session_id: string;
+//   name: string;
+//   muscle_group: MuscleGroup;
+//   status: ExerciseStatus;
+//   created_at: string;
+//   updated_at: string;
+// }
+
 export interface Set {
   id: string;
   setOrder?: string;

@@ -4,6 +4,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Link, useLocalSearchParams } from "expo-router";
 import CreateExercise from "@/components/CreateExercise";
 import { useStore } from "@/store/useTemplateStore";
+import { Template as SessionTemplate } from "@/types/session";
 
 const CreateDetail = () => {
   const { create } = useLocalSearchParams();
@@ -18,7 +19,7 @@ const CreateDetail = () => {
           <View className=" mb-[6px] h-full">
             <CreateExercise
               onClose={() => {}}
-              templateSelect={templates ? templates : null}
+              templateSelect={(templates as SessionTemplate) ?? null}
             />
           </View>
         </View>

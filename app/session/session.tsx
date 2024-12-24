@@ -5,13 +5,6 @@ import ModalSetOfRep from "@/components/ModalSetOfRep";
 import { SessionData, Set } from "@/types/session";
 import { Agenda, DateData } from "react-native-calendars";
 import { InitialState, useSessionStore } from "@/store/useSessionStore";
-import {
-  Actionsheet,
-  ActionsheetBackdrop,
-  ActionsheetContent,
-  ActionsheetDragIndicator,
-  ActionsheetDragIndicatorWrapper,
-} from "@/components/ui/actionsheet";
 import { KeyboardStickyView } from "react-native-keyboard-controller";
 import { useStore } from "@/store/useTemplateStore";
 import {

@@ -56,6 +56,7 @@ import PrevIconButton from "./ui/PrevButton";
 import { useRouter } from "expo-router";
 import { supabase } from "@/src/lib/supabaseClient";
 import { templateService } from "@/src/lib/services/templateService";
+import { getDateWithoutTime } from "@/utils/dateHelpers";
 
 interface infoSetsForm {
   id: string;
@@ -96,10 +97,11 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
 
   const [templateData, setTemplateData] = useState<Template>({
     id: "",
-    createDate: new Date().toISOString(),
+    created_at: new Date().toISOString(),
     name: "",
     sessions: [],
   });
+  console.log("🚀 ~ CreateExercise ~ templateData:", templateData);
 
   const [repeatOptions, setRepeatOptions] = useState<RepeatOption>({
     enabled: false,
@@ -164,6 +166,8 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
       id: uuidv4(),
       name: nameExerciseInput,
       sets: [],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
     setExercises([...exercises, exerciseInfo]);
     setnameExerciseInput("");
@@ -224,14 +228,6 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     setExercises(deleteExercise);
   };
 
-  const formatDate = (date: Date): string => {
-    return date.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  };
-
   const generateRepeatedSessions = (
     baseSession: SessionData
   ): SessionData[] => {
@@ -265,8 +261,16 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
   const handleOnSaveSession = () => {
     setIsSaved(true);
 
+    const idSession = templateSelect
+      ? templateSelect.sessions.find(
+          (session) =>
+            getDateWithoutTime(new Date(session.date)).getTime() ===
+            getDateWithoutTime(new Date()).getTime()
+        )?.id
+      : uuidv4();
+
     const newSession: SessionData = {
-      id: uuidv4(),
+      id: idSession,
       date: selectedDate,
       name: sessionNameInput.trim(),
       exercises: exercises,
@@ -317,7 +321,16 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     try {
       setIsLoading(true);
 
-      await templateService.saveFullTemplate(templateData, user.id);
+      if (templateSelect) {
+        console.log("templateData", templateData);
+        await templateService.updateFullTemplate(
+          templateSelect.id,
+          templateData,
+          user.id
+        );
+      } else {
+        await templateService.createFullTemplate(templateData, user.id);
+      }
 
       await fetchTemplates();
 

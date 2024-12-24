@@ -2,8 +2,9 @@ import { create } from "zustand";
 import { Database } from "../src/types/database.types";
 import { supabaseService } from "@/src/services/supabaseService";
 import { DbExercise, DbSession, DbSet, DbTemplate } from "@/src/types/database";
+import { templateService } from "@/src/lib/services/templateService";
 
-type Template = DbTemplate & {
+export type Template = DbTemplate & {
   sessions?: (DbSession & {
     exercises?: (DbExercise & {
       sets?: DbSet[];
@@ -35,7 +36,7 @@ export const useStore = create<StoreState>((set, get) => ({
   fetchTemplates: async () => {
     set({ loading: true });
     try {
-      const templates = await supabaseService.getTemplates();
+      const templates = await templateService.getTemplates();
       set({ templates, error: null });
     } catch (error) {
       set({ error: (error as Error).message });

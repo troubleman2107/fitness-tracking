@@ -3,6 +3,27 @@ import { Exercise, SessionData, Set, Template } from "@/types/session";
 import { DbTemplate, DbSession, DbExercise, DbSet } from "@/src/types/database";
 
 class TemplateService {
+  async getTemplates() {
+    const { data, error } = await supabase
+      .from("templates")
+      .select(
+        `
+        *,
+        sessions:sessions(
+          *,
+          exercises:exercises(
+            *,
+            sets:sets(*)
+          )
+        )
+      `
+      )
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return data as unknown as DbTemplate[];
+  }
+
   async createTemplate(name: string, userId: string): Promise<DbTemplate> {
     const { data, error } = await supabase
       .from("templates")
@@ -96,7 +117,7 @@ class TemplateService {
     return data;
   }
 
-  async saveFullTemplate(
+  async createFullTemplate(
     templateData: Template,
     userId: string
   ): Promise<void> {
@@ -150,6 +171,166 @@ class TemplateService {
     } catch (error) {
       const errorMessage = (error as any).message;
       throw new Error(`Failed to save template: ${errorMessage}`);
+    }
+  }
+
+  async updateTemplate(id: string, name: string): Promise<DbTemplate> {
+    const { data, error } = await supabase
+      .from("templates")
+      .update({ name })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw new Error(`Failed to update template: ${error.message}`);
+    return data;
+  }
+
+  async deleteSessionsByTemplateId(templateId: string): Promise<void> {
+    const { error } = await supabase
+      .from("sessions")
+      .delete()
+      .eq("template_id", templateId);
+
+    if (error) throw new Error(`Failed to delete sessions: ${error.message}`);
+  }
+
+  async updateSession(session: SessionData): Promise<DbSession> {
+    const { data, error } = await supabase
+      .from("sessions")
+      .update({
+        name: session.name,
+        date: session.date,
+      })
+      .eq("id", session.id)
+      .select()
+      .single();
+
+    if (error) throw new Error(`Failed to update session: ${error.message}`);
+    return data;
+  }
+
+  async updateExercise(exercise: Exercise): Promise<DbExercise> {
+    const { data, error } = await supabase
+      .from("exercises")
+      .update({
+        name: exercise.name,
+      })
+      .eq("id", exercise.id)
+      .select()
+      .single();
+
+    if (error) throw new Error(`Failed to update exercise: ${error.message}`);
+    return data;
+  }
+
+  async updateSet(set: Set): Promise<DbSet> {
+    const { data, error } = await supabase
+      .from("sets")
+      .update({
+        weight: set.weight,
+        reps: set.reps,
+        rest_time: set.rest_time,
+        setOrder: set.setOrder,
+      })
+      .eq("id", set.id)
+      .select()
+      .single();
+
+    if (error) throw new Error(`Failed to update set: ${error.message}`);
+    return data;
+  }
+
+  async updateFullTemplate(
+    templateId: string,
+    templateData: Template,
+    userId: string
+  ): Promise<void> {
+    try {
+      // Update template name if changed
+      await this.updateTemplate(templateId, templateData.name);
+
+      // Update existing sessions
+      await Promise.all(
+        templateData.sessions.map(async (session) => {
+          if (session.id) {
+            // Update existing session
+            await this.updateSession(session);
+
+            // Update exercises
+            await Promise.all(
+              session.exercises?.map(async (exercise) => {
+                if (exercise.id) {
+                  // Update existing exercise
+                  await this.updateExercise(exercise);
+
+                  // Update sets
+                  await Promise.all(
+                    exercise.sets?.map(async (set) => {
+                      if (set.id) {
+                        await this.updateSet(set);
+                      } else {
+                        // Create new set if it doesn't exist
+                        await this.createSets([set], exercise.id, userId);
+                      }
+                    }) || []
+                  );
+                } else {
+                  // Create new exercise if it doesn't exist
+                  if (!session.id) {
+                    throw new Error(
+                      `Session ID is undefined for session: ${session.name}`
+                    );
+                  }
+                  const dbExercise = await this.createExercises(
+                    [exercise],
+                    session.id,
+                    userId
+                  );
+                  if (exercise.sets) {
+                    await this.createSets(
+                      exercise.sets,
+                      dbExercise[0].id,
+                      userId
+                    );
+                  }
+                }
+              }) || []
+            );
+          } else {
+            // Create new session if it doesn't exist
+            const dbSession = await this.createSessions(
+              [session],
+              templateId,
+              userId
+            );
+
+            if (session.exercises) {
+              const dbExercises = await this.createExercises(
+                session.exercises,
+                dbSession[0].id,
+                userId
+              );
+
+              await Promise.all(
+                dbExercises.map(async (dbExercise, index) => {
+                  const exerciseData = session.exercises![index];
+                  if (exerciseData.sets) {
+                    await this.createSets(
+                      exerciseData.sets,
+                      dbExercise.id,
+                      userId
+                    );
+                  }
+                })
+              );
+            }
+          }
+        })
+      );
+    } catch (error) {
+      const errorMessage = (error as any).message;
+      throw new Error(`Failed to update template: ${errorMessage}`);
     }
   }
 }
