@@ -26,6 +26,7 @@ import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import { getDateWithoutTime } from "@/utils/dateHelpers";
 import Exercises from "@/components/Exercises";
 import { useSessionTimer } from "@/hooks/useSessionTimer";
+import PrevIconButton from "@/components/ui/PrevButton";
 
 const data = require("@/data/data.json");
 
@@ -184,7 +185,12 @@ const Session = () => {
   };
 
   return (
-    <SafeAreaView className="h-full bg-slate-50 flex-1">
+    <SafeAreaView className="h-full bg-slate-100 flex-1">
+      <PrevIconButton
+        onClick={() => {
+          router.back();
+        }}
+      />
       <Agenda
         onDayPress={(date: DateData) => {
           setSelectedDate(new Date(date.dateString));
@@ -235,21 +241,19 @@ const Session = () => {
                     </View>
                   )}
                 </View>
-                {sessionSelect ? (
-                  <>
+                <>
+                  <View className={`${isAnother ? "hidden" : ""}`}>
                     {sessionSelect ? (
-                      <View className={`${isAnother ? "hidden" : ""}`}>
-                        <Exercises
-                          exercises={
-                            sessionSelect?.exercises?.map((exercise) => ({
-                              ...exercise,
-                              sets: exercise.sets || [],
-                            })) || []
-                          }
-                          handleFinishSet={handleFinishSet}
-                          handleStopRest={handleStopRest}
-                        />
-                      </View>
+                      <Exercises
+                        exercises={
+                          sessionSelect?.exercises?.map((exercise) => ({
+                            ...exercise,
+                            sets: exercise.sets || [],
+                          })) || []
+                        }
+                        handleFinishSet={handleFinishSet}
+                        handleStopRest={handleStopRest}
+                      />
                     ) : (
                       <View className="h-full flex flex-1 items-center mt-20">
                         <Text className="font-plight text-xl">
@@ -257,33 +261,29 @@ const Session = () => {
                         </Text>
                       </View>
                     )}
-
-                    {sessionAnother ? (
-                      <View className={`${!isAnother ? "hidden" : ""}`}>
-                        <Exercises
-                          exercises={
-                            sessionAnother?.exercises?.map((exercise) => ({
-                              ...exercise,
-                              sets: exercise.sets || [],
-                            })) || []
-                          }
-                          handleFinishSet={handleFinishSet}
-                          handleStopRest={handleStopRest}
-                        />
-                      </View>
-                    ) : (
-                      <View className="h-full flex flex-1 items-center mt-20">
-                        <Text className="font-plight text-xl">
-                          No exercisess.
-                        </Text>
-                      </View>
-                    )}
-                  </>
-                ) : (
-                  <View className="h-full flex flex-1 items-center mt-20">
-                    <Text className="font-plight text-xl">No exercisess.</Text>
                   </View>
-                )}
+
+                  <View className={`${!isAnother ? "hidden" : ""}`}>
+                    {sessionAnother ? (
+                      <Exercises
+                        exercises={
+                          sessionAnother?.exercises?.map((exercise) => ({
+                            ...exercise,
+                            sets: exercise.sets || [],
+                          })) || []
+                        }
+                        handleFinishSet={handleFinishSet}
+                        handleStopRest={handleStopRest}
+                      />
+                    ) : (
+                      <View className="h-full flex flex-1 items-center mt-20">
+                        <Text className="font-plight text-xl">
+                          No exercisess.
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </>
               </View>
             </SafeAreaView>
           );

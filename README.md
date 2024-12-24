@@ -50,3 +50,9 @@ create in session store
 
 - session today will be init when user start session
 - session another day will be init when user open session page
+
+New UX:
+
+- We will have bench press work out
+- If we do bench press in monday it's will update next of bench press in next bench press
+- And present bench press will be compare with past bench press -> Analyze feature

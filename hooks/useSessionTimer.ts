@@ -5,8 +5,6 @@ export const useSessionTimer = (isActive: boolean) => {
   const startTimeRef = useRef<number>(0);
   const rafRef = useRef<number>();
   const [elapsedTime, setElapsedTime] = useState(0);
-  console.log("🚀 ~ useSessionTimer ~ elapsedTime:", elapsedTime);
-
   const updateTimer = useCallback(() => {
     if (!startTimeRef.current) return;
 
