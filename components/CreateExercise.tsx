@@ -83,6 +83,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
   const router = useRouter();
   const [session, setSession] = useState<SessionData[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
+  console.log("🚀 ~ CreateExercise ~ exercises:", exercises);
 
   const [nameExerciseInput, setnameExerciseInput] = useState("");
   const [templateInput, setTemplateInput] = useState("");
@@ -101,7 +102,6 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     name: "",
     sessions: [],
   });
-  console.log("🚀 ~ CreateExercise ~ templateData:", templateData);
 
   const [repeatOptions, setRepeatOptions] = useState<RepeatOption>({
     enabled: false,
@@ -168,6 +168,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
       sets: [],
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      exerciseOrder: String(exercises.length + 1),
     };
     setExercises([...exercises, exerciseInfo]);
     setnameExerciseInput("");
@@ -322,7 +323,6 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
       setIsLoading(true);
 
       if (templateSelect) {
-        console.log("templateData", templateData);
         await templateService.updateFullTemplate(
           templateSelect.id,
           templateData,
@@ -544,76 +544,80 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
                     </TableHeader>
                     <TableBody>
                       {exercise.sets &&
-                        exercise.sets.map((set, iSet) => (
-                          <TableRow key={set.id}>
-                            <TableData className="text-center text-base">
-                              {iSet + 1}
-                            </TableData>
-                            <TableData
-                              useRNView={true}
-                              className="flex flex-row justify-center items-center"
-                            >
-                              <Input
-                                className={`px-1 h-6 w-[50px]`}
-                                variant="outline"
-                                size="md"
-                                isDisabled={false}
-                                isInvalid={false}
-                                isReadOnly={isSaved}
+                        exercise.sets
+                          .sort(
+                            (a, b) => Number(a.setOrder) - Number(b.setOrder)
+                          )
+                          .map((set, iSet) => (
+                            <TableRow key={set.id}>
+                              <TableData className="text-center text-base">
+                                {iSet + 1}
+                              </TableData>
+                              <TableData
+                                useRNView={true}
+                                className="flex flex-row justify-center items-center"
                               >
-                                <InputField
-                                  value={set.weight ? String(set.weight) : ""}
-                                  onChangeText={(text) =>
-                                    handleSetChange(text, "weight", set.id)
-                                  }
-                                  placeholder="60"
-                                />
-                              </Input>
-                            </TableData>
-                            <TableData
-                              useRNView={true}
-                              className="flex flex-row justify-center items-center"
-                            >
-                              <Input
-                                className={`px-1 h-6 w-[50px]`}
-                                variant="outline"
-                                size="md"
-                                isDisabled={false}
-                                isInvalid={false}
-                                isReadOnly={isSaved}
+                                <Input
+                                  className={`px-1 h-6 w-[50px]`}
+                                  variant="outline"
+                                  size="md"
+                                  isDisabled={false}
+                                  isInvalid={false}
+                                  isReadOnly={isSaved}
+                                >
+                                  <InputField
+                                    value={set.weight ? String(set.weight) : ""}
+                                    onChangeText={(text) =>
+                                      handleSetChange(text, "weight", set.id)
+                                    }
+                                    placeholder="60"
+                                  />
+                                </Input>
+                              </TableData>
+                              <TableData
+                                useRNView={true}
+                                className="flex flex-row justify-center items-center"
                               >
-                                <InputField
-                                  value={set.reps ? String(set.reps) : ""}
-                                  onChangeText={(text) =>
-                                    handleSetChange(text, "reps", set.id)
-                                  }
-                                  placeholder="12"
-                                />
-                              </Input>
-                            </TableData>
-                            <TableData
-                              useRNView={true}
-                              className="flex flex-row justify-center items-center"
-                            >
-                              <Input
-                                className={`px-1 h-6 w-[50px]`}
-                                variant="outline"
-                                size="md"
-                                isReadOnly={isSaved}
+                                <Input
+                                  className={`px-1 h-6 w-[50px]`}
+                                  variant="outline"
+                                  size="md"
+                                  isDisabled={false}
+                                  isInvalid={false}
+                                  isReadOnly={isSaved}
+                                >
+                                  <InputField
+                                    value={set.reps ? String(set.reps) : ""}
+                                    onChangeText={(text) =>
+                                      handleSetChange(text, "reps", set.id)
+                                    }
+                                    placeholder="12"
+                                  />
+                                </Input>
+                              </TableData>
+                              <TableData
+                                useRNView={true}
+                                className="flex flex-row justify-center items-center"
                               >
-                                <InputField
-                                  value={
-                                    set.rest_time ? String(set.rest_time) : ""
-                                  }
-                                  onChangeText={(text) =>
-                                    handleSetChange(text, "rest_time", set.id)
-                                  }
-                                  placeholder="60"
-                                />
-                              </Input>
-                            </TableData>
-                          </TableRow>
-                        ))}
+                                <Input
+                                  className={`px-1 h-6 w-[50px]`}
+                                  variant="outline"
+                                  size="md"
+                                  isReadOnly={isSaved}
+                                >
+                                  <InputField
+                                    value={
+                                      set.rest_time ? String(set.rest_time) : ""
+                                    }
+                                    onChangeText={(text) =>
+                                      handleSetChange(text, "rest_time", set.id)
+                                    }
+                                    placeholder="60"
+                                  />
+                                </Input>
+                              </TableData>
+                            </TableRow>
+                          ))}
                     </TableBody>
                     <TableFooter>
                       <Button

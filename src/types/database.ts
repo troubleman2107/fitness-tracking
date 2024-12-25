@@ -25,6 +25,7 @@ export interface DbExercise {
   status: ExerciseStatus;
   created_at: string;
   updated_at: string;
+  exerciseOrder?: string;
 }
 
 export interface DbSet {

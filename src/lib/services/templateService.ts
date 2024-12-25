@@ -18,9 +18,19 @@ class TemplateService {
         )
       `
       )
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: true });
 
     if (error) throw error;
+
+    // Sort exercises within each session by a specific order
+    data.forEach((template: any) => {
+      template.sessions.forEach((session: any) => {
+        session.exercises.sort(
+          (a: any, b: any) => a.exerciseOrder - b.exerciseOrder
+        );
+      });
+    });
+
     return data as unknown as DbTemplate[];
   }
 
@@ -44,6 +54,18 @@ class TemplateService {
     if (error) throw error;
   }
 
+  async updateTemplate(id: string, name: string): Promise<DbTemplate> {
+    const { data, error } = await supabase
+      .from("templates")
+      .update({ name })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw new Error(`Failed to update template: ${error.message}`);
+    return data;
+  }
+
   async createSessions(
     sessions: SessionData[],
     templateId: string,
@@ -64,6 +86,43 @@ class TemplateService {
     return data;
   }
 
+  async updateSession(session: SessionData): Promise<DbSession> {
+    const { data, error } = await supabase
+      .from("sessions")
+      .update({
+        name: session.name,
+        date: session.date,
+      })
+      .eq("id", session.id)
+      .select()
+      .single();
+
+    if (error) throw new Error(`Failed to update session: ${error.message}`);
+    return data;
+  }
+
+  async getSessions(templateId: string): Promise<DbSession[]> {
+    const { data, error } = await supabase
+      .from("sessions")
+      .select("*")
+      .eq("template_id", templateId)
+      .order("date", { ascending: true });
+
+    if (error) throw new Error(`Failed to get sessions: ${error.message}`);
+    return data;
+  }
+
+  async getSessionById(sessionId: string): Promise<DbSession> {
+    const { data, error } = await supabase
+      .from("sessions")
+      .select("*")
+      .eq("id", sessionId)
+      .single();
+
+    if (error) throw new Error(`Failed to get session: ${error.message}`);
+    return data;
+  }
+
   async createExercises(
     exercises: Exercise[],
     sessionId: string,
@@ -72,6 +131,7 @@ class TemplateService {
     const exercisesToInsert = exercises.map((exercise) => ({
       session_id: sessionId,
       name: exercise.name,
+      exerciseOrder: exercise.exerciseOrder,
     }));
 
     const { data, error } = await supabase
@@ -80,6 +140,49 @@ class TemplateService {
       .select();
 
     if (error) throw new Error(`Failed to create exercises: ${error.message}`);
+    return data;
+  }
+
+  async updateExercise(exercise: Exercise): Promise<DbExercise> {
+    const { data, error } = await supabase
+      .from("exercises")
+      .update({
+        name: exercise.name,
+      })
+      .eq("id", exercise.id)
+      .select()
+      .single();
+
+    if (error) throw new Error(`Failed to update exercise: ${error.message}`);
+    return data;
+  }
+
+  async getExercises(sessionId: string): Promise<DbExercise[]> {
+    const { data, error } = await supabase
+      .from("exercises")
+      .select("*")
+      .eq("session_id", sessionId);
+
+    if (error) throw new Error(`Failed to get exercises: ${error.message}`);
+    return data;
+  }
+
+  async getExercisesById(exerciseId: string): Promise<DbExercise | null> {
+    console.log(
+      "🚀 ~ TemplateService ~ getExercisesById ~ exerciseId:",
+      exerciseId
+    );
+    const { data, error } = await supabase
+      .from("exercises")
+      .select("*")
+      .eq("id", exerciseId)
+      .single();
+
+    console.log("data", data);
+
+    if (error) {
+      return null;
+    }
     return data;
   }
 
@@ -114,6 +217,47 @@ class TemplateService {
       .single();
 
     if (error) throw new Error(`Failed to save set: ${error.message}`);
+    return data;
+  }
+
+  async getSets(exerciseId: string): Promise<DbSet[]> {
+    const { data, error } = await supabase
+      .from("sets")
+      .select("*")
+      .eq("exercise_id", exerciseId)
+      .order("setOrder", { ascending: true });
+
+    if (error) throw new Error(`Failed to get sets: ${error.message}`);
+    return data;
+  }
+
+  async getSetsById(setId: string): Promise<DbSet | null> {
+    const { data, error } = await supabase
+      .from("sets")
+      .select("*")
+      .eq("id", setId)
+      .single();
+
+    if (error) {
+      return null;
+    }
+    return data;
+  }
+
+  async updateSet(set: Set): Promise<DbSet> {
+    const { data, error } = await supabase
+      .from("sets")
+      .update({
+        weight: set.weight,
+        reps: set.reps,
+        rest_time: set.rest_time,
+        setOrder: set.setOrder,
+      })
+      .eq("id", set.id)
+      .select()
+      .single();
+
+    if (error) throw new Error(`Failed to update set: ${error.message}`);
     return data;
   }
 
@@ -174,18 +318,6 @@ class TemplateService {
     }
   }
 
-  async updateTemplate(id: string, name: string): Promise<DbTemplate> {
-    const { data, error } = await supabase
-      .from("templates")
-      .update({ name })
-      .eq("id", id)
-      .select()
-      .single();
-
-    if (error) throw new Error(`Failed to update template: ${error.message}`);
-    return data;
-  }
-
   async deleteSessionsByTemplateId(templateId: string): Promise<void> {
     const { error } = await supabase
       .from("sessions")
@@ -193,52 +325,6 @@ class TemplateService {
       .eq("template_id", templateId);
 
     if (error) throw new Error(`Failed to delete sessions: ${error.message}`);
-  }
-
-  async updateSession(session: SessionData): Promise<DbSession> {
-    const { data, error } = await supabase
-      .from("sessions")
-      .update({
-        name: session.name,
-        date: session.date,
-      })
-      .eq("id", session.id)
-      .select()
-      .single();
-
-    if (error) throw new Error(`Failed to update session: ${error.message}`);
-    return data;
-  }
-
-  async updateExercise(exercise: Exercise): Promise<DbExercise> {
-    const { data, error } = await supabase
-      .from("exercises")
-      .update({
-        name: exercise.name,
-      })
-      .eq("id", exercise.id)
-      .select()
-      .single();
-
-    if (error) throw new Error(`Failed to update exercise: ${error.message}`);
-    return data;
-  }
-
-  async updateSet(set: Set): Promise<DbSet> {
-    const { data, error } = await supabase
-      .from("sets")
-      .update({
-        weight: set.weight,
-        reps: set.reps,
-        rest_time: set.rest_time,
-        setOrder: set.setOrder,
-      })
-      .eq("id", set.id)
-      .select()
-      .single();
-
-    if (error) throw new Error(`Failed to update set: ${error.message}`);
-    return data;
   }
 
   async updateFullTemplate(
@@ -250,6 +336,8 @@ class TemplateService {
       // Update template name if changed
       await this.updateTemplate(templateId, templateData.name);
 
+      console.log("🚀 ~ TemplateService ~ templateData:", templateData);
+
       // Update existing sessions
       await Promise.all(
         templateData.sessions.map(async (session) => {
@@ -260,14 +348,22 @@ class TemplateService {
             // Update exercises
             await Promise.all(
               session.exercises?.map(async (exercise) => {
-                if (exercise.id) {
+                const findExercise = await this.getExercisesById(exercise.id);
+                console.log(
+                  "🚀 ~ TemplateService ~ session.exercises?.map ~ findExercise:",
+                  findExercise
+                );
+
+                if (findExercise?.id) {
                   // Update existing exercise
                   await this.updateExercise(exercise);
 
                   // Update sets
                   await Promise.all(
                     exercise.sets?.map(async (set) => {
-                      if (set.id) {
+                      const findSet = await this.getSetsById(set.id);
+
+                      if (findSet) {
                         await this.updateSet(set);
                       } else {
                         // Create new set if it doesn't exist
@@ -277,7 +373,7 @@ class TemplateService {
                   );
                 } else {
                   // Create new exercise if it doesn't exist
-                  if (!session.id) {
+                  if (!session?.id) {
                     throw new Error(
                       `Session ID is undefined for session: ${session.name}`
                     );
