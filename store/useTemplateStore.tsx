@@ -37,7 +37,6 @@ export const useStore = create<StoreState>((set, get) => ({
     set({ loading: true });
     try {
       const templates = await templateService.getTemplates();
-      console.log("🚀 ~ fetchTemplates: ~ templates:", templates);
       set({ templates, error: null });
     } catch (error) {
       set({ error: (error as Error).message });

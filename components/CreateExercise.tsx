@@ -83,7 +83,6 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
   const router = useRouter();
   const [session, setSession] = useState<SessionData[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
-  console.log("🚀 ~ CreateExercise ~ exercises:", exercises);
 
   const [nameExerciseInput, setnameExerciseInput] = useState("");
   const [templateInput, setTemplateInput] = useState("");
@@ -262,16 +261,16 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
   const handleOnSaveSession = () => {
     setIsSaved(true);
 
-    const idSession = templateSelect
-      ? templateSelect.sessions.find(
-          (session) =>
-            getDateWithoutTime(new Date(session.date)).getTime() ===
-            getDateWithoutTime(new Date()).getTime()
-        )?.id
-      : uuidv4();
+    const idSession =
+      templateSelect &&
+      templateSelect.sessions.find(
+        (session) =>
+          getDateWithoutTime(new Date(session.date)).getTime() ===
+          getDateWithoutTime(new Date()).getTime()
+      )?.id;
 
     const newSession: SessionData = {
-      id: idSession,
+      id: idSession || uuidv4(),
       date: selectedDate,
       name: sessionNameInput.trim(),
       exercises: exercises,

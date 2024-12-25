@@ -112,14 +112,16 @@ class TemplateService {
     return data;
   }
 
-  async getSessionById(sessionId: string): Promise<DbSession> {
+  async getSessionById(sessionId: string): Promise<DbSession | null> {
     const { data, error } = await supabase
       .from("sessions")
       .select("*")
       .eq("id", sessionId)
       .single();
 
-    if (error) throw new Error(`Failed to get session: ${error.message}`);
+    if (error) {
+      return null;
+    }
     return data;
   }
 
@@ -168,10 +170,6 @@ class TemplateService {
   }
 
   async getExercisesById(exerciseId: string): Promise<DbExercise | null> {
-    console.log(
-      "🚀 ~ TemplateService ~ getExercisesById ~ exerciseId:",
-      exerciseId
-    );
     const { data, error } = await supabase
       .from("exercises")
       .select("*")
@@ -265,7 +263,6 @@ class TemplateService {
     templateData: Template,
     userId: string
   ): Promise<void> {
-    console.log("🚀 ~ TemplateService ~ templateData:", templateData);
     try {
       const dbTemplate = await this.createTemplate(templateData.name, userId);
 
@@ -336,12 +333,11 @@ class TemplateService {
       // Update template name if changed
       await this.updateTemplate(templateId, templateData.name);
 
-      console.log("🚀 ~ TemplateService ~ templateData:", templateData);
-
       // Update existing sessions
       await Promise.all(
-        templateData.sessions.map(async (session) => {
-          if (session.id) {
+        templateData?.sessions?.map(async (session) => {
+          const findSession = await this.getSessionById(session.id);
+          if (findSession?.id) {
             // Update existing session
             await this.updateSession(session);
 
@@ -349,10 +345,6 @@ class TemplateService {
             await Promise.all(
               session.exercises?.map(async (exercise) => {
                 const findExercise = await this.getExercisesById(exercise.id);
-                console.log(
-                  "🚀 ~ TemplateService ~ session.exercises?.map ~ findExercise:",
-                  findExercise
-                );
 
                 if (findExercise?.id) {
                   // Update existing exercise

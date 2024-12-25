@@ -35,7 +35,6 @@ const Exercises = ({
   handleFinishSet,
   handleStopRest,
 }: ExerciesProps) => {
-  console.log("🚀 ~ exercises:", exercises);
   const [isFinishSet, setIsFinishSet] = useState(false);
   const [currentSet, setCurrentSet] = useState<InitialState["currentSet"]>(
     {} as InitialState["currentSet"]
