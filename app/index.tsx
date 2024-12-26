@@ -52,6 +52,7 @@ const App = () => {
   }
 
   return (
+    // <Redirect href={isAuthenticated ? "/(tabs)/create" : "/(auth)/login"} />
     <Redirect href={isAuthenticated ? "/(tabs)/create" : "/(tabs)/create"} />
   );
 };

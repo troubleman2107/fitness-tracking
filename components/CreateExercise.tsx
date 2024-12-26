@@ -90,6 +90,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
   const [selectedDate, setSelectedDate] = useState("");
   const [isCalendarVisible, setIsCalendarVisible] = useState(false);
   const [showAlertDialog, setShowAlertDialog] = useState(false); // [showAlertDialog]
+  const [idExerciseDelete, setIdExerciseDelete] = useState<string[]>([]);
 
   const [isSaved, setIsSaved] = useState(false);
   const addTemplate = useStore((state) => state.addTemplate);
@@ -101,6 +102,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     name: "",
     sessions: [],
   });
+  console.log("🚀 ~ CreateExercise ~ templateData:", templateData);
 
   const [repeatOptions, setRepeatOptions] = useState<RepeatOption>({
     enabled: false,
@@ -224,7 +226,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     const deleteExercise = exercises.filter(
       (exercise) => exercise.id !== idExercise
     );
-
+    setIdExerciseDelete([...idExerciseDelete, idExercise]);
     setExercises(deleteExercise);
   };
 
@@ -321,6 +323,10 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     try {
       setIsLoading(true);
 
+      if (idExerciseDelete.length > 0) {
+        await templateService.deleteExercises(idExerciseDelete);
+      }
+
       if (templateSelect) {
         await templateService.updateFullTemplate(
           templateSelect.id,
@@ -346,18 +352,6 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
       );
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleRequiredInput = () => {
-    if (!sessionNameInput.trim()) {
-      Alert.alert("Error", "Please enter a session name");
-      return;
-    }
-
-    if (exercises.length === 0) {
-      Alert.alert("Error", "Please add at least one exercise");
-      return;
     }
   };
 

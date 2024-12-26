@@ -3,11 +3,11 @@ import { useEffect } from "react";
 import * as WebBrowser from "expo-web-browser";
 import { useAuthRequest } from "expo-auth-session/providers/google";
 import { makeRedirectUri } from "expo-auth-session";
-import { Button } from "react-native-paper";
 import { supabase } from "@/src/lib/supabaseClient";
 import { router } from "expo-router";
 import { Text } from "react-native-paper";
 import { PostgrestError } from "@supabase/supabase-js";
+import { Button, ButtonText } from "@/components/ui/button";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -130,12 +130,10 @@ export default function Login() {
         Welcome Back
       </Text>
       <Button
-        mode="contained"
+        className="bg-success-300 focus:bg-success-50"
         onPress={() => promptAsync()}
-        disabled={!request}
-        style={styles.button}
       >
-        Sign in with Google
+        <ButtonText>Sign in with Google</ButtonText>
       </Button>
     </View>
   );

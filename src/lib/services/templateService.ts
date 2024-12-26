@@ -184,6 +184,21 @@ class TemplateService {
     return data;
   }
 
+  async deleteExercises(exerciseIds: string[]): Promise<void> {
+    if (!exerciseIds || exerciseIds.length === 0) {
+      throw new Error("Exercise IDs array must not be empty");
+    }
+
+    const { error } = await supabase
+      .from("exercises")
+      .delete()
+      .in("id", exerciseIds);
+
+    if (error) {
+      throw new Error(`Failed to delete exercises: ${error.message}`);
+    }
+  }
+
   async createSets(
     sets: Set[],
     exerciseId: string,
@@ -329,6 +344,7 @@ class TemplateService {
     templateData: Template,
     userId: string
   ): Promise<void> {
+    console.log("🚀 ~ TemplateService ~ templateData:", templateData);
     try {
       // Update template name if changed
       await this.updateTemplate(templateId, templateData.name);
