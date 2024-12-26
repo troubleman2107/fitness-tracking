@@ -153,6 +153,35 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     }
   }, [selectedDate]);
 
+  // useEffect(() => {
+  //   if (exercises.length > 0) {
+  //     const idSession =
+  //       templateSelect &&
+  //       templateSelect.sessions.find(
+  //         (session) =>
+  //           getDateWithoutTime(new Date(session.date)).getTime() ===
+  //           getDateWithoutTime(new Date()).getTime()
+  //       )?.id;
+  //     const newSession: SessionData = {
+  //       id: idSession || uuidv4(),
+  //       date: selectedDate,
+  //       name: sessionNameInput.trim(),
+  //       exercises: exercises,
+  //     };
+  //     const repeatedSessions = generateRepeatedSessions(newSession);
+  //     // Update template data with all sessions
+  //     setTemplateData({
+  //       ...templateData,
+  //       sessions: [
+  //         ...templateData.sessions.filter(
+  //           (s) => !repeatedSessions.some((rs) => rs.date === s.date)
+  //         ),
+  //         ...repeatedSessions,
+  //       ],
+  //     });
+  //   }
+  // }, [exercises]);
+
   const handleSetTemplateName = (name: string) => {
     setTemplateData({ ...templateData, name: name });
   };
@@ -260,38 +289,6 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     return sessions;
   };
 
-  const handleOnSaveSession = () => {
-    setIsSaved(true);
-
-    const idSession =
-      templateSelect &&
-      templateSelect.sessions.find(
-        (session) =>
-          getDateWithoutTime(new Date(session.date)).getTime() ===
-          getDateWithoutTime(new Date()).getTime()
-      )?.id;
-
-    const newSession: SessionData = {
-      id: idSession || uuidv4(),
-      date: selectedDate,
-      name: sessionNameInput.trim(),
-      exercises: exercises,
-    };
-
-    const repeatedSessions = generateRepeatedSessions(newSession);
-
-    // Update template data with all sessions
-    setTemplateData({
-      ...templateData,
-      sessions: [
-        ...templateData.sessions.filter(
-          (s) => !repeatedSessions.some((rs) => rs.date === s.date)
-        ),
-        ...repeatedSessions,
-      ],
-    });
-  };
-
   const handleChangeDate = (date: DateData) => {
     setIsSaved(false);
     setSessionNameInput("");
@@ -320,6 +317,44 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
       return;
     }
 
+    let templateDataInsert;
+
+    if (exercises.length > 0) {
+      const idSession =
+        templateSelect &&
+        templateSelect.sessions.find(
+          (session) =>
+            getDateWithoutTime(new Date(session.date)).getTime() ===
+            getDateWithoutTime(new Date()).getTime()
+        )?.id;
+      const newSession: SessionData = {
+        id: idSession || uuidv4(),
+        date: selectedDate,
+        name: sessionNameInput.trim(),
+        exercises: exercises,
+      };
+      const repeatedSessions = generateRepeatedSessions(newSession);
+      // Update template data with all sessions
+      templateDataInsert = {
+        ...templateData,
+        sessions: [
+          ...templateData.sessions.filter(
+            (s) => !repeatedSessions.some((rs) => rs.date === s.date)
+          ),
+          ...repeatedSessions,
+        ],
+      };
+      // setTemplateData({
+      //   ...templateData,
+      //   sessions: [
+      //     ...templateData.sessions.filter(
+      //       (s) => !repeatedSessions.some((rs) => rs.date === s.date)
+      //     ),
+      //     ...repeatedSessions,
+      //   ],
+      // });
+    }
+
     try {
       setIsLoading(true);
 
@@ -327,14 +362,16 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
         await templateService.deleteExercises(idExerciseDelete);
       }
 
-      if (templateSelect) {
-        await templateService.updateFullTemplate(
-          templateSelect.id,
-          templateData,
-          user.id
-        );
-      } else {
-        await templateService.createFullTemplate(templateData, user.id);
+      if (templateDataInsert) {
+        if (templateSelect) {
+          await templateService.updateFullTemplate(
+            templateSelect.id,
+            templateDataInsert,
+            user.id
+          );
+        } else {
+          await templateService.createFullTemplate(templateDataInsert, user.id);
+        }
       }
 
       await fetchTemplates();
@@ -389,7 +426,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
                     Session Name
                   </FormControlLabelText>
                 </FormControlLabel>
-                <Input className="w-full" isReadOnly={isSaved}>
+                <Input className="w-full">
                   <InputField
                     placeholder="Session Name"
                     value={sessionNameInput}
@@ -556,7 +593,6 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
                                   size="md"
                                   isDisabled={false}
                                   isInvalid={false}
-                                  isReadOnly={isSaved}
                                 >
                                   <InputField
                                     value={set.weight ? String(set.weight) : ""}
@@ -577,7 +613,6 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
                                   size="md"
                                   isDisabled={false}
                                   isInvalid={false}
-                                  isReadOnly={isSaved}
                                 >
                                   <InputField
                                     value={set.reps ? String(set.reps) : ""}
@@ -596,7 +631,6 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
                                   className={`px-1 h-6 w-[50px]`}
                                   variant="outline"
                                   size="md"
-                                  isReadOnly={isSaved}
                                 >
                                   <InputField
                                     value={
@@ -627,27 +661,6 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
                 </View>
               </View>
             ))}
-          {!isSaved ? (
-            <Button
-              className="bg-success-300"
-              size="md"
-              variant="solid"
-              action="primary"
-              onPress={handleOnSaveSession}
-            >
-              <ButtonText>Save Session</ButtonText>
-            </Button>
-          ) : (
-            <Button
-              className="bg-success-300"
-              size="md"
-              variant="solid"
-              action="primary"
-              onPress={() => setIsSaved(false)}
-            >
-              <ButtonText>Edit Session</ButtonText>
-            </Button>
-          )}
         </KeyboardAwareScrollView>
       </View>
       <AlertDialog
