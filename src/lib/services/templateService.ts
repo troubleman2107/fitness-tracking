@@ -217,20 +217,44 @@ class TemplateService {
     if (error) throw new Error(`Failed to create sets: ${error.message}`);
   }
 
-  async saveSet(exerciseId: string, set: Set, userId: string): Promise<DbSet> {
-    const { data, error } = await supabase
-      .from("sets")
-      .update({
-        weight: set.weight,
-        reps: set.reps,
-        rest_time: set.rest_time,
-      })
-      .eq("id", set.id)
-      .select()
+  async saveSet(exerciseId: string, set: Set, userId: string) {
+    const { data: exerciseData, error: exerciseError } = await supabase
+      .from("exercises")
+      .select("*")
+      .eq("id", exerciseId)
       .single();
 
-    if (error) throw new Error(`Failed to save set: ${error.message}`);
-    return data;
+    if (exerciseError)
+      throw new Error(`Failed to get exercise: ${exerciseError.message}`);
+
+    const exerciseName = exerciseData.name;
+
+    const { data: allExercises, error: allExercisesError } = await supabase
+      .from("exercises")
+      .select("*, sessions!inner(id, date)")
+      .eq("name", exerciseName)
+      .gte("sessions.date", new Date().toISOString().split("T")[0]);
+
+    if (allExercisesError)
+      throw new Error(`Failed to get exercises: ${allExercisesError.message}`);
+
+    const today = new Date().toISOString().split("T")[0];
+
+    allExercises.forEach(async (exercise) => {
+      const { data, error } = await supabase
+        .from("sets")
+        .update({
+          weight: set.weight,
+          reps: set.reps,
+          rest_time: set.rest_time,
+        })
+        .eq("exercise_id", exercise.id)
+        .eq("setOrder", set.setOrder)
+        // .gte("date", today)
+        .select();
+
+      if (error) throw new Error(`Failed to save set: ${error.message}`);
+    });
   }
 
   async getSets(exerciseId: string): Promise<DbSet[]> {

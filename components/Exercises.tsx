@@ -84,6 +84,7 @@ const Exercises = ({
           weight: currentSet.weight || 0,
           reps: currentSet.reps,
           rest_time: currentSet.rest_time,
+          setOrder: currentSet.setOrder,
         },
         user.id
       );

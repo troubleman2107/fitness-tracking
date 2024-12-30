@@ -105,6 +105,7 @@ const ModalSetOfRep: React.FunctionComponent<ModalSetOfRepProps> = ({
                 id: infoSet.id,
                 status: infoSet.status,
                 isDone: infoSet.isDone,
+                setOrder: infoSet.setOrder,
               })
             }
           >
