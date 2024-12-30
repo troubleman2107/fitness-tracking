@@ -238,8 +238,6 @@ class TemplateService {
     if (allExercisesError)
       throw new Error(`Failed to get exercises: ${allExercisesError.message}`);
 
-    const today = new Date().toISOString().split("T")[0];
-
     allExercises.forEach(async (exercise) => {
       const { data, error } = await supabase
         .from("sets")

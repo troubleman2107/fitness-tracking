@@ -2,6 +2,7 @@ const axios = require("axios");
 const fs = require("fs").promises;
 const path = require("path");
 const supabase = require("../../src/lib/supabaseClientJS");
+const uuid = require("uuid");
 
 // Bucket configuration
 const BUCKET_NAME = "exercise-images";
@@ -98,6 +99,12 @@ async function uploadImage(imageUrl, folder) {
       console.log(
         `    Uploading image to ${folder}: ${path.basename(imageUrl)}`
       );
+      const decodedUrl = decodeURIComponent(imageUrl);
+      const nameOfImg = decodedUrl.match(/\/([^\/?#]+\.(jpg|png))/)
+        ? decodedUrl.match(/\/([^\/?#]+\.(jpg|png))/)[1]
+        : "";
+      console.log("🚀 ~ uploadImage ~ nameOfImg:", nameOfImg);
+
       // Fetch image data
       const response = await axios.get(imageUrl, {
         responseType: "arraybuffer",
@@ -105,8 +112,8 @@ async function uploadImage(imageUrl, folder) {
       const imageBuffer = Buffer.from(response.data, "binary");
 
       // Create a unique filename
-      const fileName = path.basename(imageUrl).split("?")[0];
-      const filePath = `${folder}/${fileName}`;
+      const fileName = path.basename(nameOfImg).split("?")[0];
+      const filePath = `${"folder_" + folder}/${"img_" + nameOfImg}`;
 
       // Upload to Supabase storage
       const { data, error } = await supabase.storage
