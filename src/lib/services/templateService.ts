@@ -344,7 +344,6 @@ class TemplateService {
     templateData: Template,
     userId: string
   ): Promise<void> {
-    console.log("🚀 ~ TemplateService ~ templateData:", templateData);
     try {
       // Update template name if changed
       await this.updateTemplate(templateId, templateData.name);
