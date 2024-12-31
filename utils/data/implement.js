@@ -17,20 +17,32 @@ const BUCKET_NAME = "exercise-images";
     );
     const data = JSON.parse(rawData);
 
+    // Load progress data
+    let progress = {};
+    try {
+      const progressData = await fs.readFile(
+        path.resolve(__dirname, "./progress.json"),
+        "utf-8"
+      );
+      progress = JSON.parse(progressData);
+    } catch (err) {
+      console.log("No previous progress found, starting fresh.");
+    }
+
     // Calculate total items to process
     const totalMuscleGroups = data.length;
     let totalExercises = 0;
     data.forEach((mg) => (totalExercises += mg.exercises.length));
     const totalItems = totalMuscleGroups + totalExercises * 2; // Including equipment images
 
-    let processedItems = 0;
+    let processedItems = progress.processedItems || 0;
 
     console.log(
       `Starting to process ${totalMuscleGroups} muscle groups with ${totalExercises} exercises...`
     );
 
     // Process each muscle group
-    for (let i = 0; i < data.length; i++) {
+    for (let i = progress.muscleGroupIndex || 0; i < data.length; i++) {
       const muscleGroup = data[i];
       console.log(
         `\nProcessing muscle group ${i + 1}/${totalMuscleGroups}: ${
@@ -43,14 +55,35 @@ const BUCKET_NAME = "exercise-images";
         muscleGroup.img,
         "muscle-groups"
       );
+
+      console.log("🚀 ~ muscleGroupImageUrl:", muscleGroupImageUrl);
+
       muscleGroup.img = muscleGroupImageUrl;
       processedItems++;
       console.log(
         `Progress: ${Math.round((processedItems / totalItems) * 100)}%`
       );
 
+      // Save updated JSON to a file
+      await fs.writeFile(
+        "./updated_exercises.json",
+        JSON.stringify(data, null, 2)
+      );
+
+      // Save progress
+      progress = {
+        muscleGroupIndex: i,
+        exerciseIndex: 0,
+        processedItems,
+      };
+      await fs.writeFile("./progress.json", JSON.stringify(progress, null, 2));
+
       // Process exercises
-      for (let j = 0; j < muscleGroup.exercises.length; j++) {
+      for (
+        let j = progress.exerciseIndex || 0;
+        j < muscleGroup.exercises.length;
+        j++
+      ) {
         const exercise = muscleGroup.exercises[j];
         console.log(
           `  Processing exercise ${j + 1}/${muscleGroup.exercises.length}: ${
@@ -66,6 +99,23 @@ const BUCKET_NAME = "exercise-images";
           `Progress: ${Math.round((processedItems / totalItems) * 100)}%`
         );
 
+        // Save updated JSON to a file
+        await fs.writeFile(
+          "./updated_exercises.json",
+          JSON.stringify(data, null, 2)
+        );
+
+        // Save progress
+        progress = {
+          muscleGroupIndex: i,
+          exerciseIndex: j,
+          processedItems,
+        };
+        await fs.writeFile(
+          "./progress.json",
+          JSON.stringify(progress, null, 2)
+        );
+
         // Upload equipment image
         const equipmentImageUrl = await uploadImage(
           exercise.equipment.img,
@@ -76,16 +126,28 @@ const BUCKET_NAME = "exercise-images";
         console.log(
           `Progress: ${Math.round((processedItems / totalItems) * 100)}%`
         );
+
+        // Save updated JSON to a file
+        await fs.writeFile(
+          "./updated_exercises.json",
+          JSON.stringify(data, null, 2)
+        );
+
+        // Save progress
+        progress = {
+          muscleGroupIndex: i,
+          exerciseIndex: j + 1,
+          processedItems,
+        };
+        await fs.writeFile(
+          "./progress.json",
+          JSON.stringify(progress, null, 2)
+        );
       }
     }
 
-    // Save updated JSON to a file
-    await fs.writeFile(
-      "./updated_exercises.json",
-      JSON.stringify(data, null, 2)
-    );
-
     console.log("\n✅ All images uploaded and JSON updated successfully!");
+    await fs.unlink("./progress.json"); // Remove progress file on success
   } catch (error) {
     console.error("\n❌ Error processing images:", error.message);
     if (error.stack) console.error(error.stack);
@@ -103,7 +165,6 @@ async function uploadImage(imageUrl, folder) {
       const nameOfImg = decodedUrl.match(/\/([^\/?#]+\.(jpg|png))/)
         ? decodedUrl.match(/\/([^\/?#]+\.(jpg|png))/)[1]
         : "";
-      console.log("🚀 ~ uploadImage ~ nameOfImg:", nameOfImg);
 
       // Fetch image data
       const response = await axios.get(imageUrl, {
@@ -126,10 +187,11 @@ async function uploadImage(imageUrl, folder) {
       if (error) throw new Error(error.message);
 
       // Return the public URL
-      const { publicURL } = supabase.storage
+      const publicUrlInfo = supabase.storage
         .from(BUCKET_NAME)
         .getPublicUrl(filePath);
-      return publicURL;
+
+      return publicUrlInfo.data.publicUrl;
     } catch (error) {
       console.error(`    ❌ Error uploading image: ${imageUrl}`, error.message);
       throw error;
