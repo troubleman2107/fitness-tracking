@@ -57,6 +57,14 @@ import { useRouter } from "expo-router";
 import { supabase } from "@/src/lib/supabaseClient";
 import { templateService } from "@/src/lib/services/templateService";
 import { getDateWithoutTime } from "@/utils/dateHelpers";
+import {
+  Actionsheet,
+  ActionsheetBackdrop,
+  ActionsheetContent,
+  ActionsheetDragIndicator,
+  ActionsheetDragIndicatorWrapper,
+} from "./ui/actionsheet";
+import AddExercises from "./AddExercises";
 
 interface infoSetsForm {
   id: string;
@@ -91,6 +99,8 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
   const [isCalendarVisible, setIsCalendarVisible] = useState(false);
   const [showAlertDialog, setShowAlertDialog] = useState(false); // [showAlertDialog]
   const [idExerciseDelete, setIdExerciseDelete] = useState<string[]>([]);
+  const [isAddExerciseModalVisible, setIsAddExerciseModalVisible] =
+    useState(false);
 
   const [isSaved, setIsSaved] = useState(false);
   const addTemplate = useStore((state) => state.addTemplate);
@@ -530,12 +540,21 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
                 onChangeText={(text) => setnameExerciseInput(text)}
               />
             </Input>
-            <Button
+            {/* <Button
               className="mt-3 w-full"
               size="md"
               variant="solid"
               action="primary"
               onPress={handleAddExercise}
+            >
+              <ButtonText>Add Exercise</ButtonText>
+            </Button> */}
+            <Button
+              className="mt-3 w-full"
+              size="md"
+              variant="solid"
+              action="primary"
+              onPress={() => setIsAddExerciseModalVisible(true)}
             >
               <ButtonText>Add Exercise</ButtonText>
             </Button>
@@ -698,6 +717,34 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <Actionsheet
+          useRNModal={true}
+          snapPoints={[90]}
+          isOpen={isAddExerciseModalVisible}
+          onClose={() => setIsAddExerciseModalVisible(false)}
+        >
+          <ActionsheetBackdrop />
+          <ActionsheetContent className="p-2">
+            <ActionsheetDragIndicatorWrapper>
+              <ActionsheetDragIndicator />
+            </ActionsheetDragIndicatorWrapper>
+            {/* <CreateExercise
+              templateSelect={templateSelect}
+              onClose={handleOnCloseCreateModal}
+            /> */}
+            <AddExercises
+              onClose={() => {
+                setIsAddExerciseModalVisible(false);
+              }}
+            />
+          </ActionsheetContent>
+        </Actionsheet>
+      </KeyboardAvoidingView>
+
       {isLoading && (
         <View
           style={StyleSheet.absoluteFill}
