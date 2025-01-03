@@ -20,51 +20,15 @@ interface AddExercisesProps {
   onClose: () => void;
 }
 
-const MUSCLES_GROUP = [
-  {
-    name: "Chest",
-    muscles: ["Chest"],
-  },
-  {
-    name: "Back",
-    muscles: ["Back"],
-  },
-  {
-    name: "Shoulders",
-    muscles: ["Shoulders"],
-  },
-  {
-    name: "Arms",
-    muscles: ["Biceps", "Triceps"],
-  },
-  {
-    name: "Legs",
-    muscles: ["Quads", "Hamstrings", "Calves"],
-  },
-  {
-    name: "Abs",
-    muscles: ["Abs"],
-  },
-];
-
-const EQUIPMENT = [
-  {
-    name: "Dumbbell",
-  },
-  {
-    name: "Barbell",
-  },
-  {
-    name: "Machine",
-  },
-  {
-    name: "Bodyweight",
-  },
-];
-
 interface EquipmentInfo {
   name: string;
   img: string;
+}
+
+interface Exercise {
+  name: string;
+  img: string;
+  equipment: EquipmentInfo;
 }
 
 interface ExercisesInfo {
@@ -79,13 +43,70 @@ interface ExercisesInfo {
 }
 
 const AddExercises = ({ onClose }: AddExercisesProps) => {
-  //   const [exerciseInfo, setExerciseInfo] =
-  // useState<ExercisesInfo[]>(exercisesData);
+  const exercises = getAllExercises(exercisesData);
   const muscleGroups = exercisesData.map((exercise) => ({
     name: exercise.muscleGroups,
     img: exercise.img,
   }));
   const equipment = filterEquipment(exercisesData);
+
+  // Add new state variables
+  const [selectedMuscle, setSelectedMuscle] = useState<string | null>(null);
+  const [selectedEquipment, setSelectedEquipment] = useState<string | null>(
+    null
+  );
+
+  // Add new search state
+  const [searchTerm, setSearchTerm] = useState<string>("");
+
+  // Add new filter functions
+  const filteredExercises = exercises.filter((exercise) => {
+    const matchesMuscle = selectedMuscle
+      ? exercisesData.some(
+          (group) =>
+            group.muscleGroups === selectedMuscle &&
+            group.exercises.some((ex) => ex.name === exercise.name)
+        )
+      : true;
+
+    const matchesEquipment = selectedEquipment
+      ? exercise.equipment?.name === selectedEquipment
+      : true;
+
+    const matchesSearch = searchTerm
+      ? exercise.name.toLowerCase().includes(searchTerm.toLowerCase())
+      : true;
+
+    return matchesMuscle && matchesEquipment && matchesSearch;
+  });
+
+  const handleMuscleFilter = (muscleName: string) => {
+    setSelectedMuscle(selectedMuscle === muscleName ? null : muscleName);
+  };
+
+  const handleEquipmentFilter = (equipmentName: string) => {
+    setSelectedEquipment(
+      selectedEquipment === equipmentName ? null : equipmentName
+    );
+  };
+
+  // Add search handler
+  const handleSearch = (text: string) => {
+    setSearchTerm(text);
+  };
+
+  function getAllExercises(data: ExercisesInfo[]) {
+    try {
+      return Object.values(data)
+        .flat()
+        .reduce((acc: Exercise[], session) => {
+          return [...acc, ...session.exercises];
+        }, []);
+    } catch (error) {
+      console.error("Error getting exercises:", error);
+      return [];
+    }
+  }
 
   function filterEquipment(exercisesData: ExercisesInfo[]) {
     // Create a Set to store unique equipment names
@@ -117,73 +138,120 @@ const AddExercises = ({ onClose }: AddExercisesProps) => {
     return equipmentSet;
   }
 
-  console.log("equipment", equipment);
-
   return (
-    <ScrollView>
-      <View className="w-full mt-2 flex flex-row justify-between">
-        <CloseIconButton onClick={() => onClose()} />
-        <Input className="w-[250px]">
-          <InputField
-            className=""
-            placeholder="Name of exercise"
-            //   value={templateData.name}
-            //   onChangeText={(text) => handleSetTemplateName(text)}
-          />
-          <InputSlot>
-            {/* <InputIcon> */}
-            <Icon
-              as={SearchIcon}
-              className="w-5 h-5 mr-2 text-typography-500"
+    <View className="flex-1">
+      {/* Header Section - Fixed */}
+      <View className="px-2 py-2">
+        <View className="w-full flex flex-row justify-between items-center">
+          <CloseIconButton onClick={() => onClose()} />
+          <Input className="w-[250px]">
+            <InputField
+              placeholder="Name of exercise"
+              value={searchTerm}
+              onChangeText={handleSearch}
             />
-            {/* </InputIcon> */}
-          </InputSlot>
-        </Input>
-        <Button
-          className="bg-success-300 focus:bg-success-50"
-          // onPress={handleSaveTemplate}
-          // isDisabled={isLoading}
-        >
-          <ButtonText>Add</ButtonText>
-        </Button>
+            <InputSlot>
+              <Icon
+                as={SearchIcon}
+                className="w-5 h-5 mr-2 text-typography-500"
+              />
+            </InputSlot>
+          </Input>
+          <Button
+            className="bg-success-300 focus:bg-success-50"
+            // onPress={handleSaveTemplate}
+            // isDisabled={isLoading}
+          >
+            <ButtonText>Add</ButtonText>
+          </Button>
+        </View>
       </View>
-      <Text className="font-psemibold mt-3">Filter by Muscle</Text>
+
+      {/* Main Scrollable Content */}
       <FlatList
-        horizontal={true}
-        data={muscleGroups}
+        className="flex-1"
+        ListHeaderComponent={() => (
+          <>
+            {/* Muscle Groups Section */}
+            <View className="px-2">
+              <Text className="font-psemibold mt-3">Filter by Muscle</Text>
+            </View>
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 16 }}
+              data={muscleGroups}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  className={`mt-3 mr-3 ${
+                    selectedMuscle === item.name ? "opacity-50" : ""
+                  }`}
+                  onPress={() => handleMuscleFilter(item.name)}
+                >
+                  <View className="bg-gray-200 w-24 h-24 rounded-lg overflow-hidden">
+                    <Image
+                      source={{ uri: item.img }}
+                      className="w-full h-full"
+                    />
+                  </View>
+                  <Text className="text-center font-psemibold mt-1">
+                    {item.name}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              keyExtractor={(item) => item.name}
+            />
+
+            {/* Equipment Section */}
+            <View className="px-2">
+              <Text className="font-psemibold mt-3">Filter by Equipment</Text>
+            </View>
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 16 }}
+              data={equipment}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  className={`mt-3 mr-3 ${
+                    selectedEquipment === item.name ? "opacity-50" : ""
+                  }`}
+                  onPress={() => handleEquipmentFilter(item.name)}
+                >
+                  <View className="bg-gray-200 w-24 h-24 rounded-lg overflow-hidden">
+                    <Image
+                      source={{ uri: item.img }}
+                      className="w-full h-full"
+                    />
+                  </View>
+                  <Text className="w-[100px] text-center font-psemibold mt-1">
+                    {item.name}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              keyExtractor={(item) => item.name}
+            />
+            <Text className="px-2 font-pbold">{`${filteredExercises.length} exercises`}</Text>
+          </>
+        )}
+        data={filteredExercises}
+        keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
-          <TouchableOpacity className="mt-3 mr-1" onPress={() => {}}>
-            <View className="bg-gray-200 w-24 h-24 rounded-lg flex items-center justify-center border ml-2">
+          <>
+            <TouchableOpacity className="flex-row items-center px-2 py-2">
               <Image
                 source={{ uri: item.img }}
-                className="w-full h-full rounded-lg"
+                className="w-16 h-16 rounded-lg"
               />
-            </View>
-            <Text className="text-center font-psemibold">{item.name}</Text>
-          </TouchableOpacity>
+              <Text className="ml-4 font-psemibold">{item.name}</Text>
+            </TouchableOpacity>
+          </>
         )}
-        keyExtractor={(item) => item.name}
+        initialNumToRender={10}
+        maxToRenderPerBatch={20}
+        windowSize={5}
       />
-      <Text className="font-psemibold mt-3">Filter by Equipment</Text>
-      <FlatList
-        horizontal={true}
-        data={equipment}
-        renderItem={({ item }) => (
-          <TouchableOpacity className="mt-3 mr-1" onPress={() => {}}>
-            <View className="bg-gray-200 w-24 h-24 rounded-lg flex items-center justify-center border ml-2">
-              <Image
-                source={{ uri: item.img }}
-                className="w-full h-full rounded-lg"
-              />
-            </View>
-            <Text className="w-[100px] text-center font-psemibold">
-              {item.name}
-            </Text>
-          </TouchableOpacity>
-        )}
-        keyExtractor={(item) => item.name}
-      />
-    </ScrollView>
+    </View>
   );
 };
 
