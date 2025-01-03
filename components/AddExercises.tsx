@@ -18,6 +18,7 @@ import exercisesData from "@/utils/data/exercises.json";
 
 interface AddExercisesProps {
   onClose: () => void;
+  onAddExercises: (exercises: Exercise[]) => void;
 }
 
 interface EquipmentInfo {
@@ -137,7 +138,7 @@ const ListHeader = React.memo(
   }
 );
 
-const AddExercises = ({ onClose }: AddExercisesProps) => {
+const AddExercises = ({ onClose, onAddExercises }: AddExercisesProps) => {
   const exercises = useMemo(() => getAllExercises(exercisesData), []);
   const muscleGroups = useMemo(
     () =>
@@ -154,6 +155,7 @@ const AddExercises = ({ onClose }: AddExercisesProps) => {
     null
   );
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedExercises, setSelectedExercises] = useState<Exercise[]>([]);
 
   const filteredExercises = useMemo(
     () =>
@@ -191,6 +193,23 @@ const AddExercises = ({ onClose }: AddExercisesProps) => {
 
   const handleSearch = (text: string) => {
     setSearchTerm(text);
+  };
+
+  const toggleSelection = (item: Exercise) => {
+    setSelectedExercises((prev) => {
+      const isSelected = prev.some((exercise) => exercise.name === item.name);
+      if (isSelected) {
+        return prev.filter((exercise) => exercise.name !== item.name);
+      } else {
+        return [...prev, item];
+      }
+    });
+  };
+
+  const handleAdd = () => {
+    console.log("selectedExercises", selectedExercises);
+    onAddExercises(selectedExercises); // Pass to parent
+    setSelectedExercises([]); // Reset selection
   };
 
   function getAllExercises(data: ExercisesInfo[]) {
@@ -270,7 +289,10 @@ const AddExercises = ({ onClose }: AddExercisesProps) => {
               />
             </InputSlot>
           </Input>
-          <Button className="bg-success-300 focus:bg-success-50">
+          <Button
+            className="bg-success-300 focus:bg-success-50"
+            onPress={handleAdd}
+          >
             <ButtonText>Add</ButtonText>
           </Button>
         </View>
@@ -283,7 +305,14 @@ const AddExercises = ({ onClose }: AddExercisesProps) => {
         data={filteredExercises}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
-          <TouchableOpacity className="flex-row items-center px-2 py-2">
+          <TouchableOpacity
+            className={`flex-row items-center px-2 py-2 ${
+              selectedExercises.some((exercise) => exercise.name === item.name)
+                ? "bg-gray-200"
+                : ""
+            }`}
+            onPress={() => toggleSelection(item)}
+          >
             <Image
               source={{ uri: item.img }}
               className="w-16 h-16 rounded-lg"

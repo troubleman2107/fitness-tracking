@@ -195,22 +195,26 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     setTemplateData({ ...templateData, name: name });
   };
 
-  const handleAddExercise = () => {
-    if (!nameExerciseInput) {
-      Alert.alert("Error", "Please enter a exercise name");
+  const handleAddExercise = (exercisesInput: string[]) => {
+    console.log("🚀 ~ handleAddExercise ~ exercises:", exercisesInput);
+    if (exercisesInput.length === 0) {
+      Alert.alert("Error", "Please enter at least one exercise.");
       return;
     }
 
-    const exerciseInfo: Exercise = {
-      id: uuidv4(),
-      name: nameExerciseInput,
-      sets: [],
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      exerciseOrder: String(exercises.length + 1),
-    };
-    setExercises([...exercises, exerciseInfo]);
-    setnameExerciseInput("");
+    const exerciseInfo = exercisesInput.map((exercise, index) => {
+      return {
+        id: uuidv4(),
+        name: exercise,
+        sets: [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        exerciseOrder: String(index + 1),
+      };
+    });
+
+    setIsAddExerciseModalVisible(false);
+    setExercises([...exercises, ...exerciseInfo]);
   };
 
   const handleAddSets = (idExercise: string) => {
@@ -737,6 +741,9 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
               onClose={handleOnCloseCreateModal}
             /> */}
             <AddExercises
+              onAddExercises={(exercises) =>
+                handleAddExercise(exercises.map((e) => e.name))
+              }
               onClose={() => {
                 setIsAddExerciseModalVisible(false);
               }}
