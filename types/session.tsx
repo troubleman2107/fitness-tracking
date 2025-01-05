@@ -6,7 +6,7 @@ export interface Template {
 }
 
 export interface SessionData {
-  id: string;
+  id?: string;
   date: string;
   name: string;
   exercises: Exercise[];

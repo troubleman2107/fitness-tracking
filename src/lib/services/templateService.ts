@@ -373,8 +373,8 @@ class TemplateService {
       // Update existing sessions
       await Promise.all(
         templateData?.sessions?.map(async (session) => {
-          const findSession = await this.getSessionById(session.id);
-          if (findSession?.id) {
+          // const findSession = await this.getSessionById(session.id);
+          if (session?.id) {
             // Update existing session
             await this.updateSession(session);
 
@@ -390,6 +390,10 @@ class TemplateService {
                   // Update sets
                   await Promise.all(
                     exercise.sets?.map(async (set) => {
+                      console.log(
+                        "🚀 ~ TemplateService ~ exercise.sets?.map ~ set:",
+                        set
+                      );
                       const findSet = await this.getSetsById(set.id);
 
                       if (findSet) {

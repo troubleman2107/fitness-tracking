@@ -195,26 +195,27 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     setTemplateData({ ...templateData, name: name });
   };
 
-  const handleAddExercise = (exercisesInput: string[]) => {
-    console.log("🚀 ~ handleAddExercise ~ exercises:", exercisesInput);
-    if (exercisesInput.length === 0) {
+  const handleAddExercise = (exerciseNames: string[]) => {
+    console.log("🚀 ~ handleAddExercise ~ exercises:", exerciseNames);
+    if (exerciseNames.length === 0) {
       Alert.alert("Error", "Please enter at least one exercise.");
       return;
     }
 
-    const exerciseInfo = exercisesInput.map((exercise, index) => {
+    const exerciseInfo = exerciseNames.map((exercise, index) => {
       return {
         id: uuidv4(),
         name: exercise,
         sets: [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        exerciseOrder: String(index + 1),
+        exerciseOrder: String(index + index),
       };
     });
 
     setIsAddExerciseModalVisible(false);
-    setExercises([...exercises, ...exerciseInfo]);
+
+    setExercises((prevExercises) => [...prevExercises, ...exerciseInfo]);
   };
 
   const handleAddSets = (idExercise: string) => {
@@ -341,7 +342,6 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
             getDateWithoutTime(new Date()).getTime()
         )?.id;
       const newSession: SessionData = {
-        id: idSession || uuidv4(),
         date: selectedDate,
         name: sessionNameInput.trim(),
         exercises: exercises,
@@ -357,15 +357,6 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
           ...repeatedSessions,
         ],
       };
-      // setTemplateData({
-      //   ...templateData,
-      //   sessions: [
-      //     ...templateData.sessions.filter(
-      //       (s) => !repeatedSessions.some((rs) => rs.date === s.date)
-      //     ),
-      //     ...repeatedSessions,
-      //   ],
-      // });
     }
 
     try {
