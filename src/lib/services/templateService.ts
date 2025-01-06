@@ -391,10 +391,6 @@ class TemplateService {
                   // Update sets
                   await Promise.all(
                     exercise.sets?.map(async (set) => {
-                      console.log(
-                        "🚀 ~ TemplateService ~ exercise.sets?.map ~ set:",
-                        set
-                      );
                       const findSet = await this.getSetsById(set.id);
 
                       if (findSet) {

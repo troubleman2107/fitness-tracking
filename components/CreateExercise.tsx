@@ -91,6 +91,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
   const router = useRouter();
   const [session, setSession] = useState<SessionData[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
+  console.log("🚀 ~ CreateExercise ~ exercises:", exercises);
 
   const [nameExerciseInput, setnameExerciseInput] = useState("");
   const [templateInput, setTemplateInput] = useState("");
@@ -140,20 +141,13 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
       const dataByDate = templateData.sessions.filter(
         (session) => session.date === selectedDate
       )[0];
-      if (dataByDate) {
-        setSessionNameInput(dataByDate?.name);
-        setExercises(dataByDate?.exercises);
-      }
-    }
-  }, [templateData]);
-
-  useEffect(() => {
-    if (templateData) {
-      const dataByDate = templateData.sessions.filter(
-        (session) => session.date === selectedDate
-      )[0];
       dataByDate?.exercises && setExercises(dataByDate.exercises);
       dataByDate?.name && setSessionNameInput(dataByDate.name);
+
+      setRepeatOptions({
+        enabled: false,
+        daysToRepeat: [],
+      });
 
       if (dataByDate) {
         setIsSaved(true);
@@ -161,7 +155,41 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
         setExercises([]);
       }
     }
-  }, [selectedDate]);
+  }, [selectedDate, sessionNameInput]);
+
+  useEffect(() => {
+    let templateDataInsert;
+
+    if (exercises.length > 0) {
+      const idSession =
+        templateSelect &&
+        templateSelect.sessions.find(
+          (session) =>
+            getDateWithoutTime(new Date(session.date)).getTime() ===
+            getDateWithoutTime(new Date(selectedDate)).getTime()
+        )?.id;
+
+      const newSession: SessionData = {
+        ...(idSession && { id: idSession }),
+        date: selectedDate,
+        name: sessionNameInput.trim(),
+        exercises: exercises,
+      };
+      const repeatedSessions = generateRepeatedSessions(newSession);
+      // Update template data with all sessions
+      templateDataInsert = {
+        ...templateData,
+        sessions: [
+          ...templateData.sessions.filter(
+            (s) => !repeatedSessions.some((rs) => rs.date === s.date)
+          ),
+          ...repeatedSessions,
+        ],
+      };
+
+      setTemplateData(templateDataInsert);
+    }
+  }, [exercises, repeatOptions]);
 
   // useEffect(() => {
   //   if (exercises.length > 0) {
@@ -220,6 +248,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
   };
 
   const handleAddSets = (idExercise: string) => {
+    console.log("🚀 ~ handleAddSets ~ idExercise:", idExercise);
     if (exercises) {
       const addSets = exercises.map((exercise) => {
         if (exercise.id === idExercise) {
@@ -332,34 +361,34 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
       return;
     }
 
-    let templateDataInsert;
+    // let templateDataInsert;
 
-    if (exercises.length > 0) {
-      const idSession =
-        templateSelect &&
-        templateSelect.sessions.find(
-          (session) =>
-            getDateWithoutTime(new Date(session.date)).getTime() ===
-            getDateWithoutTime(new Date()).getTime()
-        )?.id;
-      const newSession: SessionData = {
-        ...(idSession && { id: idSession }),
-        date: selectedDate,
-        name: sessionNameInput.trim(),
-        exercises: exercises,
-      };
-      const repeatedSessions = generateRepeatedSessions(newSession);
-      // Update template data with all sessions
-      templateDataInsert = {
-        ...templateData,
-        sessions: [
-          ...templateData.sessions.filter(
-            (s) => !repeatedSessions.some((rs) => rs.date === s.date)
-          ),
-          ...repeatedSessions,
-        ],
-      };
-    }
+    // if (exercises.length > 0) {
+    //   const idSession =
+    //     templateSelect &&
+    //     templateSelect.sessions.find(
+    //       (session) =>
+    //         getDateWithoutTime(new Date(session.date)).getTime() ===
+    //         getDateWithoutTime(new Date()).getTime()
+    //     )?.id;
+    //   const newSession: SessionData = {
+    //     ...(idSession && { id: idSession }),
+    //     date: selectedDate,
+    //     name: sessionNameInput.trim(),
+    //     exercises: exercises,
+    //   };
+    //   const repeatedSessions = generateRepeatedSessions(newSession);
+    //   // Update template data with all sessions
+    //   templateDataInsert = {
+    //     ...templateData,
+    //     sessions: [
+    //       ...templateData.sessions.filter(
+    //         (s) => !repeatedSessions.some((rs) => rs.date === s.date)
+    //       ),
+    //       ...repeatedSessions,
+    //     ],
+    //   };
+    // }
 
     try {
       setIsLoading(true);
@@ -368,15 +397,15 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
         await templateService.deleteExercises(idExerciseDelete);
       }
 
-      if (templateDataInsert) {
+      if (templateData) {
         if (templateSelect) {
           await templateService.updateFullTemplate(
             templateSelect.id,
-            templateDataInsert,
+            templateData,
             user.id
           );
         } else {
-          await templateService.createFullTemplate(templateDataInsert, user.id);
+          await templateService.createFullTemplate(templateData, user.id);
         }
       }
 
@@ -524,38 +553,15 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
         </View>
 
         <View className="mt-3">
-          <FormControl className="w-full">
-            <FormControlLabel>
-              <FormControlLabelText className="font-psemibold">
-                Name of Exercise
-              </FormControlLabelText>
-            </FormControlLabel>
-            <Input className="w-full">
-              <InputField
-                placeholder="Barbel Bench Press"
-                value={nameExerciseInput}
-                onChangeText={(text) => setnameExerciseInput(text)}
-              />
-            </Input>
-            {/* <Button
-              className="mt-3 w-full"
-              size="md"
-              variant="solid"
-              action="primary"
-              onPress={handleAddExercise}
-            >
-              <ButtonText>Add Exercise</ButtonText>
-            </Button> */}
-            <Button
-              className="mt-3 w-full"
-              size="md"
-              variant="solid"
-              action="primary"
-              onPress={() => setIsAddExerciseModalVisible(true)}
-            >
-              <ButtonText>Add Exercise</ButtonText>
-            </Button>
-          </FormControl>
+          <Button
+            className="mt-3 w-full"
+            size="md"
+            variant="solid"
+            action="primary"
+            onPress={() => setIsAddExerciseModalVisible(true)}
+          >
+            <ButtonText>Add Exercise</ButtonText>
+          </Button>
         </View>
         <KeyboardAwareScrollView bottomOffset={50} className="mt-3">
           {exercises &&
