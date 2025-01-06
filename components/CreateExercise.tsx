@@ -112,6 +112,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     name: "",
     sessions: [],
   });
+  console.log("🚀 ~ CreateExercise ~ templateData:", templateData);
 
   const [repeatOptions, setRepeatOptions] = useState<RepeatOption>({
     enabled: false,
@@ -342,6 +343,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
             getDateWithoutTime(new Date()).getTime()
         )?.id;
       const newSession: SessionData = {
+        ...(idSession && { id: idSession }),
         date: selectedDate,
         name: sessionNameInput.trim(),
         exercises: exercises,
