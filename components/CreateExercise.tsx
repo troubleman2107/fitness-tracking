@@ -91,7 +91,6 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
   const router = useRouter();
   const [session, setSession] = useState<SessionData[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
-  console.log("🚀 ~ CreateExercise ~ exercises:", exercises);
 
   const [nameExerciseInput, setnameExerciseInput] = useState("");
   const [templateInput, setTemplateInput] = useState("");
@@ -113,7 +112,6 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     name: "",
     sessions: [],
   });
-  console.log("🚀 ~ CreateExercise ~ templateData:", templateData);
 
   const [repeatOptions, setRepeatOptions] = useState<RepeatOption>({
     enabled: false,
@@ -191,41 +189,11 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     }
   }, [exercises, repeatOptions]);
 
-  // useEffect(() => {
-  //   if (exercises.length > 0) {
-  //     const idSession =
-  //       templateSelect &&
-  //       templateSelect.sessions.find(
-  //         (session) =>
-  //           getDateWithoutTime(new Date(session.date)).getTime() ===
-  //           getDateWithoutTime(new Date()).getTime()
-  //       )?.id;
-  //     const newSession: SessionData = {
-  //       id: idSession || uuidv4(),
-  //       date: selectedDate,
-  //       name: sessionNameInput.trim(),
-  //       exercises: exercises,
-  //     };
-  //     const repeatedSessions = generateRepeatedSessions(newSession);
-  //     // Update template data with all sessions
-  //     setTemplateData({
-  //       ...templateData,
-  //       sessions: [
-  //         ...templateData.sessions.filter(
-  //           (s) => !repeatedSessions.some((rs) => rs.date === s.date)
-  //         ),
-  //         ...repeatedSessions,
-  //       ],
-  //     });
-  //   }
-  // }, [exercises]);
-
   const handleSetTemplateName = (name: string) => {
     setTemplateData({ ...templateData, name: name });
   };
 
   const handleAddExercise = (exerciseNames: string[]) => {
-    console.log("🚀 ~ handleAddExercise ~ exercises:", exerciseNames);
     if (exerciseNames.length === 0) {
       Alert.alert("Error", "Please enter at least one exercise.");
       return;
@@ -248,7 +216,6 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
   };
 
   const handleAddSets = (idExercise: string) => {
-    console.log("🚀 ~ handleAddSets ~ idExercise:", idExercise);
     if (exercises) {
       const addSets = exercises.map((exercise) => {
         if (exercise.id === idExercise) {

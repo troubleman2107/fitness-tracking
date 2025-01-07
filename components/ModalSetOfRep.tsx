@@ -63,14 +63,15 @@ const ModalSetOfRep: React.FunctionComponent<ModalSetOfRepProps> = ({
   return (
     <SafeAreaProvider>
       <View className="py-2 px-5 rounded-[20px]">
-        <View className="w-full flex flex-row items-center justify-center gap-3">
+        {/* <View className="w-full flex flex-row items-center justify-center gap-3">
           <Text className="text-['#67BC5F'] font-psemibold mb-3">
             Goal: {infoSet.reps} x {infoSet.weight}
           </Text>
-        </View>
+        </View> */}
         <View className="flex flex-row justify-center gap-2 items-center">
           <View className="flex flex-row items-center justify-center gap-2 ">
             <FormField
+              title="Reps"
               type="number"
               handleChangeText={(value) => {
                 setReps(Number(value));
@@ -82,6 +83,7 @@ const ModalSetOfRep: React.FunctionComponent<ModalSetOfRepProps> = ({
           </View>
           <View className="flex flex-row items-center gap-2  justify-center">
             <FormField
+              title="Weight"
               type="number"
               handleChangeText={(value) => {
                 setWeight(Number(value));
