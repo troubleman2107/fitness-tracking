@@ -10,37 +10,51 @@ import {
   ContributionGraph,
   StackedBarChart,
 } from "react-native-chart-kit";
+import { format, parseISO } from "date-fns";
 
 const Report = () => {
   const templates = useStore((state) => state.templates);
   const exercises = [];
   templates[0].sessions?.forEach((session) => {
     const dateSession = session.date;
-    session.exercises?.forEach((exercise) => {
-      if (exercise.name === "Barbell Bench Press") {
-        const totalWeight = exercise.sets
-          ?.map((set) => set.weight)
-          .reduce(
-            (accumulator, currentValue) =>
-              Number(accumulator) + Number(currentValue),
-            0
-          );
-        exercises.push({
-          ...exercise,
-          date: dateSession,
-          totalWeight: totalWeight,
-        });
-      }
-    });
+    const dateNow = format(new Date("2025-01-30"), "yyyy-MM-dd");
+    if (dateSession <= dateNow) {
+      session.exercises?.forEach((exercise) => {
+        if (exercise.name === "Barbell Bench Press") {
+          const lengthOfSets = exercise?.sets?.length
+            ? exercise.sets?.length
+            : 0;
+          const totalWeight = exercise.sets
+            ?.map((set) => set.weight)
+            .reduce(
+              (accumulator, currentValue) =>
+                Number(accumulator) + Number(currentValue),
+              0
+            );
+          exercises.push({
+            ...exercise,
+            date: dateSession,
+            totalWeight: totalWeight ? totalWeight / lengthOfSets : 0,
+          });
+        }
+      });
+    }
   });
+
+  console.log(
+    "🚀 ~ Report ~ exercises:",
+    exercises.sort((a, b) => parseISO(a.date) - parseISO(b.date))
+  );
 
   const label = exercises
     .slice(0, 7)
-    .map((item) => new Date(item.date).getDate());
-  const weight = exercises
-    .slice(0, 7)
-    .map((item) => item.totalWeight + Math.random() * 100);
-  console.log("🚀 ~ Report ~ weight:", weight);
+    .map(
+      (item) =>
+        String(new Date(item.date).getDate()) +
+        "/" +
+        String(new Date(item.date).getMonth() + 1)
+    );
+  const weight = exercises.slice(0, 7).map((item) => item.totalWeight);
 
   return (
     <SafeAreaProvider>
@@ -61,7 +75,9 @@ const Report = () => {
               }}
               width={Dimensions.get("window").width - 30} // from react-native
               height={220}
-              // yAxisLabel="$"
+              formatYLabel={(value) => {
+                return `${value}kg`;
+              }}
               // yAxisSuffix="k"
               yAxisInterval={1} // optional, defaults to 1
               chartConfig={{
