@@ -9,7 +9,7 @@ interface PrevIconButtonProps {
 const PrevIconButton = ({ onClick }: PrevIconButtonProps) => {
   return (
     <TouchableOpacity
-      className="bg-slate-100 rounded w-10 h-10 flex justify-center items-center"
+      className="bg-zinc-100 rounded w-10 h-10 flex justify-center items-center"
       onPress={onClick}
     >
       <Icon as={ArrowLeftIcon} className="text-typography-500 m-2 w-5 h-5" />

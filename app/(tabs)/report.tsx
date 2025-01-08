@@ -1,7 +1,7 @@
 import { Dimensions, StyleSheet, Text, View } from "react-native";
 import React from "react";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { useStore } from "@/store/useTemplateStore";
+import { Template, useStore } from "@/store/useTemplateStore";
 import {
   LineChart,
   BarChart,
@@ -11,10 +11,15 @@ import {
   StackedBarChart,
 } from "react-native-chart-kit";
 import { format, parseISO } from "date-fns";
+import { DbExercise, DbSet } from "@/src/types/database";
 
 const Report = () => {
   const templates = useStore((state) => state.templates);
-  const exercises = [];
+  const exercises: (DbExercise & {
+    sets?: DbSet[];
+    date: string;
+    totalWeight: number;
+  })[] = [];
   templates[0].sessions?.forEach((session) => {
     const dateSession = session.date;
     const dateNow = format(new Date("2025-01-30"), "yyyy-MM-dd");
@@ -41,11 +46,6 @@ const Report = () => {
     }
   });
 
-  console.log(
-    "🚀 ~ Report ~ exercises:",
-    exercises.sort((a, b) => parseISO(a.date) - parseISO(b.date))
-  );
-
   const label = exercises
     .slice(0, 7)
     .map(
@@ -58,11 +58,11 @@ const Report = () => {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView className="bg-slate-50 flex-1">
+      <SafeAreaView className="bg-zinc-900 flex-1">
         <View className="w-full">
-          <View className="p-4 bg-slate-100 mb-[6px] rounded-[20px] h-full">
+          <View className="p-4 bg-zinc-950 mb-[6px] rounded-[20px] h-full">
             <View className="flex flex-row justify-between items-center mb-10">
-              <Text className="font-pbold text-xl text-slate-600">Analyze</Text>
+              <Text className="font-pbold text-xl text-zinc-50">Analyze</Text>
             </View>
             <LineChart
               data={{
@@ -81,9 +81,9 @@ const Report = () => {
               // yAxisSuffix="k"
               yAxisInterval={1} // optional, defaults to 1
               chartConfig={{
-                backgroundColor: "#e26a00",
-                backgroundGradientFrom: "#fb8c00",
-                backgroundGradientTo: "#ffa726",
+                backgroundColor: "#09090b",
+                backgroundGradientFrom: "#18181b",
+                backgroundGradientTo: "#09090b",
                 decimalPlaces: 2, // optional, defaults to 2dp
                 color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
                 labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
@@ -93,7 +93,7 @@ const Report = () => {
                 propsForDots: {
                   r: "6",
                   strokeWidth: "2",
-                  stroke: "#ffa726",
+                  stroke: "#fff",
                 },
               }}
               bezier

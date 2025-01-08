@@ -159,7 +159,7 @@ const Exercises = ({
       <View className="flex-row justify-center">
         {isRest && (
           <>
-            <Text className="font-plight text-xl text-slate-600">Rest: </Text>
+            <Text className="font-plight text-xl text-zinc-600">Rest: </Text>
             <CountDownRest
               seconds={currentSet.rest_time ? currentSet.rest_time : 0}
               isRunning={isRest}
@@ -168,14 +168,14 @@ const Exercises = ({
           </>
         )}
       </View>
-      <ScrollView className="px-3 pt-3 pb-6 bg-slate-100 rounded-[20px] mt-2">
+      <ScrollView className="px-3 pt-3 pb-6 bg-zinc-100 rounded-[20px] mt-2">
         {exercises &&
           exercises.map((exercise) => (
             <View className="mb-[27px] relative" key={exercise.id}>
               <View className="absolute right-1/2 left-1/2 z-10">
                 <View className="w-full flex items-center mb-[6px]">
-                  <View className="rounded-[20px] bg-slate-300 flex items-center p-2 w-[300px]">
-                    <Text className="font-pbold text-slate-600">
+                  <View className="rounded-[20px] bg-zinc-300 flex items-center p-2 w-[300px]">
+                    <Text className="font-pbold text-zinc-600">
                       {exercise.name}
                     </Text>
                   </View>
@@ -201,7 +201,7 @@ const Exercises = ({
                     >
                       <View
                         className={`${
-                          set.active ? "bg-slate-400" : "bg-slate-200"
+                          set.active ? "bg-zinc-400" : "bg-zinc-200"
                         }  px-[19px] py-[22px] rounded-[20px] mb-[6px] flex flex-row justify-between items-center`}
                       >
                         <Text className="font-pregular">

@@ -178,7 +178,7 @@ const Session = () => {
   };
 
   return (
-    <SafeAreaView className="h-full bg-slate-100 flex-1">
+    <SafeAreaView className="h-full bg-zinc-100 flex-1">
       <PrevIconButton
         onClick={() => {
           router.back();
@@ -191,15 +191,15 @@ const Session = () => {
         items={{ items: [] }}
         renderEmptyData={() => {
           return (
-            <SafeAreaView className="h-full bg-slate-50">
+            <SafeAreaView className="h-full bg-zinc-50">
               <View className="p-2 h-full">
-                <View className="px-3 pt-3 pb-6 bg-slate-100 mb-[6px] rounded-[20px]">
+                <View className="px-3 pt-3 pb-6 bg-zinc-100 mb-[6px] rounded-[20px]">
                   {sessionAnother && (
                     <View className="mb-2 flex items-center justify-center gap-2">
-                      <Text className="font-pbold text-xl text-slate-600">
+                      <Text className="font-pbold text-xl text-zinc-600">
                         {sessionAnother && sessionAnother.name}
                       </Text>
-                      <Text className="font-plight text-[14px] text-slate-600">
+                      <Text className="font-plight text-[14px] text-zinc-600">
                         {`${new Date(sessionAnother.date).toLocaleString(
                           "default",
                           { weekday: "short" }
@@ -214,7 +214,7 @@ const Session = () => {
                       </Text>
                       {!isAnother && (
                         <>
-                          <Text className="font-plight text-xl text-slate-600">
+                          <Text className="font-plight text-xl text-zinc-600">
                             Time: {formatTime(elapsedTime)}
                           </Text>
                           <Button
@@ -227,7 +227,7 @@ const Session = () => {
                         </>
                       )}
                       {/* {sessionSelect.isDone && (
-                        <Text className="font-plight text-xl text-slate-600">
+                        <Text className="font-plight text-xl text-zinc-600">
                           Session is done
                         </Text>
                       )} */}

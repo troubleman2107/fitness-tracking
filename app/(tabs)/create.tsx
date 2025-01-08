@@ -31,6 +31,7 @@ import { Link, useRouter } from "expo-router";
 import { supabase } from "@/src/lib/supabaseClient";
 import { useFocusEffect } from "@react-navigation/native";
 import { DbTemplate } from "@/src/types/database";
+import { Icon, PlayIcon } from "@/components/ui/icon";
 
 interface UserInfo {
   full_name: string | null;
@@ -130,20 +131,20 @@ const Create = () => {
   );
 
   const renderHiddenItem = ({ item }: { item: DbTemplate }) => (
-    <View className="flex-1 flex-row justify-end bg-slate-200 mb-3 rounded-lg gap-1">
+    <View className="flex-1 flex-row justify-end bg-zinc-950 mb-3 rounded-lg gap-1">
       {isShowHiddenItem["id"] === item.id && isShowHiddenItem["isHidden"] && (
         <>
           <TouchableOpacity
-            className="bg-success-500 justify-center items-center rounded-lg w-[70px]"
+            className="bg-zinc-50 justify-center items-center rounded-lg w-[70px]"
             onPress={() => handleStartTemplate(item)}
           >
-            <Text className="text-white font-bold">Start</Text>
+            <Text className="bg-zinc-850 font-pextrabold">GO</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            className="bg-red-500 justify-center items-center rounded-lg w-[70px]"
+            className="bg-zinc-50 justify-center items-center rounded-lg w-[70px]"
             onPress={() => deleteTemplate(item.id)}
           >
-            <Text className="text-white font-bold">Delete</Text>
+            <Text className="text-zinc-800 font-pextrabold">DEL</Text>
           </TouchableOpacity>
         </>
       )}
@@ -152,9 +153,9 @@ const Create = () => {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView className="bg-slate-50 flex-1">
-        <View className="p-2">
-          <View className="p-4 bg-slate-100 mb-[6px] rounded-[20px] h-full">
+      <SafeAreaView className="bg-zinc-900 flex-1">
+        <View className="">
+          <View className="p-4 bg-zinc-950 mb-[6px] rounded-[20px] h-full">
             <View className="flex flex-row items-center mb-6">
               <View className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 mr-3">
                 {userInfo?.avatar_url ? (
@@ -164,33 +165,31 @@ const Create = () => {
                   />
                 ) : (
                   <View className="w-full h-full bg-primary-200 items-center justify-center">
-                    <Text className="text-primary-700 text-lg font-bold">
+                    <Text className="text-white text-lg font-bold">
                       {userInfo?.full_name?.[0]?.toUpperCase() || "?"}
                     </Text>
                   </View>
                 )}
               </View>
               <View className="flex-1">
-                <Text className="text-lg font-pbold text-slate-800">
+                <Text className="text-lg font-pbold text-white">
                   {userInfo?.full_name || "User"}
                 </Text>
-                <Text className="text-sm text-slate-500">Welcome back!</Text>
+                <Text className="text-sm text-zinc-50">Welcome back!</Text>
               </View>
             </View>
 
             <View className="flex flex-row justify-between items-center mb-10">
-              <Text className="font-pbold text-xl text-slate-600">
-                Template
-              </Text>
+              <Text className="font-pbold text-xl text-zinc-50">Template</Text>
               <View className="flex flex-row gap-2">
                 <TouchableOpacity
-                  className="bg-red-500 py-2 px-4 rounded-lg"
+                  className="bg-zinc-50 py-2 px-4 rounded-lg"
                   onPress={handleLogout}
                 >
-                  <Text className="text-white font-pbold">Logout</Text>
+                  <Text className="text-zinc-800 font-pbold">Logout</Text>
                 </TouchableOpacity>
                 <Link
-                  className="bg-primary-500 py-2 px-4 rounded-lg text-slate-50 font-pbold"
+                  className="bg-zinc-50 py-2 px-4 rounded-lg text-zinc-800 font-pbold"
                   href={"/create-detail/new"}
                 >
                   Create

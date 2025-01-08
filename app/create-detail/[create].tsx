@@ -14,7 +14,7 @@ const CreateDetail = () => {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView className="bg-slate-100 flex-1">
+      <SafeAreaView className="bg-zinc-100 flex-1">
         <View className="p-2">
           <View className=" mb-[6px] h-full">
             <CreateExercise

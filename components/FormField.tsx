@@ -33,13 +33,13 @@ const FormField = ({
   return (
     <View className={`space-y-2 ${otherStyles} flex flex-col`}>
       {title && (
-        <Text className="text-base text-slate-600 font-pmedium mb-2">
+        <Text className="text-base text-zinc-600 font-pmedium mb-2">
           {title}
         </Text>
       )}
-      <View className="w-full h-16 px-4 bg-slate-300 rounded-2xl border-slate-200 focus:border-secondary flex flex-row items-center">
+      <View className="w-full h-16 px-4 bg-zinc-300 rounded-2xl border-zinc-200 focus:border-secondary flex flex-row items-center">
         <TextInput
-          className="flex-1 text-slate-9001 font-psemibold text-base text-center"
+          className="flex-1 text-zinc-9001 font-psemibold text-base text-center"
           keyboardType={type === "string" ? "default" : "numeric"}
           value={value}
           placeholder={placeholder}
