@@ -65,6 +65,7 @@ import {
   ActionsheetDragIndicatorWrapper,
 } from "./ui/actionsheet";
 import AddExercises from "./AddExercises";
+import { color } from "@rneui/base";
 
 interface infoSetsForm {
   id: string;
@@ -412,11 +413,13 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
             />
           </Input>
           <Button
-            className="bg-success-300 focus:bg-success-50"
+            className="bg-zinc-50 focus:bg-success-50"
             onPress={handleSaveTemplate}
             isDisabled={isLoading}
           >
-            <ButtonText>{isLoading ? "Saving..." : "Save"}</ButtonText>
+            <ButtonText className="text-zinc-800 font-psemibold">
+              {isLoading ? "Saving..." : "Save"}
+            </ButtonText>
           </Button>
         </View>
         <View className="w-full mt-2">
@@ -424,7 +427,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
             <View className="w-full">
               <FormControl>
                 <FormControlLabel>
-                  <FormControlLabelText className="font-psemibold">
+                  <FormControlLabelText className="font-psemibold text-zinc-50">
                     Session Name
                   </FormControlLabelText>
                 </FormControlLabel>
@@ -442,22 +445,28 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
         <View className="mt-3">
           <FormControl>
             <FormControlLabel>
-              <FormControlLabelText className="font-psemibold">
+              <FormControlLabelText className="font-psemibold text-zinc-50">
                 Repeat Session
               </FormControlLabelText>
             </FormControlLabel>
             <View className="flex-row items-center">
               <Button
-                variant={repeatOptions.enabled ? "solid" : "outline"}
+                // variant={repeatOptions.enabled ? "solid" : "outline"}
                 onPress={() =>
                   setRepeatOptions((prev) => ({
                     ...prev,
                     enabled: !prev.enabled,
                   }))
                 }
-                className="mr-2"
+                className={`mr-2 ${
+                  repeatOptions.enabled ? "bg-zinc-50" : "bg-zinc-800"
+                }`}
               >
-                <ButtonText>
+                <ButtonText
+                  className={`font-psemibold ${
+                    repeatOptions.enabled ? "text-zinc-800" : "text-zinc-50"
+                  }`}
+                >
                   {repeatOptions.enabled ? "Repeat On" : "Repeat Off"}
                 </ButtonText>
               </Button>
@@ -470,11 +479,11 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
                     (day, index) => (
                       <Button
                         key={day}
-                        variant={
-                          repeatOptions.daysToRepeat.includes(index)
-                            ? "solid"
-                            : "outline"
-                        }
+                        // variant={
+                        //   repeatOptions.daysToRepeat.includes(index)
+                        //     ? "solid"
+                        //     : "outline"
+                        // }
                         onPress={() => {
                           setRepeatOptions((prev) => ({
                             ...prev,
@@ -483,8 +492,21 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
                               : [...prev.daysToRepeat, index],
                           }));
                         }}
+                        className={`${
+                          repeatOptions.daysToRepeat.includes(index)
+                            ? "bg-zinc-50"
+                            : "bg-zinc-800"
+                        }`}
                       >
-                        <ButtonText>{day}</ButtonText>
+                        <ButtonText
+                          className={`${
+                            repeatOptions.daysToRepeat.includes(index)
+                              ? "text-zinc-800"
+                              : "text-zinc-50"
+                          }`}
+                        >
+                          {day}
+                        </ButtonText>
                       </Button>
                     )
                   )}
@@ -494,14 +516,13 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
           </FormControl>
         </View>
         <View className="mt-3">
-          <Text className="mb-2 font-psemibold text-typography-900">
-            Day Workout
-          </Text>
+          <Text className="mb-2 font-psemibold text-zinc-50">Day Workout</Text>
           <Button
             action="primary"
             onPress={() => setIsCalendarVisible(!isCalendarVisible)}
+            className="bg-zinc-50"
           >
-            <ButtonText>{selectedDate}</ButtonText>
+            <ButtonText className="text-zinc-800">{selectedDate}</ButtonText>
           </Button>
           {isCalendarVisible && (
             <Calendar
@@ -510,24 +531,80 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
                 [selectedDate]: {
                   selected: true,
                   marked: true,
+                  selectedColor: "#fafafa",
+                  selectedTextColor: "#27272a",
+                  dotColor: "#27272a",
                 },
               }}
               current={selectedDate}
               // Event handler for selecting a day
               onDayPress={handleChangeDate}
+              theme={{
+                // Background colors
+                backgroundColor: "#121212",
+                calendarBackground: "#121212",
+
+                // Header styling
+                textSectionTitleColor: "#ffffff",
+                textSectionTitleDisabledColor: "#666666",
+                selectedDayBackgroundColor: "#2196F3", // Blue circle for selected date
+                selectedDayTextColor: "#ffffff",
+                todayTextColor: "#ffffff",
+                todayBackgroundColor: "#3f3f46",
+                dayTextColor: "#ffffff",
+                textDisabledColor: "#404040",
+                dotColor: "#2196F3",
+                selectedDotColor: "#ffffff",
+                arrowColor: "#ffffff",
+                disabledArrowColor: "#404040",
+                monthTextColor: "#808080", // Gray color for month text as shown in image
+
+                // Text styling
+                textDayFontSize: 16,
+                textMonthFontSize: 20,
+                textDayHeaderFontSize: 14,
+                textMonthFontWeight: "300", // Light weight for month text
+                textDayFontWeight: "400",
+                textDayHeaderFontWeight: "400",
+
+                // Custom header style
+                "stylesheet.calendar.header": {
+                  header: {
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    paddingLeft: 10,
+                    paddingRight: 10,
+                    marginTop: 6,
+                    alignItems: "center",
+                  },
+                  monthText: {
+                    fontSize: 20,
+                    fontWeight: "300",
+                    color: "#808080",
+                  },
+                  dayHeader: {
+                    marginTop: 2,
+                    marginBottom: 7,
+                    width: 32,
+                    textAlign: "center",
+                    fontSize: 14,
+                    color: "#ffffff",
+                  },
+                },
+              }}
             />
           )}
         </View>
 
-        <View className="mt-3">
+        <View className="mt-3 ">
           <Button
-            className="mt-3 w-full"
+            className="mt-3 bg-zinc-50 w-full"
             size="md"
             variant="solid"
             action="primary"
             onPress={() => setIsAddExerciseModalVisible(true)}
           >
-            <ButtonText>Add Exercise</ButtonText>
+            <ButtonText className="text-zinc-800">Add Exercise</ButtonText>
           </Button>
         </View>
         <KeyboardAwareScrollView bottomOffset={50} className="mt-3">
@@ -535,7 +612,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
             exercises.map((exercise) => (
               <View key={exercise.id}>
                 <View className="flex flex-row items-center justify-between">
-                  <Text className="text-base font-psemibold">
+                  <Text className="text-base font-psemibold text-zinc-50">
                     {exercise.name}
                   </Text>
                   <CloseIconButton
@@ -545,17 +622,17 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
                 <View className="flex flex-row gap-5 mb-6">
                   <Table className="w-full">
                     <TableHeader>
-                      <TableRow>
-                        <TableHead className="text-center text-base">
+                      <TableRow className="bg-zinc-800">
+                        <TableHead className="text-center text-base text-zinc-50">
                           Set
                         </TableHead>
-                        <TableHead className="text-center text-base">
+                        <TableHead className="text-center text-base text-zinc-50">
                           Kg
                         </TableHead>
-                        <TableHead className="text-center text-base">
+                        <TableHead className="text-center text-base text-zinc-50">
                           Reps
                         </TableHead>
-                        <TableHead className="text-center text-base">
+                        <TableHead className="text-center text-base text-zinc-50">
                           Rest
                         </TableHead>
                       </TableRow>
@@ -567,8 +644,8 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
                             (a, b) => Number(a.setOrder) - Number(b.setOrder)
                           )
                           .map((set, iSet) => (
-                            <TableRow key={set.id}>
-                              <TableData className="text-center text-base">
+                            <TableRow key={set.id} className="bg-zinc-900">
+                              <TableData className="text-center text-base text-zinc-50">
                                 {iSet + 1}
                               </TableData>
                               <TableData
@@ -698,7 +775,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
           onClose={() => setIsAddExerciseModalVisible(false)}
         >
           <ActionsheetBackdrop />
-          <ActionsheetContent className="p-2">
+          <ActionsheetContent className="p-2 bg-zinc-900 border border-zinc-700">
             <ActionsheetDragIndicatorWrapper>
               <ActionsheetDragIndicator />
             </ActionsheetDragIndicatorWrapper>

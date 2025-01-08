@@ -69,7 +69,9 @@ const ListHeader = React.memo(
       <>
         {/* Muscle Groups Section */}
         <View className="px-2">
-          <Text className="font-psemibold mt-3">Filter by Muscle</Text>
+          <Text className="font-psemibold mt-3 text-zinc-50">
+            Filter by Muscle
+          </Text>
         </View>
         <FlatList
           ref={muscleGroupsListRef}
@@ -87,7 +89,7 @@ const ListHeader = React.memo(
               <View className="bg-gray-200 w-24 h-24 rounded-lg overflow-hidden">
                 <Image source={{ uri: item.img }} className="w-full h-full" />
               </View>
-              <Text className="text-center font-psemibold mt-1">
+              <Text className="text-center font-psemibold mt-1 text-zinc-50">
                 {item.name}
               </Text>
             </TouchableOpacity>
@@ -102,7 +104,9 @@ const ListHeader = React.memo(
 
         {/* Equipment Section */}
         <View className="px-2">
-          <Text className="font-psemibold mt-3">Filter by Equipment</Text>
+          <Text className="font-psemibold mt-3 text-zinc-50">
+            Filter by Equipment
+          </Text>
         </View>
         <FlatList
           ref={equipmentListRef}
@@ -120,7 +124,7 @@ const ListHeader = React.memo(
               <View className="bg-gray-200 w-24 h-24 rounded-lg overflow-hidden">
                 <Image source={{ uri: item.img }} className="w-full h-full" />
               </View>
-              <Text className="w-[100px] text-center font-psemibold mt-1">
+              <Text className="w-[100px] text-center font-psemibold mt-1 text-zinc-50">
                 {item.name}
               </Text>
             </TouchableOpacity>
@@ -132,7 +136,7 @@ const ListHeader = React.memo(
           }}
           removeClippedSubviews={false}
         />
-        <Text className="px-2 font-pbold">{`${filteredExercisesCount} exercises`}</Text>
+        <Text className="px-2 font-pbold text-zinc-50">{`${filteredExercisesCount} exercises`}</Text>
       </>
     );
   }
@@ -289,11 +293,8 @@ const AddExercises = ({ onClose, onAddExercises }: AddExercisesProps) => {
               />
             </InputSlot>
           </Input>
-          <Button
-            className="bg-success-300 focus:bg-success-50"
-            onPress={handleAdd}
-          >
-            <ButtonText>Add</ButtonText>
+          <Button className="bg-zinc-50" onPress={handleAdd}>
+            <ButtonText className="text-zinc-800">Add</ButtonText>
           </Button>
         </View>
       </View>
@@ -308,7 +309,7 @@ const AddExercises = ({ onClose, onAddExercises }: AddExercisesProps) => {
           <TouchableOpacity
             className={`flex-row items-center px-2 py-2 ${
               selectedExercises.some((exercise) => exercise.name === item.name)
-                ? "bg-gray-200"
+                ? "bg-zinc-800"
                 : ""
             }`}
             onPress={() => toggleSelection(item)}
@@ -317,7 +318,9 @@ const AddExercises = ({ onClose, onAddExercises }: AddExercisesProps) => {
               source={{ uri: item.img }}
               className="w-16 h-16 rounded-lg"
             />
-            <Text className="ml-4 font-psemibold">{item.name}</Text>
+            <Text className="ml-4 font-psemibold text-zinc-50">
+              {item.name}
+            </Text>
           </TouchableOpacity>
         )}
         initialNumToRender={10}
