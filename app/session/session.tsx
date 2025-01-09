@@ -199,8 +199,8 @@ const Session = () => {
           // Header styling
           textSectionTitleColor: "#ffffff",
           textSectionTitleDisabledColor: "#666666",
-          selectedDayBackgroundColor: "#2196F3", // Blue circle for selected date
-          selectedDayTextColor: "#ffffff",
+          selectedDayBackgroundColor: "#ffffff", // Blue circle for selected date
+          selectedDayTextColor: "#27272a",
           todayTextColor: "#ffffff",
           todayBackgroundColor: "#3f3f46",
           dayTextColor: "#ffffff",
@@ -226,26 +226,13 @@ const Session = () => {
                 <View className="px-3 pt-3 pb-6 bg-zinc-900 mb-[6px] rounded-[20px]">
                   {sessionAnother && (
                     <View className="mb-2 flex items-center justify-center gap-2">
-                      <Text className="font-pbold text-xl text-zinc-600">
+                      <Text className="font-pbold text-xl text-zinc-50">
                         {sessionAnother && sessionAnother.name}
-                      </Text>
-                      <Text className="font-plight text-[14px] text-zinc-50">
-                        {`${new Date(sessionAnother.date).toLocaleString(
-                          "default",
-                          { weekday: "short" }
-                        )} - ${new Date(sessionAnother.date).toLocaleDateString(
-                          "en-GB",
-                          {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          }
-                        )}`}
                       </Text>
                       {!isAnother && (
                         <>
-                          <Text className="font-pbold text-xl text-zinc-50">
-                            Time: {formatTime(elapsedTime)}
+                          <Text className="font-psemibold text-xl text-zinc-50">
+                            {formatTime(elapsedTime)}
                           </Text>
                           <Button
                             variant="solid"

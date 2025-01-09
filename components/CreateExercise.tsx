@@ -113,6 +113,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     name: "",
     sessions: [],
   });
+  console.log("🚀 ~ CreateExercise ~ templateData:", templateData);
 
   const [repeatOptions, setRepeatOptions] = useState<RepeatOption>({
     enabled: false,
@@ -188,7 +189,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
 
       setTemplateData(templateDataInsert);
     }
-  }, [exercises, repeatOptions]);
+  }, [exercises, repeatOptions, sessionNameInput]);
 
   const handleSetTemplateName = (name: string) => {
     setTemplateData({ ...templateData, name: name });
@@ -789,7 +790,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
           style={StyleSheet.absoluteFill}
           className="bg-black/30 items-center justify-center"
         >
-          <ActivityIndicator size="large" color="#0000ff" />
+          <ActivityIndicator size="large" color="#fff" />
         </View>
       )}
     </View>
