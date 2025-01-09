@@ -182,18 +182,16 @@ const Create = () => {
             <View className="flex flex-row justify-between items-center mb-10">
               <Text className="font-pbold text-xl text-zinc-50">Template</Text>
               <View className="flex flex-row gap-2">
-                <TouchableOpacity
-                  className="bg-zinc-50 py-2 px-4 rounded-lg"
-                  onPress={handleLogout}
+                <Button onPress={handleLogout}>
+                  <ButtonText>Logout</ButtonText>
+                </Button>
+                <Button
+                  onPress={() => {
+                    router.push(`/create-detail/new`);
+                  }}
                 >
-                  <Text className="text-zinc-800 font-pbold">Logout</Text>
-                </TouchableOpacity>
-                <Link
-                  className="bg-zinc-50 py-2 px-4 rounded-lg text-zinc-800 font-pbold"
-                  href={"/create-detail/new"}
-                >
-                  Create
-                </Link>
+                  <ButtonText>Create</ButtonText>
+                </Button>
               </View>
             </View>
             <SwipeListView

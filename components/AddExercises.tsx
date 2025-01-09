@@ -293,8 +293,8 @@ const AddExercises = ({ onClose, onAddExercises }: AddExercisesProps) => {
               />
             </InputSlot>
           </Input>
-          <Button className="bg-zinc-50" onPress={handleAdd}>
-            <ButtonText className="text-zinc-800">Add</ButtonText>
+          <Button onPress={handleAdd}>
+            <ButtonText>Add</ButtonText>
           </Button>
         </View>
       </View>

@@ -154,7 +154,7 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
         setExercises([]);
       }
     }
-  }, [selectedDate, sessionNameInput]);
+  }, [selectedDate]);
 
   useEffect(() => {
     let templateDataInsert;
@@ -397,217 +397,209 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
 
   return (
     <View className="flex-1">
-      <View className="h-full">
-        <View className="w-ful mt-2 flex flex-row justify-between">
-          <PrevIconButton
-            onClick={() => {
-              router.back();
-            }}
-          />
-          <Input className="w-[250px]">
-            <InputField
-              className="text-center"
-              placeholder="Template Name"
-              value={templateData.name}
-              onChangeText={(text) => handleSetTemplateName(text)}
+      <KeyboardAwareScrollView bottomOffset={50} className="mt-3">
+        <View className="h-full">
+          <View className="w-ful mt-2 flex flex-row justify-between">
+            <PrevIconButton
+              onClick={() => {
+                router.back();
+              }}
             />
-          </Input>
-          <Button
-            className="bg-zinc-50 focus:bg-success-50"
-            onPress={handleSaveTemplate}
-            isDisabled={isLoading}
-          >
-            <ButtonText className="text-zinc-800 font-psemibold">
-              {isLoading ? "Saving..." : "Save"}
-            </ButtonText>
-          </Button>
-        </View>
-        <View className="w-full mt-2">
-          <View className="flex flex-row">
-            <View className="w-full">
-              <FormControl>
-                <FormControlLabel>
-                  <FormControlLabelText className="font-psemibold text-zinc-50">
-                    Session Name
-                  </FormControlLabelText>
-                </FormControlLabel>
-                <Input className="w-full">
-                  <InputField
-                    placeholder="Session Name"
-                    value={sessionNameInput}
-                    onChangeText={(text) => setSessionNameInput(text)}
-                  />
-                </Input>
-              </FormControl>
+            <Input className="w-[250px]">
+              <InputField
+                className="text-center"
+                placeholder="Template Name"
+                value={templateData.name}
+                onChangeText={(text) => handleSetTemplateName(text)}
+              />
+            </Input>
+            <Button>
+              <ButtonText onPress={handleSaveTemplate}>Save</ButtonText>
+            </Button>
+          </View>
+          <View className="w-full mt-2">
+            <View className="flex flex-row">
+              <View className="w-full">
+                <FormControl>
+                  <FormControlLabel>
+                    <FormControlLabelText className="font-psemibold text-zinc-50">
+                      Session Name
+                    </FormControlLabelText>
+                  </FormControlLabel>
+                  <Input className="w-full">
+                    <InputField
+                      placeholder="Session Name"
+                      value={sessionNameInput}
+                      onChangeText={(text) => setSessionNameInput(text)}
+                    />
+                  </Input>
+                </FormControl>
+              </View>
             </View>
           </View>
-        </View>
-        <View className="mt-3">
-          <FormControl>
-            <FormControlLabel>
-              <FormControlLabelText className="font-psemibold text-zinc-50">
-                Repeat Session
-              </FormControlLabelText>
-            </FormControlLabel>
-            <View className="flex-row items-center">
-              <Button
-                // variant={repeatOptions.enabled ? "solid" : "outline"}
-                onPress={() =>
-                  setRepeatOptions((prev) => ({
-                    ...prev,
-                    enabled: !prev.enabled,
-                  }))
-                }
-                className={`mr-2 ${
-                  repeatOptions.enabled ? "bg-zinc-50" : "bg-zinc-800"
-                }`}
-              >
-                <ButtonText
-                  className={`font-psemibold ${
-                    repeatOptions.enabled ? "text-zinc-800" : "text-zinc-50"
+          <View className="mt-3">
+            <FormControl>
+              <FormControlLabel>
+                <FormControlLabelText className="font-psemibold text-zinc-50">
+                  Repeat Session
+                </FormControlLabelText>
+              </FormControlLabel>
+              <View className="flex-row items-center">
+                <Button
+                  // variant={repeatOptions.enabled ? "solid" : "outline"}
+                  onPress={() =>
+                    setRepeatOptions((prev) => ({
+                      ...prev,
+                      enabled: !prev.enabled,
+                    }))
+                  }
+                  className={`mr-2 ${
+                    repeatOptions.enabled ? "bg-zinc-50" : "bg-zinc-800"
                   }`}
                 >
-                  {repeatOptions.enabled ? "Repeat On" : "Repeat Off"}
-                </ButtonText>
-              </Button>
-            </View>
-            {repeatOptions.enabled && (
-              <View className="mt-2">
-                <Text className="mb-2 font-psemibold">Repeat on:</Text>
-                <View className="flex-row flex-wrap gap-2">
-                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
-                    (day, index) => (
-                      <Button
-                        key={day}
-                        // variant={
-                        //   repeatOptions.daysToRepeat.includes(index)
-                        //     ? "solid"
-                        //     : "outline"
-                        // }
-                        onPress={() => {
-                          setRepeatOptions((prev) => ({
-                            ...prev,
-                            daysToRepeat: prev.daysToRepeat.includes(index)
-                              ? prev.daysToRepeat.filter((d) => d !== index)
-                              : [...prev.daysToRepeat, index],
-                          }));
-                        }}
-                        className={`${
-                          repeatOptions.daysToRepeat.includes(index)
-                            ? "bg-zinc-50"
-                            : "bg-zinc-800"
-                        }`}
-                      >
-                        <ButtonText
+                  <ButtonText
+                    className={`font-psemibold ${
+                      repeatOptions.enabled ? "text-zinc-800" : "text-zinc-50"
+                    }`}
+                  >
+                    {repeatOptions.enabled ? "Repeat On" : "Repeat Off"}
+                  </ButtonText>
+                </Button>
+              </View>
+              {repeatOptions.enabled && (
+                <View className="mt-2">
+                  <Text className="mb-2 font-psemibold">Repeat on:</Text>
+                  <View className="flex-row flex-wrap gap-2">
+                    {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
+                      (day, index) => (
+                        <Button
+                          key={day}
+                          // variant={
+                          //   repeatOptions.daysToRepeat.includes(index)
+                          //     ? "solid"
+                          //     : "outline"
+                          // }
+                          onPress={() => {
+                            setRepeatOptions((prev) => ({
+                              ...prev,
+                              daysToRepeat: prev.daysToRepeat.includes(index)
+                                ? prev.daysToRepeat.filter((d) => d !== index)
+                                : [...prev.daysToRepeat, index],
+                            }));
+                          }}
                           className={`${
                             repeatOptions.daysToRepeat.includes(index)
-                              ? "text-zinc-800"
-                              : "text-zinc-50"
+                              ? "bg-zinc-50"
+                              : "bg-zinc-800"
                           }`}
                         >
-                          {day}
-                        </ButtonText>
-                      </Button>
-                    )
-                  )}
+                          <ButtonText
+                            className={`${
+                              repeatOptions.daysToRepeat.includes(index)
+                                ? "text-zinc-800"
+                                : "text-zinc-50"
+                            }`}
+                          >
+                            {day}
+                          </ButtonText>
+                        </Button>
+                      )
+                    )}
+                  </View>
                 </View>
-              </View>
+              )}
+            </FormControl>
+          </View>
+          <View className="mt-3">
+            <Text className="mb-2 font-psemibold text-zinc-50">
+              Day Workout
+            </Text>
+            <Button
+              action="primary"
+              onPress={() => setIsCalendarVisible(!isCalendarVisible)}
+              className="bg-zinc-50"
+            >
+              <ButtonText className="text-zinc-800">{selectedDate}</ButtonText>
+            </Button>
+            {isCalendarVisible && (
+              <Calendar
+                // Mark the selected date
+                markedDates={{
+                  [selectedDate]: {
+                    selected: true,
+                    marked: true,
+                    selectedColor: "#fafafa",
+                    selectedTextColor: "#27272a",
+                    dotColor: "#27272a",
+                  },
+                }}
+                current={selectedDate}
+                // Event handler for selecting a day
+                onDayPress={handleChangeDate}
+                theme={{
+                  // Background colors
+                  backgroundColor: "#121212",
+                  calendarBackground: "#121212",
+
+                  // Header styling
+                  textSectionTitleColor: "#ffffff",
+                  textSectionTitleDisabledColor: "#666666",
+                  selectedDayBackgroundColor: "#2196F3", // Blue circle for selected date
+                  selectedDayTextColor: "#ffffff",
+                  todayTextColor: "#ffffff",
+                  todayBackgroundColor: "#3f3f46",
+                  dayTextColor: "#ffffff",
+                  textDisabledColor: "#404040",
+                  dotColor: "#2196F3",
+                  selectedDotColor: "#ffffff",
+                  arrowColor: "#ffffff",
+                  disabledArrowColor: "#404040",
+                  monthTextColor: "#808080", // Gray color for month text as shown in image
+
+                  // Text styling
+                  textDayFontSize: 16,
+                  textMonthFontSize: 20,
+                  textDayHeaderFontSize: 14,
+                  textMonthFontWeight: "300", // Light weight for month text
+                  textDayFontWeight: "400",
+                  textDayHeaderFontWeight: "400",
+
+                  // Custom header style
+                  "stylesheet.calendar.header": {
+                    header: {
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      paddingLeft: 10,
+                      paddingRight: 10,
+                      marginTop: 6,
+                      alignItems: "center",
+                    },
+                    monthText: {
+                      fontSize: 20,
+                      fontWeight: "300",
+                      color: "#808080",
+                    },
+                    dayHeader: {
+                      marginTop: 2,
+                      marginBottom: 7,
+                      width: 32,
+                      textAlign: "center",
+                      fontSize: 14,
+                      color: "#ffffff",
+                    },
+                  },
+                }}
+              />
             )}
-          </FormControl>
-        </View>
-        <View className="mt-3">
-          <Text className="mb-2 font-psemibold text-zinc-50">Day Workout</Text>
-          <Button
-            action="primary"
-            onPress={() => setIsCalendarVisible(!isCalendarVisible)}
-            className="bg-zinc-50"
-          >
-            <ButtonText className="text-zinc-800">{selectedDate}</ButtonText>
-          </Button>
-          {isCalendarVisible && (
-            <Calendar
-              // Mark the selected date
-              markedDates={{
-                [selectedDate]: {
-                  selected: true,
-                  marked: true,
-                  selectedColor: "#fafafa",
-                  selectedTextColor: "#27272a",
-                  dotColor: "#27272a",
-                },
-              }}
-              current={selectedDate}
-              // Event handler for selecting a day
-              onDayPress={handleChangeDate}
-              theme={{
-                // Background colors
-                backgroundColor: "#121212",
-                calendarBackground: "#121212",
-
-                // Header styling
-                textSectionTitleColor: "#ffffff",
-                textSectionTitleDisabledColor: "#666666",
-                selectedDayBackgroundColor: "#2196F3", // Blue circle for selected date
-                selectedDayTextColor: "#ffffff",
-                todayTextColor: "#ffffff",
-                todayBackgroundColor: "#3f3f46",
-                dayTextColor: "#ffffff",
-                textDisabledColor: "#404040",
-                dotColor: "#2196F3",
-                selectedDotColor: "#ffffff",
-                arrowColor: "#ffffff",
-                disabledArrowColor: "#404040",
-                monthTextColor: "#808080", // Gray color for month text as shown in image
-
-                // Text styling
-                textDayFontSize: 16,
-                textMonthFontSize: 20,
-                textDayHeaderFontSize: 14,
-                textMonthFontWeight: "300", // Light weight for month text
-                textDayFontWeight: "400",
-                textDayHeaderFontWeight: "400",
-
-                // Custom header style
-                "stylesheet.calendar.header": {
-                  header: {
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    paddingLeft: 10,
-                    paddingRight: 10,
-                    marginTop: 6,
-                    alignItems: "center",
-                  },
-                  monthText: {
-                    fontSize: 20,
-                    fontWeight: "300",
-                    color: "#808080",
-                  },
-                  dayHeader: {
-                    marginTop: 2,
-                    marginBottom: 7,
-                    width: 32,
-                    textAlign: "center",
-                    fontSize: 14,
-                    color: "#ffffff",
-                  },
-                },
-              }}
-            />
-          )}
-        </View>
-
-        <View className="mt-3 ">
-          <Button
-            className="mt-3 bg-zinc-50 w-full"
-            size="md"
-            variant="solid"
-            action="primary"
-            onPress={() => setIsAddExerciseModalVisible(true)}
-          >
-            <ButtonText className="text-zinc-800">Add Exercise</ButtonText>
-          </Button>
-        </View>
-        <KeyboardAwareScrollView bottomOffset={50} className="mt-3">
+          </View>
+          <View className="mt-3 ">
+            <Button
+              className="mt-3 w-full"
+              onPress={() => setIsAddExerciseModalVisible(true)}
+            >
+              <ButtonText>Add exercise</ButtonText>
+            </Button>
+          </View>
           {exercises &&
             exercises.map((exercise) => (
               <View key={exercise.id}>
@@ -714,9 +706,6 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
                     <TableFooter>
                       <Button
                         className="mt-3"
-                        size="md"
-                        variant="solid"
-                        action="primary"
                         onPress={() => handleAddSets(exercise.id)}
                       >
                         <ButtonText>Add sets</ButtonText>
@@ -726,8 +715,8 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
                 </View>
               </View>
             ))}
-        </KeyboardAwareScrollView>
-      </View>
+        </View>
+      </KeyboardAwareScrollView>
       <AlertDialog
         isOpen={showAlertDialog}
         onClose={() => setShowAlertDialog(!showAlertDialog)}

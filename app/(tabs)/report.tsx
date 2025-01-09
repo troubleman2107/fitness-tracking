@@ -15,6 +15,7 @@ import { DbExercise, DbSet } from "@/src/types/database";
 
 const Report = () => {
   const templates = useStore((state) => state.templates);
+
   const exercises: (DbExercise & {
     sets?: DbSet[];
     date: string;
@@ -47,14 +48,14 @@ const Report = () => {
   });
 
   const label = exercises
-    .slice(0, 7)
+    .sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime())
     .map(
       (item) =>
         String(new Date(item.date).getDate()) +
         "/" +
         String(new Date(item.date).getMonth() + 1)
     );
-  const weight = exercises.slice(0, 7).map((item) => item.totalWeight);
+  const weight = exercises.map((item) => item.totalWeight);
 
   return (
     <SafeAreaProvider>
