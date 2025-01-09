@@ -178,28 +178,58 @@ const Session = () => {
   };
 
   return (
-    <SafeAreaView className="h-full bg-zinc-100 flex-1">
-      <PrevIconButton
-        onClick={() => {
-          router.back();
-        }}
-      />
+    <SafeAreaView className="h-full bg-zinc-900 flex-1">
+      <View className="ml-2 mb-3">
+        <PrevIconButton
+          onClick={() => {
+            router.back();
+          }}
+        />
+      </View>
       <Agenda
         onDayPress={(date: DateData) => {
           setSelectedDate(new Date(date.dateString));
         }}
         items={{ items: [] }}
+        theme={{
+          // Background colors
+          backgroundColor: "#121212",
+          calendarBackground: "#121212",
+
+          // Header styling
+          textSectionTitleColor: "#ffffff",
+          textSectionTitleDisabledColor: "#666666",
+          selectedDayBackgroundColor: "#2196F3", // Blue circle for selected date
+          selectedDayTextColor: "#ffffff",
+          todayTextColor: "#ffffff",
+          todayBackgroundColor: "#3f3f46",
+          dayTextColor: "#ffffff",
+          textDisabledColor: "#404040",
+          dotColor: "#2196F3",
+          selectedDotColor: "#ffffff",
+          arrowColor: "#ffffff",
+          disabledArrowColor: "#404040",
+          monthTextColor: "#808080", // Gray color for month text as shown in image
+
+          // Text styling
+          textDayFontSize: 16,
+          textMonthFontSize: 20,
+          textDayHeaderFontSize: 14,
+          textMonthFontWeight: "300", // Light weight for month text
+          textDayFontWeight: "400",
+          textDayHeaderFontWeight: "400",
+        }}
         renderEmptyData={() => {
           return (
-            <SafeAreaView className="h-full bg-zinc-50">
+            <SafeAreaView className="h-full bg-zinc-950">
               <View className="p-2 h-full">
-                <View className="px-3 pt-3 pb-6 bg-zinc-100 mb-[6px] rounded-[20px]">
+                <View className="px-3 pt-3 pb-6 bg-zinc-900 mb-[6px] rounded-[20px]">
                   {sessionAnother && (
                     <View className="mb-2 flex items-center justify-center gap-2">
                       <Text className="font-pbold text-xl text-zinc-600">
                         {sessionAnother && sessionAnother.name}
                       </Text>
-                      <Text className="font-plight text-[14px] text-zinc-600">
+                      <Text className="font-plight text-[14px] text-zinc-50">
                         {`${new Date(sessionAnother.date).toLocaleString(
                           "default",
                           { weekday: "short" }
@@ -214,13 +244,13 @@ const Session = () => {
                       </Text>
                       {!isAnother && (
                         <>
-                          <Text className="font-plight text-xl text-zinc-600">
+                          <Text className="font-pbold text-xl text-zinc-50">
                             Time: {formatTime(elapsedTime)}
                           </Text>
                           <Button
                             variant="solid"
                             onPress={() => setShowExitModal(true)}
-                            className="mt-2 bg-red-500"
+                            className="mt-2"
                           >
                             <ButtonText>Finish Session</ButtonText>
                           </Button>
