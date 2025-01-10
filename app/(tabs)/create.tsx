@@ -110,10 +110,10 @@ const Create = () => {
 
   const renderItem = ({ item }: { item: DbTemplate }) => (
     <TouchableOpacity
-      className=" z-20"
+      className="z-20"
       onPress={() => handleCreateTemplate(item)}
     >
-      <View style={{ marginBottom: 8 }} className="mr-1">
+      <View style={{ marginBottom: 8 }} className="">
         <Card size="md" variant="outline" className="bg-white">
           <Heading size="md" className="mb-1">
             {item.name}

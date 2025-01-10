@@ -1,15 +1,8 @@
 import {
   Alert,
-  findNodeHandle,
-  NativeSyntheticEvent,
   Platform,
-  SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
-  TextInput,
-  TextInputChangeEventData,
-  TouchableOpacity,
   View,
   ActivityIndicator,
 } from "react-native";
@@ -39,10 +32,9 @@ import {
   KeyboardAwareScrollView,
 } from "react-native-keyboard-controller";
 import CloseIconButton from "./ui/CloseButton";
-import { Agenda, Calendar, DateData } from "react-native-calendars";
+import { Calendar, DateData } from "react-native-calendars";
 import { useStore } from "@/store/useTemplateStore";
-import { clear } from "@/utils/AsyncStorage";
-import { set, addDays, getDay } from "date-fns";
+import { addDays, getDay } from "date-fns";
 import {
   AlertDialog,
   AlertDialogBackdrop,
@@ -113,7 +105,6 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
     name: "",
     sessions: [],
   });
-  console.log("🚀 ~ CreateExercise ~ templateData:", templateData);
 
   const [repeatOptions, setRepeatOptions] = useState<RepeatOption>({
     enabled: false,
@@ -329,35 +320,6 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
       Alert.alert("Error", "You must be logged in");
       return;
     }
-
-    // let templateDataInsert;
-
-    // if (exercises.length > 0) {
-    //   const idSession =
-    //     templateSelect &&
-    //     templateSelect.sessions.find(
-    //       (session) =>
-    //         getDateWithoutTime(new Date(session.date)).getTime() ===
-    //         getDateWithoutTime(new Date()).getTime()
-    //     )?.id;
-    //   const newSession: SessionData = {
-    //     ...(idSession && { id: idSession }),
-    //     date: selectedDate,
-    //     name: sessionNameInput.trim(),
-    //     exercises: exercises,
-    //   };
-    //   const repeatedSessions = generateRepeatedSessions(newSession);
-    //   // Update template data with all sessions
-    //   templateDataInsert = {
-    //     ...templateData,
-    //     sessions: [
-    //       ...templateData.sessions.filter(
-    //         (s) => !repeatedSessions.some((rs) => rs.date === s.date)
-    //       ),
-    //       ...repeatedSessions,
-    //     ],
-    //   };
-    // }
 
     try {
       setIsLoading(true);
@@ -638,21 +600,27 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
                           )
                           .map((set, iSet) => (
                             <TableRow key={set.id} className="bg-zinc-900">
-                              <TableData className="text-center text-base text-zinc-50">
-                                {iSet + 1}
+                              <TableData className="">
+                                <View className="px-1 h-8 w-[60px] flex items-center justify-center">
+                                  <Text className="text-centers text-base text-zinc-50">
+                                    {iSet + 1}
+                                  </Text>
+                                </View>
                               </TableData>
                               <TableData
                                 useRNView={true}
                                 className="flex flex-row justify-center items-center"
                               >
                                 <Input
-                                  className={`px-1 h-6 w-[50px]`}
+                                  className={`px-1 h-8 w-[60px]`}
                                   variant="outline"
                                   size="md"
                                   isDisabled={false}
                                   isInvalid={false}
                                 >
                                   <InputField
+                                    className="text-center"
+                                    keyboardType="numeric"
                                     value={set.weight ? String(set.weight) : ""}
                                     onChangeText={(text) =>
                                       handleSetChange(text, "weight", set.id)
@@ -666,13 +634,15 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
                                 className="flex flex-row justify-center items-center"
                               >
                                 <Input
-                                  className={`px-1 h-6 w-[50px]`}
+                                  className={`px-1 h-8 w-[60px]`}
                                   variant="outline"
                                   size="md"
                                   isDisabled={false}
                                   isInvalid={false}
                                 >
                                   <InputField
+                                    className="text-center"
+                                    keyboardType="numeric"
                                     value={set.reps ? String(set.reps) : ""}
                                     onChangeText={(text) =>
                                       handleSetChange(text, "reps", set.id)
@@ -686,11 +656,13 @@ const CreateExercise = ({ onClose, templateSelect }: CreateExerciseProps) => {
                                 className="flex flex-row justify-center items-center"
                               >
                                 <Input
-                                  className={`px-1 h-6 w-[50px]`}
+                                  className={`px-1 h-8 w-[60px]`}
                                   variant="outline"
                                   size="md"
                                 >
                                   <InputField
+                                    className="text-center"
+                                    keyboardType="numeric"
                                     value={
                                       set.rest_time ? String(set.rest_time) : ""
                                     }

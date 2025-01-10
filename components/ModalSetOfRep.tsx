@@ -63,24 +63,7 @@ const ModalSetOfRep: React.FunctionComponent<ModalSetOfRepProps> = ({
   return (
     <SafeAreaProvider>
       <View className="py-2 px-5 rounded-[20px]">
-        {/* <View className="w-full flex flex-row items-center justify-center gap-3">
-          <Text className="text-['#67BC5F'] font-psemibold mb-3">
-            Goal: {infoSet.reps} x {infoSet.weight}
-          </Text>
-        </View> */}
         <View className="flex flex-row justify-center gap-2 items-center">
-          <View className="flex flex-row items-center justify-center gap-2 ">
-            <FormField
-              title="Reps"
-              type="number"
-              handleChangeText={(value) => {
-                setReps(Number(value));
-              }}
-              value={reps ? String(reps) : ""}
-              placeholder="Reps"
-              otherStyles="flex flex-row items-center w-[100px] gap-2 mb-2 mr-[]"
-            />
-          </View>
           <View className="flex flex-row items-center gap-2  justify-center">
             <FormField
               title="Weight"
@@ -93,13 +76,22 @@ const ModalSetOfRep: React.FunctionComponent<ModalSetOfRepProps> = ({
               otherStyles="flex flex-row items-center w-[100px] gap-2 mb-2 mr-[]"
             />
           </View>
+          <View className="flex flex-row items-center justify-center gap-2 ">
+            <FormField
+              title="Reps"
+              type="number"
+              handleChangeText={(value) => {
+                setReps(Number(value));
+              }}
+              value={reps ? String(reps) : ""}
+              placeholder="Reps"
+              otherStyles="flex flex-row items-center w-[100px] gap-2 mb-2 mr-[]"
+            />
+          </View>
         </View>
         <View className="w-full flex items-center">
           <Button
-            className="mt-3"
-            size="md"
-            variant="solid"
-            action="primary"
+            className="mt-3 bg-zinc-800"
             onPress={() =>
               handleSubmit({
                 reps: reps,
@@ -111,7 +103,7 @@ const ModalSetOfRep: React.FunctionComponent<ModalSetOfRepProps> = ({
               })
             }
           >
-            <ButtonText>Submit</ButtonText>
+            <ButtonText className="text-zinc-50">Submit</ButtonText>
           </Button>
         </View>
       </View>

@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -40,6 +41,7 @@ const Exercises = ({
     {} as InitialState["currentSet"]
   );
   const [isRest, setIsRest] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const activeSet = exercises
@@ -58,6 +60,7 @@ const Exercises = ({
 
   const handleRest = async (currentSet: InitialState["currentSet"]) => {
     try {
+      setIsLoading(true);
       // Find the current exercise that contains the active set
       const currentExercise = exercises.find((exercise) =>
         exercise.sets.some((set) => set.id === currentSet.id)
@@ -97,40 +100,12 @@ const Exercises = ({
     } catch (error) {
       console.error("Failed to save set:", error);
       // You might want to add error handling UI here
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleNextSet = () => {
-    // progressToNextSet();
-
-    // const nextSet = exercises.sets.map((set, index) => {
-    //   if (set.active && !foundActive) {
-    //     foundActive = true;
-    //     set.active = false;
-
-    //     if (index + 1 < allSets.length) {
-    //       allSets[index + 1].active = true;
-    //     }
-
-    //     return { ...set, active: false };
-    //   }
-
-    //   return { ...set };
-    // });
-
-    // const updateExercies = exercises.map((exercise) => {
-    //   return {
-    //     ...exercise,
-    //     sets: [
-    //       ...exercise.sets.map((set) => {
-    //         return {
-    //           ...set,
-    //           active: set.id === findActiveSet?.id ? true : false,
-    //         };
-    //       }),
-    //     ],
-    //   };
-    // });
     if (handleStopRest) {
       handleStopRest();
     }
@@ -205,7 +180,7 @@ const Exercises = ({
                         }  px-[19px] py-[22px] rounded-[20px] mb-[6px] flex flex-row justify-between items-center`}
                       >
                         <Text className="font-pregular text-zinc-50">
-                          Set {index + 1}: {set.reps} reps x {set.weight}kg
+                          Set {index + 1}: {set.weight}kg x {set.reps} reps
                         </Text>
                       </View>
                     </TouchableOpacity>
@@ -238,6 +213,15 @@ const Exercises = ({
           </ActionsheetContent>
         </KeyboardStickyView>
       </Actionsheet>
+
+      {isLoading && (
+        <View
+          style={StyleSheet.absoluteFill}
+          className="bg-black/30 items-center justify-center"
+        >
+          <ActivityIndicator size="large" color="#fff" />
+        </View>
+      )}
     </>
   );
 };
