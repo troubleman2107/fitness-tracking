@@ -56,3 +56,10 @@ New UX:
 - We will have bench press work out
 - If we do bench press in monday it's will update next of bench press in next bench press
 - And present bench press will be compare with past bench press -> Analyze feature
+
+Analyze:
+
+- Filter by week
+- Filter by last week
+- Filter by this month
+- Filter by last month
