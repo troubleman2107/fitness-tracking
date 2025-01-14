@@ -1,15 +1,13 @@
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+import { Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Template, useStore } from "@/store/useTemplateStore";
-import {
-  LineChart,
-  BarChart,
-  PieChart,
-  ProgressChart,
-  ContributionGraph,
-  StackedBarChart,
-} from "react-native-chart-kit";
+// import {
+//   LineChart
+// } from "react-native-chart-kit";
+
+import { LineChart } from "react-native-gifted-charts";
+
 import { format, parseISO, set } from "date-fns";
 import { DbExercise, DbSet } from "@/src/types/database";
 import {
@@ -39,6 +37,11 @@ interface DataChart {
   }[];
 }
 
+interface DataChart2 {
+  label: string;
+  value: number;
+}
+
 const Report = () => {
   const templates = useStore((state) => state.templates);
 
@@ -49,11 +52,6 @@ const Report = () => {
       selected: true,
     },
     {
-      label: "This Day",
-      value: "day",
-      selected: false,
-    },
-    {
       label: "This Year",
       value: "year",
       selected: false,
@@ -62,12 +60,11 @@ const Report = () => {
 
   const [templateFilter, setTemplateFilter] = useState<SelectLabel[]>([]);
   const [exerciseFilter, setExerciseFilter] = useState<SelectLabel[]>([]);
-  console.log("🚀 ~ Report ~ exerciseFilter:", exerciseFilter);
   const [exerciseSelected, setExerciseSelected] = useState<string | undefined>(
     ""
   );
-  console.log("🚀 ~ Report ~ exerciseSelected:", exerciseSelected);
-
+  const [dataChart2, setDataChart2] = useState<DataChart2[]>([]);
+  console.log("🚀 ~ Report ~ dataChart2:", dataChart2);
   const [dataChart, setDataChart] = useState<DataChart>({
     labels: [],
     datasets: [
@@ -128,7 +125,6 @@ const Report = () => {
   useEffect(() => {
     const templateId = templateFilter.find((item) => item.selected)?.value;
     const templateSelect = templates.find((item) => item.id === templateId);
-    console.log("🚀 ~ handleDataChart ~ templateSelect:", templateSelect);
 
     if (templateSelect) {
       const exercises: (DbExercise & {
@@ -139,7 +135,7 @@ const Report = () => {
 
       templateSelect.sessions?.forEach((session) => {
         const dateSession = session.date;
-        const dateNow = format(new Date("2025-01-30"), "yyyy-MM-dd");
+        const dateNow = format(new Date("2025-01-28"), "yyyy-MM-dd");
         if (dateSession <= dateNow) {
           session.exercises?.forEach((exercise) => {
             if (
@@ -184,67 +180,18 @@ const Report = () => {
           },
         ],
       });
+
+      setDataChart2(
+        exercises.map((item) => ({
+          label:
+            String(new Date(item.date).getDate()) +
+            "/" +
+            String(new Date(item.date).getMonth() + 1),
+          value: item.totalWeight,
+        }))
+      );
     }
   }, [templateFilter, templates, exerciseFilter]);
-
-  const handleDataChart = () => {
-    const templateId = templateFilter.find((item) => item.selected)?.value;
-    const templateSelect = templates.find((item) => item.id === templateId);
-    console.log("🚀 ~ handleDataChart ~ templateSelect:", templateSelect);
-
-    if (templateSelect === undefined) return;
-
-    const exercises: (DbExercise & {
-      sets?: DbSet[];
-      date: string;
-      totalWeight: number;
-    })[] = [];
-
-    templateSelect.sessions?.forEach((session) => {
-      const dateSession = session.date;
-      const dateNow = format(new Date("2025-01-30"), "yyyy-MM-dd");
-      if (dateSession <= dateNow) {
-        session.exercises?.forEach((exercise) => {
-          if (exercise.name === "Barbell Bench Press") {
-            const lengthOfSets = exercise?.sets?.length
-              ? exercise.sets?.length
-              : 0;
-            const totalWeight = exercise.sets
-              ?.map((set) => set.weight)
-              .reduce(
-                (accumulator, currentValue) =>
-                  Number(accumulator) + Number(currentValue),
-                0
-              );
-            exercises.push({
-              ...exercise,
-              date: dateSession,
-              totalWeight: totalWeight ? totalWeight / lengthOfSets : 0,
-            });
-          }
-        });
-      }
-    });
-
-    const label = exercises
-      .sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime())
-      .map(
-        (item) =>
-          String(new Date(item.date).getDate()) +
-          "/" +
-          String(new Date(item.date).getMonth() + 1)
-      );
-    const weight = exercises.map((item) => item.totalWeight);
-
-    setDataChart({
-      labels: label,
-      datasets: [
-        {
-          data: weight,
-        },
-      ],
-    });
-  };
 
   const handleDateChange = (value: string) => {};
 
@@ -351,7 +298,7 @@ const Report = () => {
               <Select
                 onValueChange={handleExerciseChange}
                 selectedValue={exerciseSelected}
-                className="mb-3"
+                className="mb-10"
               >
                 <SelectTrigger
                   className="flex justify-between"
@@ -382,40 +329,84 @@ const Report = () => {
               </Select>
             )}
 
-            {dataChart.labels.length > 0 && (
+            {/* <ScrollView
+              horizontal={true}
+              contentOffset={{ x: 0, y: 10000 }} // i needed the scrolling to start from the end not the start
+              showsHorizontalScrollIndicator={false} // to hide scroll bar
+            > */}
+            {dataChart2.length > 0 && (
+              // <LineChart
+              //   data={dataChart}
+              //   width={
+              //     (dataChart.labels.length * Dimensions.get("window").width) /
+              //     5
+              //   }
+              //   height={220}
+              //   formatYLabel={(value) => {
+              //     return `${value}kg`;
+              //   }}
+              //   // yAxisSuffix="k"
+              //   yAxisInterval={1} // optional, defaults to 1
+              //   chartConfig={{
+              //     backgroundColor: "#09090b",
+              //     backgroundGradientFrom: "#18181b",
+              //     backgroundGradientTo: "#09090b",
+              //     decimalPlaces: 2, // optional, defaults to 2dp
+              //     color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+              //     labelColor: (opacity = 1) =>
+              //       `rgba(255, 255, 255, ${opacity})`,
+              //     style: {
+              //       borderRadius: 16,
+              //     },
+              //     propsForDots: {
+              //       r: "6",
+              //       strokeWidth: "2",
+              //       stroke: "#fff",
+              //     },
+              //   }}
+              //   bezier
+              //   style={{
+              //     marginVertical: 8,
+              //     borderRadius: 16,
+              //   }}
+              // />
               <LineChart
-                data={dataChart}
-                width={Dimensions.get("window").width - 30} // from react-native
-                height={220}
-                formatYLabel={(value) => {
-                  return `${value}kg`;
-                }}
-                // yAxisSuffix="k"
-                yAxisInterval={1} // optional, defaults to 1
-                chartConfig={{
-                  backgroundColor: "#09090b",
-                  backgroundGradientFrom: "#18181b",
-                  backgroundGradientTo: "#09090b",
-                  decimalPlaces: 2, // optional, defaults to 2dp
-                  color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                  labelColor: (opacity = 1) =>
-                    `rgba(255, 255, 255, ${opacity})`,
-                  style: {
-                    borderRadius: 16,
-                  },
-                  propsForDots: {
-                    r: "6",
-                    strokeWidth: "2",
-                    stroke: "#fff",
-                  },
-                }}
-                bezier
-                style={{
-                  marginVertical: 8,
-                  borderRadius: 16,
-                }}
+                width={Dimensions.get("window").width - 20}
+                yAxisColor="#fafafa"
+                xAxisColor="#fafafa"
+                color={"#fff"}
+                thickness={5}
+                data={dataChart2}
+                yAxisTextStyle={{ color: "#e5e5e5", fontSize: 12 }}
+                xAxisLabelTextStyle={{ color: "#e5e5e5", fontSize: 12 }}
+                stepHeight={30}
+                startFillColor="rgb(152, 154, 156)"
+                startOpacity={0.8}
+                endFillColor="rgb(50, 50, 50)"
+                endOpacity={0.3}
+                areaChart={true}
+                scrollToEnd={true}
+                dataPointsColor="#fff"
+                dataPointsWidth={10}
+                dataPointsHeight1={10}
+                curved={true}
+                stepValue={10}
+                // customDataPoint={({ value, index }) => {
+                //   return value > 0 ? (
+                //     <View
+                //       style={{
+                //         width: 10,
+                //         height: 10,
+                //         borderRadius: 5,
+                //         backgroundColor: "#fff",
+                //       }}
+                //     />
+                //   ) : null;
+                // }}
+                maxValue={100}
               />
             )}
+            {/* </ScrollView> */}
           </View>
         </View>
       </SafeAreaView>
