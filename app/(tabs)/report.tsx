@@ -62,6 +62,7 @@ const Report = () => {
 
   const [templateFilter, setTemplateFilter] = useState<SelectLabel[]>([]);
   const [exerciseFilter, setExerciseFilter] = useState<SelectLabel[]>([]);
+  console.log("🚀 ~ Report ~ exerciseFilter:", exerciseFilter);
   const [exerciseSelected, setExerciseSelected] = useState<string | undefined>(
     ""
   );
@@ -82,7 +83,7 @@ const Report = () => {
         exerciseFilter?.find((item) => item?.selected)?.value
       );
     }
-  }, [exerciseFilter]);
+  }, [exerciseFilter, templateFilter]);
 
   // useEffect(() => {
   //   if(exerciseFilter) {
@@ -256,6 +257,15 @@ const Report = () => {
     );
   };
 
+  const handleExerciseChange = (value: string) => {
+    setExerciseFilter(
+      exerciseFilter.map((item) => ({
+        ...item,
+        selected: item.value === value ? true : false,
+      }))
+    );
+  };
+
   return (
     <SafeAreaProvider>
       <SafeAreaView className="bg-zinc-900 flex-1">
@@ -339,8 +349,7 @@ const Report = () => {
 
             {exerciseFilter.length > 0 && (
               <Select
-                // onValueChange={handleTemplateChange}
-                initialLabel={exerciseSelected}
+                onValueChange={handleExerciseChange}
                 selectedValue={exerciseSelected}
                 className="mb-3"
               >
@@ -350,9 +359,8 @@ const Report = () => {
                   size="md"
                 >
                   <SelectInput
-                    placeholder={
-                      exerciseFilter.find((item) => item.selected)?.label
-                    }
+                    value={exerciseSelected}
+                    placeholder={exerciseSelected}
                   />
                   <SelectIcon className="mr-3" as={ChevronDownIcon} />
                 </SelectTrigger>
@@ -364,7 +372,7 @@ const Report = () => {
                     </SelectDragIndicatorWrapper>
                     {exerciseFilter.map((item, idx) => (
                       <SelectItem
-                        key={idx}
+                        key={item.value}
                         label={item.label}
                         value={item.value}
                       />
