@@ -40,6 +40,7 @@ interface DataChart {
 interface DataChart2 {
   label: string;
   value: number;
+  dataPointLabelComponent: React.FC;
 }
 
 const Report = () => {
@@ -64,7 +65,6 @@ const Report = () => {
     ""
   );
   const [dataChart2, setDataChart2] = useState<DataChart2[]>([]);
-  console.log("🚀 ~ Report ~ dataChart2:", dataChart2);
   const [dataChart, setDataChart] = useState<DataChart>({
     labels: [],
     datasets: [
@@ -81,12 +81,6 @@ const Report = () => {
       );
     }
   }, [exerciseFilter, templateFilter]);
-
-  // useEffect(() => {
-  //   if(exerciseFilter) {
-  //     setExerciseSelected(exerciseFilter.find((item) => item.selected)?.value);
-  //   }
-  // }, [exerciseFilter])
 
   useEffect(() => {
     setTemplateFilter(
@@ -135,7 +129,7 @@ const Report = () => {
 
       templateSelect.sessions?.forEach((session) => {
         const dateSession = session.date;
-        const dateNow = format(new Date("2025-01-28"), "yyyy-MM-dd");
+        const dateNow = format(new Date(), "yyyy-MM-dd");
         if (dateSession <= dateNow) {
           session.exercises?.forEach((exercise) => {
             if (
@@ -188,6 +182,29 @@ const Report = () => {
             "/" +
             String(new Date(item.date).getMonth() + 1),
           value: item.totalWeight,
+          // showStrip: true,
+          // stripHeight: 200,
+          // stripColor: "#fff",
+          dataPointLabelComponent: () => {
+            return (
+              <View
+                style={{
+                  marginBottom: 10,
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#fafafa",
+                    textAlign: "center",
+                    fontSize: 12,
+                  }}
+                >
+                  {Math.round(item.totalWeight)}
+                </Text>
+              </View>
+            );
+          },
+          dataPointLabelShiftY: -15,
         }))
       );
     }
@@ -222,7 +239,7 @@ const Report = () => {
               <Text className="font-pbold text-xl text-zinc-50">Analyze</Text>
             </View>
 
-            <Select
+            {/* <Select
               className="mb-3"
               onValueChange={handleDateChange}
               defaultValue={dateFilter.find((item) => item.selected)?.value}
@@ -252,7 +269,7 @@ const Report = () => {
                   ))}
                 </SelectContent>
               </SelectPortal>
-            </Select>
+            </Select> */}
 
             {templateFilter.length > 0 && (
               <Select
@@ -335,43 +352,12 @@ const Report = () => {
               showsHorizontalScrollIndicator={false} // to hide scroll bar
             > */}
             {dataChart2.length > 0 && (
-              // <LineChart
-              //   data={dataChart}
-              //   width={
-              //     (dataChart.labels.length * Dimensions.get("window").width) /
-              //     5
-              //   }
-              //   height={220}
-              //   formatYLabel={(value) => {
-              //     return `${value}kg`;
-              //   }}
-              //   // yAxisSuffix="k"
-              //   yAxisInterval={1} // optional, defaults to 1
-              //   chartConfig={{
-              //     backgroundColor: "#09090b",
-              //     backgroundGradientFrom: "#18181b",
-              //     backgroundGradientTo: "#09090b",
-              //     decimalPlaces: 2, // optional, defaults to 2dp
-              //     color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-              //     labelColor: (opacity = 1) =>
-              //       `rgba(255, 255, 255, ${opacity})`,
-              //     style: {
-              //       borderRadius: 16,
-              //     },
-              //     propsForDots: {
-              //       r: "6",
-              //       strokeWidth: "2",
-              //       stroke: "#fff",
-              //     },
-              //   }}
-              //   bezier
-              //   style={{
-              //     marginVertical: 8,
-              //     borderRadius: 16,
-              //   }}
-              // />
               <LineChart
-                width={Dimensions.get("window").width - 20}
+                width={Dimensions.get("window").width - 90}
+                horizontalRulesStyle={{
+                  color: "#e5e5e5",
+                  paddingHorizional: 20,
+                }}
                 yAxisColor="#fafafa"
                 xAxisColor="#fafafa"
                 color={"#fff"}
@@ -391,18 +377,6 @@ const Report = () => {
                 dataPointsHeight1={10}
                 curved={true}
                 stepValue={10}
-                // customDataPoint={({ value, index }) => {
-                //   return value > 0 ? (
-                //     <View
-                //       style={{
-                //         width: 10,
-                //         height: 10,
-                //         borderRadius: 5,
-                //         backgroundColor: "#fff",
-                //       }}
-                //     />
-                //   ) : null;
-                // }}
                 maxValue={100}
               />
             )}
