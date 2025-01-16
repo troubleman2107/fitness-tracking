@@ -32,6 +32,11 @@ import { supabase } from "@/src/lib/supabaseClient";
 import { useFocusEffect } from "@react-navigation/native";
 import { DbTemplate } from "@/src/types/database";
 import { Icon, PlayIcon } from "@/components/ui/icon";
+import notifee, {
+  AndroidImportance,
+  TimestampTrigger,
+  TriggerType,
+} from "@notifee/react-native";
 
 interface UserInfo {
   full_name: string | null;
@@ -51,6 +56,8 @@ const Create = () => {
   const deleteTemplate = useStore((state) => state.deleteTemplate);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const fetchTemplates = useStore((state) => state.fetchTemplates);
+  const [permission, setPermission] = useState<number | null>(null);
+  console.log("🚀 ~ Create ~ permission:", permission);
 
   useEffect(() => {
     const getUserInfo = async () => {
@@ -79,10 +86,20 @@ const Create = () => {
     }, [])
   );
 
+  useEffect(() => {
+    const requestUserPermission = async () => {
+      const settings = await notifee.requestPermission();
+      setPermission(settings.authorizationStatus);
+      return settings.authorizationStatus;
+    };
+
+    requestUserPermission();
+  }, []);
+
   const handleStartTemplate = (template: DbTemplate) => {
     router.push({
       pathname: `/session/session`,
-      params: { templateId: template.id },
+      params: { templateId: template.id, permissionNotification: permission },
     });
   };
 

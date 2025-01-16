@@ -1,4 +1,4 @@
-import { SafeAreaView, Text, View } from "react-native";
+import { SafeAreaView, Text, View, Platform } from "react-native";
 import React, { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import ModalSetOfRep from "@/components/ModalSetOfRep";
@@ -20,6 +20,11 @@ import { getDateWithoutTime } from "@/utils/dateHelpers";
 import Exercises from "@/components/Exercises";
 import { useSessionTimer } from "@/hooks/useSessionTimer";
 import PrevIconButton from "@/components/ui/PrevButton";
+import notifee, {
+  AndroidImportance,
+  TimestampTrigger,
+  TriggerType,
+} from "@notifee/react-native";
 
 const data = require("@/data/data.json");
 
@@ -27,7 +32,7 @@ const Session = () => {
   const [isFinishSet, setIsFinishSet] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const templates = useStore((state) => state.templates);
-  const { templateId } = useLocalSearchParams();
+  const { templateId, permissionNotification } = useLocalSearchParams();
   const templateById = templates.find((template) => {
     return template.id === templateId;
   });
@@ -66,6 +71,52 @@ const Session = () => {
   const dayNow = getDateWithoutTime(new Date());
 
   const { elapsedTime, formatTime, resetTimer } = useSessionTimer(true);
+
+  const alarmTime = new Date();
+
+  const createNotificationChannel = async () => {
+    await notifee.createChannel({
+      id: "default",
+      name: "Default Channel",
+      importance: AndroidImportance.HIGH,
+      sound: "default",
+    });
+  };
+
+  const triggerNotification = async () => {
+    try {
+      // Create channel for Android
+      if (Platform.OS === "android") {
+        await createNotificationChannel();
+      }
+
+      // Request permission
+      if (permissionNotification) {
+        await notifee.displayNotification({
+          title: "Fitness Tracking",
+          body: `Time to workout! Session started at ${alarmTime?.toLocaleTimeString()}`,
+          android: {
+            channelId: "default",
+            sound: "default",
+            pressAction: {
+              id: "default",
+            },
+          },
+          ios: {
+            sound: "default",
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Failed to trigger notification:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (Platform.OS === "android") {
+      createNotificationChannel();
+    }
+  }, []);
 
   useEffect(() => {
     const selectDay = getDateWithoutTime(selectedDate);
@@ -188,6 +239,7 @@ const Session = () => {
       </View>
       <Agenda
         onDayPress={(date: DateData) => {
+          triggerNotification();
           setSelectedDate(new Date(date.dateString));
         }}
         items={{ items: [] }}
