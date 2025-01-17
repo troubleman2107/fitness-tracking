@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import { Duration, formatDuration, intervalToDuration } from "date-fns";
+import BackgroundTimer from "react-native-background-timer";
 
 interface CountDownRestProps {
   seconds: number;
@@ -16,24 +17,40 @@ const CountDownRest = ({
   const [timeRemaining, setTimeRemaining] = useState(seconds);
 
   useEffect(() => {
-    // If time is running out, set up an interval
-    if (isRunning && timeRemaining > 0) {
-      const timer = setInterval(() => {
-        setTimeRemaining((prev) => {
-          if (prev <= 1) {
-            setTimeout(() => {
-              onStop(false);
-            }, 0);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      // Clean up the interval when component unmounts or time runs out
-      return () => clearInterval(timer);
-    }
+    BackgroundTimer.runBackgroundTimer(() => {
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          setTimeout(() => {
+            onStop(false);
+          }, 0);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => {
+      BackgroundTimer.stopBackgroundTimer();
+    };
   }, [isRunning, timeRemaining]);
+
+  // useEffect(() => {
+  //   // If time is running out, set up an interval
+  //   if (isRunning && timeRemaining > 0) {
+  //     const timer = setInterval(() => {
+  //       setTimeRemaining((prev) => {
+  //         if (prev <= 1) {
+  //           setTimeout(() => {
+  //             onStop(false);
+  //           }, 0);
+  //           return 0;
+  //         }
+  //         return prev - 1;
+  //       });
+  //     }, 1000);
+  //     return () => clearInterval(timer);
+  //     // Clean up the interval when component unmounts or time runs out
+  //   }
+  // }, [isRunning, timeRemaining]);
 
   const duration = intervalToDuration({ start: 0, end: timeRemaining * 1000 });
 

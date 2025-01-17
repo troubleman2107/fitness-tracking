@@ -94,7 +94,7 @@ const Session = () => {
       if (permissionNotification) {
         await notifee.displayNotification({
           title: "Fitness Tracking",
-          body: `Time to workout! Session started at ${alarmTime?.toLocaleTimeString()}`,
+          body: `Time to workout! Exercise started at ${alarmTime?.toLocaleTimeString()}`,
           android: {
             channelId: "default",
             sound: "default",
@@ -223,8 +223,8 @@ const Session = () => {
           ],
         };
       });
-
       setSessionSelect(updatedSession);
+      triggerNotification();
     }
   };
 
@@ -239,7 +239,6 @@ const Session = () => {
       </View>
       <Agenda
         onDayPress={(date: DateData) => {
-          triggerNotification();
           setSelectedDate(new Date(date.dateString));
         }}
         items={{ items: [] }}
