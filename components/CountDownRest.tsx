@@ -1,6 +1,10 @@
-import { StyleSheet, Text, View } from "react-native";
-import React, { useEffect, useState } from "react";
+import { StyleSheet, Text, View, Platform, AppState } from "react-native";
+import React, { useEffect, useState, useRef } from "react";
 import { Duration, formatDuration, intervalToDuration } from "date-fns";
+import notifee, {
+  AndroidImportance,
+  AndroidVisibility,
+} from "@notifee/react-native";
 import BackgroundTimer from "react-native-background-timer";
 
 interface CountDownRestProps {
@@ -15,42 +19,95 @@ const CountDownRest = ({
   onStop,
 }: CountDownRestProps) => {
   const [timeRemaining, setTimeRemaining] = useState(seconds);
+  const endTimeRef = useRef<number>(0);
+  const timerRef = useRef<NodeJS.Timeout>();
+  const appStateRef = useRef(AppState.currentState);
+
+  const updateTimer = () => {
+    const now = Date.now();
+    const remaining = Math.max(0, Math.ceil((endTimeRef.current - now) / 1000));
+    console.log("🚀 ~ updateTimer ~ remaining:", remaining);
+
+    if (remaining <= 0) {
+      BackgroundTimer.stopBackgroundTimer();
+      triggerCompletionNotification();
+      onStop(false);
+      setTimeRemaining(0);
+      return;
+    }
+
+    setTimeRemaining(remaining);
+    // updateNotification(remaining);
+  };
+
+  const createNotificationChannel = async () => {
+    if (Platform.OS === "android") {
+      await notifee.createChannel({
+        id: "rest",
+        name: "Rest Timer",
+        lights: false,
+        vibration: true,
+        importance: AndroidImportance.HIGH,
+      });
+    }
+  };
+
+  const updateNotification = async (remaining: number) => {
+    await notifee.displayNotification({
+      title: "Rest Timer Running",
+      body: `${remaining} seconds remaining`,
+      android: {
+        channelId: "rest",
+        ongoing: true,
+        pressAction: {
+          id: "default",
+        },
+        timestamp: Date.now(),
+        showTimestamp: true,
+      },
+    });
+  };
+
+  const triggerCompletionNotification = async () => {
+    try {
+      await notifee.displayNotification({
+        title: "Rest Complete!",
+        body: "Time to start your next set!",
+        android: {
+          channelId: "rest",
+          importance: AndroidImportance.HIGH,
+          sound: "default",
+        },
+        ios: {
+          sound: "default",
+        },
+      });
+    } catch (error) {
+      console.error("Notification error:", error);
+    }
+  };
 
   useEffect(() => {
-    BackgroundTimer.runBackgroundTimer(() => {
-      setTimeRemaining((prev) => {
-        if (prev <= 1) {
-          setTimeout(() => {
-            onStop(false);
-          }, 0);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    createNotificationChannel();
+
+    if (isRunning) {
+      endTimeRef.current = Date.now() + timeRemaining * 1000;
+      BackgroundTimer.runBackgroundTimer(updateTimer, 1000);
+    } else {
+      BackgroundTimer.stopBackgroundTimer();
+    }
+
     return () => {
       BackgroundTimer.stopBackgroundTimer();
     };
-  }, [isRunning, timeRemaining]);
+  }, [isRunning]);
 
-  // useEffect(() => {
-  //   // If time is running out, set up an interval
-  //   if (isRunning && timeRemaining > 0) {
-  //     const timer = setInterval(() => {
-  //       setTimeRemaining((prev) => {
-  //         if (prev <= 1) {
-  //           setTimeout(() => {
-  //             onStop(false);
-  //           }, 0);
-  //           return 0;
-  //         }
-  //         return prev - 1;
-  //       });
-  //     }, 1000);
-  //     return () => clearInterval(timer);
-  //     // Clean up the interval when component unmounts or time runs out
-  //   }
-  // }, [isRunning, timeRemaining]);
+  useEffect(() => {
+    setTimeRemaining(seconds);
+    if (isRunning) {
+      endTimeRef.current = Date.now() + seconds * 1000;
+    }
+  }, [seconds]);
 
   const duration = intervalToDuration({ start: 0, end: timeRemaining * 1000 });
 

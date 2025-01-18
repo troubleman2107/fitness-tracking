@@ -106,6 +106,7 @@ const Exercises = ({
   };
 
   const handleNextSet = () => {
+    console.log("notifi");
     if (handleStopRest) {
       handleStopRest();
     }

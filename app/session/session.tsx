@@ -83,35 +83,6 @@ const Session = () => {
     });
   };
 
-  const triggerNotification = async () => {
-    try {
-      // Create channel for Android
-      if (Platform.OS === "android") {
-        await createNotificationChannel();
-      }
-
-      // Request permission
-      if (permissionNotification) {
-        await notifee.displayNotification({
-          title: "Fitness Tracking",
-          body: `Time to workout! Exercise started at ${alarmTime?.toLocaleTimeString()}`,
-          android: {
-            channelId: "default",
-            sound: "default",
-            pressAction: {
-              id: "default",
-            },
-          },
-          ios: {
-            sound: "default",
-          },
-        });
-      }
-    } catch (error) {
-      console.error("Failed to trigger notification:", error);
-    }
-  };
-
   useEffect(() => {
     if (Platform.OS === "android") {
       createNotificationChannel();
@@ -224,7 +195,7 @@ const Session = () => {
         };
       });
       setSessionSelect(updatedSession);
-      triggerNotification();
+      // triggerNotification();
     }
   };
 
